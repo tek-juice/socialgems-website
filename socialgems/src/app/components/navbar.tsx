@@ -15,7 +15,7 @@ const Navbar = () => {
         <div className="flex">
           {/* Right section: Signup and Login */}
           <Link href="/signup" className="px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 mr-4">Sign Up</ Link>
-          <Link href="#" className="text-black hover:text-gray-800">Login</ Link>
+          <Link href="/login" className="text-black hover:text-gray-800">Login</ Link>
         </div>
       </nav>
     );

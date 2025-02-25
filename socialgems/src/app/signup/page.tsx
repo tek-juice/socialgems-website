@@ -1,3 +1,5 @@
+'use client';
+
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Image from "next/image";
@@ -17,6 +19,7 @@ export default function SignUpPage(){
                                 type="text"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="Enter your first name"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -25,6 +28,7 @@ export default function SignUpPage(){
                                 type="text"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="Enter your last name"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -33,6 +37,7 @@ export default function SignUpPage(){
                                 type="text"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="Enter your company name"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -41,6 +46,7 @@ export default function SignUpPage(){
                                 type="email"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="Enter your email"
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -49,6 +55,7 @@ export default function SignUpPage(){
                                 type="text"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="+256 778 406 122"
+                                required
                             />
                         </div>
                         <div className="flex flex-col space-y-4">
@@ -63,7 +70,7 @@ export default function SignUpPage(){
                                     { name: "YouTube", image: "/Youtube.webp" }
                                 ].map((platform) => (
                                     <label key={platform.name} className="flex flex-col items-center text-gray-700">
-                                        <input className="mb-2" type="checkbox" name="social-media" value={platform.name} />
+                                        <input className="mb-2" type="checkbox" name="social-media" value={platform.name} /> 
                                         <Image src={platform.image} alt={platform.name} width={48} height={48} />
                                         {platform.name}
                                     </label>
@@ -76,6 +83,7 @@ export default function SignUpPage(){
                                 type="text"
                                 className="w-full p-2 border border-gray-300 rounded mt-1"
                                 placeholder="Music, Dance, Fashion, Travel etc.."
+                                required
                             />
                         </div>
                         <div className="mb-4">
@@ -83,6 +91,7 @@ export default function SignUpPage(){
                             <textarea
                                 className="w-full p-10 border border-gray-300 rounded mt-1"
                                 placeholder="Enter your message here"
+                                required
                             />
                         </div>
                         <button
