@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Footer = () => {
     return (
       <footer className="bg-black text-white py-8">
@@ -7,10 +9,10 @@ const Footer = () => {
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Explore More</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Safety</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Our Services</a></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Privacy Policy</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Safety</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">About Us</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Our Services</ Link></li>
               </ul>
             </div>
   
@@ -18,10 +20,10 @@ const Footer = () => {
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Connect with Us</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Facebook</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Twitter</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Instagram</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">LinkedIn</a></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Facebook</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Twitter</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Instagram</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">LinkedIn</ Link></li>
               </ul>
             </div>
   
@@ -29,9 +31,9 @@ const Footer = () => {
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Legal</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Terms of Service</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Cookie Policy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Disclaimers</a></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Terms of Service</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Cookie Policy</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Disclaimers</ Link></li>
               </ul>
             </div>
   
@@ -39,10 +41,10 @@ const Footer = () => {
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Follow Us</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Facebook</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Twitter</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Instagram</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">LinkedIn</a></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Facebook</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Twitter</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Instagram</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">LinkedIn</ Link></li>
               </ul>
             </div>
   
@@ -50,9 +52,9 @@ const Footer = () => {
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Contact Us</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Email Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Support</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Help Center</a></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Email Us</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Support</ Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white">Help Center</ Link></li>
               </ul>
             </div>
           </div>
