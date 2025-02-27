@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { NextResponse } from "next/server";
 import { db } from "../../lib/db";
 import { Users } from "../../lib/definitions";

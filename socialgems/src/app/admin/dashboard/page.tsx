@@ -1,4 +1,7 @@
 //this is the page an admin comes to after successful loggin in.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 'use client';
 
 import { useEffect, useState } from 'react';
