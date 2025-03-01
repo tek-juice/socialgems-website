@@ -37,17 +37,6 @@ const Footer = () => {
               </ul>
             </div>
   
-            {/* Follow Us */}
-            <div className="flex flex-col items-center sm:items-start">
-              <h3 className="text-lg font-semibold mb-2">Follow Us</h3>
-              <ul className="space-y-2">
-                <li><Link href="#" className="text-gray-400 hover:text-white">Facebook</ Link></li>
-                <li><Link href="#" className="text-gray-400 hover:text-white">Twitter</ Link></li>
-                <li><Link href="#" className="text-gray-400 hover:text-white">Instagram</ Link></li>
-                <li><Link href="#" className="text-gray-400 hover:text-white">LinkedIn</ Link></li>
-              </ul>
-            </div>
-  
             {/* Contact Us */}
             <div className="flex flex-col items-center sm:items-start">
               <h3 className="text-lg font-semibold mb-2">Contact Us</h3>

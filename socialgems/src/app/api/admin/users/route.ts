@@ -1,4 +1,4 @@
-//route that handles retrieving users from users table and displays it on dashbaord.
+//route that handles retrieving users(brands information) from users table and displays it on dashbaord.
 
 import { NextResponse } from "next/server";
 import { db } from "../../../lib/db"; // Adjusted path according to the folder level of the  DB connection file
@@ -34,6 +34,23 @@ export async function DELETE(req: Request) {
     }
 }
 
+// PUT function to update an influencer
+export async function PUT(req: Request) {
+  try {
+    const { id, first_name, last_name, email } = await req.json();
+    if (!id || !first_name || !last_name || !email) {
+      return NextResponse.json({ success: false, error: "All fields are required" }, { status: 400 });
+    }
+    const updatedUser = await db.query(
+      "UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE id = $4 RETURNING *;",
+      [first_name, last_name, email, id]
+    );
+    return NextResponse.json({ success: true, user: updatedUser.rows[0] }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return NextResponse.json({ success: false, error: "Failed to update user" }, { status: 500 });
+  }
+}
 
 /*
 export async function GET(req: NextRequest) {

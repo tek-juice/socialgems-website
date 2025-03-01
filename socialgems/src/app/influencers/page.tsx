@@ -1,3 +1,5 @@
+//page that collects influencers sign up information from the page
+
 "use client";
 
 import { useState } from "react";
@@ -11,22 +13,20 @@ export default function SignUpPage() {
     interface formData {
         first_name: string;
         last_name: string;
-        company_name: string;
         email: string;
         contact: string;
         social_media: string[]; // Ensure it's recognized as a string array
-        expertise: string;
+        influence: string;
         message: string;
     }
     
     const [formData, setFormData] = useState<formData>({
         first_name: "",
         last_name: "",
-        company_name: "",
         email: "",
         contact: "",
         social_media: [],
-        expertise: "",
+        influence: "",
         message: "",
     });
 
@@ -44,7 +44,7 @@ export default function SignUpPage() {
             ...prevState,
             social_media: checked
                 ? [...prevState.social_media, value] //add the platform to the array.
-                : prevState.social_media.filter((platform) => platform !== value), //remoe the platform from the array
+                : prevState.social_media.filter((platform) => platform !== value), //remove the platform from the array
         }));
     };
 
@@ -60,7 +60,7 @@ export default function SignUpPage() {
         }, {} as { [key: string]: string });
 
         try {
-            const res = await fetch("/api/users", {
+            const res = await fetch("/api/influencers", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -68,7 +68,6 @@ export default function SignUpPage() {
                 body: JSON.stringify({
                     ...formData,
                     social_media: socialMediaObject, //send the object instead of an array.
-                    expertise: formData.expertise, //send expertise as plain string
                 }),
             });
 
@@ -95,15 +94,24 @@ export default function SignUpPage() {
                     {/* New Text Section */}
                     <div className="text-center mb-8">
                         <h1 className="text-4xl font-bold text-[#1A1A1A] mb-4">
-                            Find Niche Influencers Faster
+                            Join our influencer community
                         </h1>
                         <p className="text-[#4A5568] text-lg">
-                            Effortlessly discover niche creators who align with your business’s goals. No more guesswork; our smart tech pairs you with the right influencers, saving you time. We do the search for you so you can concentrate on perfecting your campaign.
+                            Social Gems is all about fueling creativity
+                            in an industry that never stops evolving. 
+                            From beauty, sports, gaming, or food, 
+                            our African network of creators is breaking 
+                            boundaries; and we want you in.
+                            Want exclusive opportunities with top businesses?
+                            We've got you covered. At Social Gems, finding campaigns, 
+                            creating amazing content, and getting paid should be the easy part. 
+                            We help you land more deals, grow your audience, 
+                            and take your creative journey to the next level.
                         </p>
                     </div>
 
                     {/* Form Section */}
-                    <h1 className="text-2xl font-bold mb-4 text-[#1A1A1A]">Are you a Brand?</h1>
+                    <h1 className="text-2xl font-bold mb-4 text-[#1A1A1A]">Are you an Influencer?</h1>
                     <h2 className="text-2xl font-bold mb-6 text-[#1A1A1A]">Sign Up with Social Gems</h2>
 
                     {success ? (
@@ -133,18 +141,6 @@ export default function SignUpPage() {
                                         onChange={handleChange} 
                                     />
                                 </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-[#4A5568]">Company Name</label>
-                                <input 
-                                    name="company_name" 
-                                    type="text" 
-                                    placeholder="Company Name" 
-                                    required 
-                                    className="w-full p-3 border border-[#E2E8F0] rounded-lg mt-1 placeholder-[#A0AEC0] text-[#1A1A1A] focus:ring-2 focus:ring-[#3182CE] focus:border-transparent"
-                                    onChange={handleChange}
-                                />
                             </div>
 
                             <div>
@@ -199,11 +195,11 @@ export default function SignUpPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-[#4A5568]">Field of Expertise</label>
+                                <label className="block text-sm font-medium text-[#4A5568]">Field of Influence</label>
                                 <input 
-                                    name="expertise" 
+                                    name="influence" 
                                     type="text" 
-                                    placeholder="Expertise (Music, Travel...)" 
+                                    placeholder="Field of Influence (Music, Travel...)" 
                                     required 
                                     className="w-full p-3 border border-[#E2E8F0] rounded-lg mt-1 placeholder-[#A0AEC0] text-[#1A1A1A] focus:ring-2 focus:ring-[#3182CE] focus:border-transparent"
                                     onChange={handleChange} 
