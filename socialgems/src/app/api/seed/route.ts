@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { db } from '@vercel/postgres';
-import { admins } from '../../lib/placeholder-data';
+import { db } from '@vercel/postgres'; // Ensure this is correctly imported
+import { users } from '../../lib/placeholder-data';
 
 // CORS Headers
 const headers = {
@@ -10,11 +9,101 @@ const headers = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-//GET handler for testing in the browser
+// GET handler for testing in the browser
 export async function GET() {
   return NextResponse.json({ message: 'Send a POST request to seed the database' }, { status: 200 });
 }
 
+export async function POST(req: Request) {
+  try {
+      // Initialize the database client
+      const client = await db.connect();
+
+      // Check if the table exists
+      const checkTable = await client.query(`
+          SELECT EXISTS (
+              SELECT FROM information_schema.tables
+              WHERE table_name = 'users'
+          ) AS exists;
+      `);
+
+      if (!checkTable.rows[0].exists) {
+          return NextResponse.json({ success: false, error: "Table 'users' does not exist" }, { status: 404 });
+      }
+
+      // Insert each influencer into the database
+      for (const user of users) {
+          await client.query(
+              `INSERT INTO users (first_name, last_name, company_name, email, contact, social_media, expertise, message)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
+              [
+                  user.first_name,
+                  user.last_name,
+                  user.company_name,
+                  user.email,
+                  user.contact,
+                  JSON.stringify(user.social_media),
+                  user.expertise,
+                  user.message,
+              ]
+          );
+      }
+
+      // Release the client back to the pool
+      client.release();
+
+      return NextResponse.json({ success: true, message: "Data seeded successfully" }, { status: 201 });
+  } catch (error) {
+      console.error(error);
+      return NextResponse.json({ success: false, error: "Failed to seed data" }, { status: 500 });
+  }
+}
+/*
+export async function POST(req: Request) {
+  try {
+      // Initialize the database client
+      const client = await db.connect();
+
+      // Check if the table exists
+      const checkTable = await client.query(`
+          SELECT EXISTS (
+              SELECT FROM information_schema.tables
+              WHERE table_name = 'influencers'
+          ) AS exists;
+      `);
+
+      if (!checkTable.rows[0].exists) {
+          return NextResponse.json({ success: false, error: "Table 'influencers' does not exist" }, { status: 404 });
+      }
+
+      // Insert each influencer into the database
+      for (const influencer of influencers) {
+          await client.query(
+              `INSERT INTO influencers (first_name, last_name, email, contact, social_media, influence, message)
+               VALUES ($1, $2, $3, $4, $5, $6, $7);`,
+              [
+                  influencer.first_name,
+                  influencer.last_name,
+                  influencer.email,
+                  influencer.contact,
+                  JSON.stringify(influencer.social_media),
+                  influencer.influence,
+                  influencer.message,
+              ]
+          );
+      }
+
+      // Release the client back to the pool
+      client.release();
+
+      return NextResponse.json({ success: true, message: "Data seeded successfully" }, { status: 201 });
+  } catch (error) {
+      console.error(error);
+      return NextResponse.json({ success: false, error: "Failed to seed data" }, { status: 500 });
+  }
+}*/
+
+/* commentded out the admin seeding.
 // POST handler to seed the database
 export async function POST() {
   const client = await db.connect();
@@ -54,3 +143,4 @@ export async function POST() {
     client.release();
   }
 }
+*/

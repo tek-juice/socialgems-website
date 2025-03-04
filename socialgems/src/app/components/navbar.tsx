@@ -13,12 +13,12 @@ const Navbar = () => {
             <li><Link href="/about" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">About</ Link></li>
             <li><Link href="/contact" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Contact</ Link></li>
             <li><Link href="/services" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Services</ Link></li>
-            <li><Link href="blogpost" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Blog Posts</ Link></li>
+            <li><Link hidden href="blogpost" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Blog Posts</ Link></li>
           </ul>
         </div>
         <div className="flex">
           {/* Right section: Signup and Login */}
-          <Link href="/login" className=" px-2 py-2 bg-white text-black border border-black rounded-md hover:bg-black hover:text-white hover:border hover:border-black">Login</ Link>
+          <Link hidden href="/login" className=" px-2 py-2 bg-white text-black border border-black rounded-md hover:bg-black hover:text-white hover:border hover:border-black">Login</ Link>
         </div>
       </nav>
     );

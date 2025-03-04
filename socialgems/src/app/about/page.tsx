@@ -10,16 +10,30 @@ export default function About() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-center bg-white">
+      <section className="relative h-96 flex items-center justify-center text-center bg-white overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-gold to-brown rounded-b-3xl z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-gold to-brown rounded-b-3xl z-0 shadow-2xl hover:shadow-3xl transition-shadow duration-300">
+          {/* Hero Content */}
+          <div className="relative z-10 text-white container mx-auto px-6 flex items-center justify-between h-full">
+            {/* Text Content */}
+            <div className="text-left max-w-2xl">
+              <h1 className="text-5xl font-bold mb-4 text-darkgold">Engage with customers through creators they trust</h1>
+              <p className="text-xl">
+                Discover the story behind Social Gems and our mission to connect brands with influencers.
+              </p>
+            </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 text-white">
-          <h1 className="text-5xl font-bold mb-4">About Us</h1>
-          <p className="text-xl max-w-2xl mx-auto">
-            Discover the story behind Social Gems and our mission to connect brands with influencers.
-          </p>
+            {/* Image */}
+            <div className="flex-1 flex justify-end">
+              <Image 
+                src="/Hannifah-about.webp" 
+                alt="about" 
+                width={407} 
+                height={600} 
+                className="rounded-md shadow-lg transform hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -27,6 +41,21 @@ export default function About() {
       <section className="flex-1 py-12 px-8 bg-white">
         <div className="max-w-4xl mx-auto">
           {/* Mission Section */}
+          <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
+            <h2 className="text-3xl font-bold text-brown mb-4">Our Story</h2>
+            <p className="text-black text-lg">
+              Social Gems was founded on the insight 
+              that everyday social media users hold 
+              untapped value. While many have engaged 
+              followers, their influence is not fully tapped, 
+              and businesses struggle to connect with the right 
+              audience. Social Gems bridges this gap, transforming 
+              organic social sharing into a powerful tool that connects
+              businesses with authentic influence. We’re redefining 
+              influence and making marketing more human, trusted, 
+              and effective.
+            </p>
+          </div>
           <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
             <h2 className="text-3xl font-bold text-brown mb-4">Our Mission</h2>
             <p className="text-black text-lg">
@@ -38,25 +67,12 @@ export default function About() {
           <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
             <h2 className="text-3xl font-bold text-brown mb-4">Our Team</h2>
 
-            {/* Team Leaders (Top Row) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Team Leader 1 */}
+            {/* Rest of the Team Members (Bottom Row) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Team Member 3 */}
               <div className="text-center">
                 <Image
-                  src="/team-leader-1.webp" // Replace with your image path
-                  alt="Founder"
-                  width={150}
-                  height={150}
-                  className="rounded-full mx-auto mb-4"
-                />
-                <h3 className="text-xl font-bold text-black">Jason Hathaway</h3>
-                <p className="text-brown">CEO & Founder</p>
-              </div>
-
-              {/* Team Leader 2 */}
-              <div className="text-center">
-                <Image
-                  src="/team-leader-2.webp" // Replace with your image path
+                  src="/social-gems-web-eve.jpg" // Replace with your image path
                   alt="Team Leader 2"
                   width={150}
                   height={150}
@@ -65,15 +81,10 @@ export default function About() {
                 <h3 className="text-xl font-bold text-black">Evelyn Luganda:</h3>
                 <p className="text-brown">Project Manager</p>
               </div>
-            </div>
-
-            {/* Rest of the Team Members (Bottom Row) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Team Member 1 */}
               <div className="text-center">
                 <Image
-                  src="/team-member-1.webp" // Replace with your image path
-                  alt="Team Member 1"
+                  src="/social-gems-web-christine.jpg" // Replace with your image path
+                  alt="Team Member 3"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
@@ -85,8 +96,8 @@ export default function About() {
               {/* Team Member 2 */}
               <div className="text-center">
                 <Image
-                  src="/team-member-2.webp" // Replace with your image path
-                  alt="Team Member 2"
+                  src="/barbra.jpg" // Replace with your image path
+                  alt="Team Member 4"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
@@ -95,11 +106,11 @@ export default function About() {
                 <p className="text-brown">Copywriter/Digital Marketer</p>
               </div>
 
-              {/* Team Member 3 */}
+              {/* Team Member 5 */}
               <div className="text-center">
                 <Image
-                  src="/team-member-3.webp" // Replace with your image path
-                  alt="Team Member 3"
+                  src="/social-gems-web-leinah.jpg" // Replace with your image path
+                  alt="Team Member 5"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
@@ -108,11 +119,11 @@ export default function About() {
                 <p className="text-brown">Digital Marketer</p>
               </div>
 
-              {/* Team Member 4 */}
+              {/* Team Member 6 */}
               <div className="text-center">
                   <Image
-                    src="/team-member-3.webp" // Replace with your image path
-                    alt="Team Member 3"
+                    src="/social-gems-web-martha.jpg" // Replace with your image path
+                    alt="Team Member 6"
                     width={150}
                     height={150}
                     className="rounded-full mx-auto mb-4"
@@ -124,8 +135,8 @@ export default function About() {
               {/* Team Member 5 */}
               <div className="text-center">
                 <Image
-                  src="/team-member-3.webp" // Replace with your image path
-                  alt="Team Member 3"
+                  src="/social-gems-web-hanie.jpg" // Replace with your image path
+                  alt="Team Member 7"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"

@@ -34,8 +34,57 @@ export default function SignUpPage() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
 
+    //validate names
+    const validateName = (name: string): boolean => {
+        const regex = /^[A-Za-z\s]+$/; //allows letters and spaces
+        return regex.test(name);
+    };
+
+    //validate email
+    const validateEmail = (email: string): boolean => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format validation
+        return regex.test(email);
+    }
+    //validate country dial codes
+    const countryDialCodes = [
+        {code: "+1", name:"USA"},
+        {code: "+44", name:"UK"},
+        {code: "+256", name: "Uganda"},
+        {code: "+254", name: "Kenya"},
+        {code: "+97", name: "UAE"},
+        {code: "+234", name: "Nigeria"},
+        {code: "+27", name: "South Africa"},
+        {code: "+143", name: "Senegal"},
+        {code: "+233", name: "Ghana"},
+    ];
+    //add state for selected dial code
+    const [dialCode, setDialCode] = useState("+256");
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const {name, value } = e.target;
+        //update name validation
+        if(name === "first_name" || name ==="lats_name") {
+            if(!validateName(value)) {
+                setError("Names should only contain letters and spaces.");
+                return;
+            }
+        }
+        //update email
+        if (name === "email") {
+            if(!validateEmail(value)) {
+                setError("Please enter a vlaid email address.")
+                return;
+            }
+        }
+        //validate contact
+        if (name === "contact") {
+            if (value.startsWith("0")) {
+                setError("Contact number should not start with a zero");
+                return;
+            }
+        }
+        setFormData({ ...formData, [name]: value });
+        setError("");//clear any previous errors.
     };
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +99,22 @@ export default function SignUpPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        //validate social media selection
+        if(formData.social_media.length === 0) {
+            setError("Please select at least one social media platform")
+            return;
+        }
+        //validate message
+        if (!formData.message.trim()) {
+            setError("Message cannot be left blank.");
+            return;
+        }
+        //validate field of influence
+        if (!formData.influence.trim()) {
+            setError("Field of influence cannot be left blank.");
+            return;
+        }
         setLoading(true);
         setError("");
 
@@ -67,6 +132,7 @@ export default function SignUpPage() {
                 },
                 body: JSON.stringify({
                     ...formData,
+                    contact: `${dialCode}${formData.contact}`, //combines dial code and contact
                     social_media: socialMediaObject, //send the object instead of an array.
                 }),
             });
@@ -157,6 +223,17 @@ export default function SignUpPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-[#4A5568]">Contact</label>
+                                <select 
+                                    value={dialCode} 
+                                    onChange={(e) => setDialCode(e.target.value)}
+                                    className="p-3 border border-[#E2E8F0] rounded-lg text-[#1A1A1A] focus:ring-2 focus:ring-[#3182CE] focus:border-transparent"
+                                    >
+                                    {countryDialCodes.map((country) => (
+                                        <option key={country.code} value={country.code}>
+                                            {country.name} ({country.code})
+                                        </option>
+                                    ))}
+                                    </select>
                                 <input 
                                     name="contact" 
                                     type="text" 

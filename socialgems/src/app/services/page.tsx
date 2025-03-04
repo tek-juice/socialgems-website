@@ -94,13 +94,7 @@ export default function Services() {
               {/* Service 1 */}
               <div className="flex items-start">
                 <div className="bg-gold p-3 rounded-full mr-4">
-                  <Image
-                    src="/icons/globe.svg" // Replace with your icon path
-                    alt="Global Influencer Marketplace"
-                    width={24}
-                    height={24}
-                    className="text-white"
-                  />
+                  <span className="text-white text-xl font-bold">1</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Global Influencer Marketplace & Opportunities</h3>
@@ -113,13 +107,7 @@ export default function Services() {
               {/* Service 2 */}
               <div className="flex items-start">
                 <div className="bg-gold p-3 rounded-full mr-4">
-                  <Image
-                    src="/icons/strategy.svg" // Replace with your icon path
-                    alt="Bespoke Campaign Strategies"
-                    width={24}
-                    height={24}
-                    className="text-white"
-                  />
+                  <span className="text-white text-xl font-bold">2</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Bespoke Campaign Strategies & Streamlined Management</h3>
@@ -132,13 +120,7 @@ export default function Services() {
               {/* Service 3 */}
               <div className="flex items-start">
                 <div className="bg-gold p-3 rounded-full mr-4">
-                  <Image
-                    src="/icons/analytics.svg" // Replace with your icon path
-                    alt="Authentic Content Creation"
-                    width={24}
-                    height={24}
-                    className="text-white"
-                  />
+                  <span className="text-white text-xl font-bold">3</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Authentic Content Creation & Real-Time Analytics</h3>
@@ -151,13 +133,7 @@ export default function Services() {
               {/* Service 4 */}
               <div className="flex items-start">
                 <div className="bg-gold p-3 rounded-full mr-4">
-                  <Image
-                    src="/icons/community.svg" // Replace with your icon path
-                    alt="Training & Community"
-                    width={24}
-                    height={24}
-                    className="text-white"
-                  />
+                  <span className="text-white text-xl font-bold">4</span>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Training, Support & Community for Growth</h3>

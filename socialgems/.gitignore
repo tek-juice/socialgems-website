@@ -33,6 +33,13 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env
 
+#files
+convertCsvToJson.js
+placeholder-data.json
+placeholder-data.ts
+brands-form-2025-03-03.csv
+brands-form-2025-03-032.csv
+influencer-form-2025-03-03.csv
 # vercel
 .vercel
 

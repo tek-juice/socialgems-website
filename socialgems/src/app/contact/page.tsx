@@ -88,28 +88,20 @@ export default function Contact() {
           {/* Contact Information */}
           <div className="bg-white p-8 rounded-2xl shadow-lg">
             <h2 className="text-3xl font-bold text-brown mb-6">Contact Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Email */}
-              <div className="text-center">
+            <div className="flex flex-col md:flex-row justify-between gap-6">
+              {/* Email - Left Side */}
+              <div className="w-full md:w-1/2 text-center">
                 <div className="bg-gold p-6 rounded-2xl">
                   <h3 className="text-xl font-bold text-black mb-2">Email</h3>
-                  <p className="text-black">info@socialgems.com</p>
+                  <p className="text-black">info@socialgems.me</p>
                 </div>
               </div>
 
-              {/* Phone */}
-              <div className="text-center">
-                <div className="bg-gold p-6 rounded-2xl">
-                  <h3 className="text-xl font-bold text-black mb-2">Phone</h3>
-                  <p className="text-black">+1 (123) 456-7890</p>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="text-center">
+              {/* Address - Right Side */}
+              <div className="w-full md:w-1/2 text-center">
                 <div className="bg-gold p-6 rounded-2xl">
                   <h3 className="text-xl font-bold text-black mb-2">Address</h3>
-                  <p className="text-black">123 Social Gems Lane, City, Country</p>
+                  <p className="text-black">19 Binayomba Road, Bugolobi, Kampala</p>
                 </div>
               </div>
             </div>

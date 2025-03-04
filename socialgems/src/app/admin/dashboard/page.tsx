@@ -213,18 +213,16 @@ const Dashboard = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <div className="border border-gray-300 rounded-lg overflow-hidden mb-8">
-          <table className="min-w-full bg-white">
+        <div className="border border-gray-300 rounded-lg overflow-auto mb-8" style={{maxWidth: "100vw"}}>
+          <table className="min-w-full bg-white resizable">
             <thead>
-              <tr className="bg-gray-200">
+              <tr className="bg-gray-200 resizable header">
                 <th className="py-2 px-4 text-left">First Name</th>
                 <th className="py-2 px-4 text-left">Last Name</th>
                 <th className="py-2 px-4 text-left">Email</th>
                 <th className="py-2 px-4 text-left">Company</th>
                 <th className="py-2 px-4 text-left">Contact</th>
-                <th className="py-2 px-4 text-left">Social Media</th>
                 <th className="py-2 px-4 text-left">{activeTab === "brands" ? "Expertise" : "Influence"}</th>
-                <th className="py-2 px-4 text-left">Message</th>
                 <th className="py-2 px-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -236,13 +234,7 @@ const Dashboard = () => {
                   <td className="py-2 px-4">{record.email}</td>
                   <td className="py-2 px-4">{record.company_name || "N/A"}</td>
                   <td className="py-2 px-4">{record.contact || "N/A"}</td>
-                  <td className="py-2 px-4">
-                    {record.social_media && typeof record.social_media === "object"
-                      ? Object.values(record.social_media).join(", ") // Display social media platforms as a comma-separated string
-                      : "N/A"}
-                  </td>
                   <td className="py-2 px-4">{activeTab === "brands" ? record.expertise : record.influence}</td>
-                  <td className="py-2 px-4 truncate max-w-xs" title={record.message}>{record.message || "N/A"}</td>
                   <td className="py-2 px-4">
                     <button className="text-blue-500 mr-2" onClick={() => openViewModal(record)}>View</button>
                     <button className="text-green-500 mr-2" onClick={() => openEditModal(record)}>Edit</button>
@@ -258,16 +250,62 @@ const Dashboard = () => {
       {/* View Modal */}
       {isViewModalOpen && selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold">Details</h2>
-            <p><strong>First Name:</strong> {selectedUser.first_name}</p>
-            <p><strong>Last Name:</strong> {selectedUser.last_name}</p>
-            <p><strong>Email:</strong> {selectedUser.email}</p>
-            <p><strong>Company:</strong> {selectedUser.company_name || "N/A"}</p>
-            <button className="mt-4 bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsViewModalOpen(false)}>Close</button>
+          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] max-w-full">
+            <h2 className="text-2xl font-bold mb-4 text-center">User Details</h2>
+            
+            <div className="space-y-3">
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700"><strong>First Name:</strong> {selectedUser.first_name}</p>
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700"><strong>Last Name:</strong> {selectedUser.last_name}</p>
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700"><strong>Email:</strong> {selectedUser.email}</p>
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700"><strong>Company:</strong> {selectedUser.company_name || "N/A"}</p>
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700"><strong>Contact:</strong> {selectedUser.contact || "N/A"}</p>
+              </div>
+              <div className="bg-gray-100 p-3 rounded-lg shadow">
+                <p className="text-gray-700">
+                  <strong>{activeTab === "brands" ? "Expertise" : "Influence"}:</strong> 
+                  {activeTab === "brands" ? selectedUser.expertise : selectedUser.influence}
+                </p>
+              </div>
+
+              {/* Social Media */}
+              {selectedUser.social_media && (
+                <div className="bg-gray-100 p-3 rounded-lg shadow">
+                  <p className="text-gray-700"><strong>Social Media:</strong></p>
+                  <p className="text-gray-600">{Object.values(selectedUser.social_media).join(", ")}</p>
+                </div>
+              )}
+
+              {/* Message Box */}
+              <div className="bg-gray-100 p-4 rounded-lg shadow">
+                <p className="text-gray-700"><strong>Message:</strong></p>
+                <div className="bg-white p-3 rounded-lg shadow-md max-h-32 overflow-y-auto">
+                  <p className="text-gray-600">{selectedUser.message || "N/A"}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Centered Close Button */}
+            <div className="flex justify-center mt-6">
+              <button 
+                className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700"
+                onClick={() => setIsViewModalOpen(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
+
 
       {/* Edit Modal */}
       {isEditModalOpen && editedUser && (

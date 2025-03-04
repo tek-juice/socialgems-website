@@ -1,9 +1,22 @@
+'use client'
 import Image from "next/image";
 import Link from "next/link";
+import ComingSoonModal from "./components/comingSoonModal"; // Import the modal
 import Navbar from "./components/navbar"
 import Footer from "./components/footer";
+import { useState } from 'react';
+import { warnOptionHasBeenMovedOutOfExperimental } from "next/dist/server/config";
 
 export default function Home() {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  
+    const handleOpenModal = () => {
+      setIsModalOpen(true);
+    };
+  
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+    };
   return (
     <div className="min-h-screen flex flex-col relative bg-white">
 
@@ -22,24 +35,22 @@ export default function Home() {
 
           {/* Call to Action Buttons */}
           <div className="flex gap-4 mt-8">
-            <Link
-              href="https://play.google.com/store/apps/details?id=com.yourapp"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleOpenModal}
+              className="hover:opacity-80"
             >
               <Image
                 src="/GooglePlay.webp" // Replace with your Google Play logo path
                 alt="Download on Google Play"
                 width={150}
                 height={50}
-                className="hover:opacity-80 transition-opacity rounded-md"
+                className="hover:opacity-80 rounded-md"
               />
-            </Link>
+            </button>
 
-            <Link
-              href="https://apps.apple.com/app/yourapp/id123456789"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={handleOpenModal}
+              className="hover:opacity-80"
             >
               <Image
                 src="/App-Store-Black.webp" // Replace with your App Store logo path
@@ -48,8 +59,12 @@ export default function Home() {
                 height={50}
                 className="hover:opacity-80 transition-opacity rounded-md"
               />
-            </Link>
+            </button>
+             {/* Coming Soon Modal */}
+            <ComingSoonModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </div>
+         
+        
         </div>
 
       </section>
@@ -70,7 +85,7 @@ export default function Home() {
               <Link href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
                 FOR INFLUENCERS
               </Link>
-              <Link href="/influencer" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
+              <Link href="/influencers" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
                 FOR BRANDS
               </Link>
             </div>
@@ -136,7 +151,7 @@ export default function Home() {
           {/* Final CTA Section */}
           <div className="text-center">
             <div className="flex gap-4">
-              <Link href="/influencer" className="px-6 py-2 text-black rounded-md border border-black hover:bg-black hover:text-white">
+              <Link href="/influencers" className="px-6 py-2 text-black rounded-md border border-black hover:bg-black hover:text-white">
                 FOR INFLUENCERS
               </Link>
               <Link href="/signup" className="px-6 py-2 text-black rounded-md hover:bg-black hover:text-white">
@@ -162,33 +177,31 @@ export default function Home() {
               </p>
               {/* Call to Action Buttons */}
               <div className="flex gap-4 mt-8 animate-gradient-x">
-                <Link
-                  href="https://play.google.com/store/apps/details?id=com.yourapp"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleOpenModal}
+                  className="hover:opacity-80"
                 >
                   <Image
                     src="/GooglePlay.webp" // Replace with your Google Play logo path
                     alt="Download on Google Play"
                     width={150}
                     height={50}
-                    className="hover:opacity-80 transition-opacity rounded-md"
+                    className="hover:opacity-80 rounded-md"
                   />
-                </Link>
+                </button>
 
-                <Link
-                  href="https://apps.apple.com/app/yourapp/id123456789"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={handleOpenModal}
+                  className="hover:opacity-80"
                 >
                   <Image
                     src="/App-Store-Black.webp" // Replace with your App Store logo path
                     alt="Download on the App Store"
                     width={150}
                     height={50}
-                    className="hover:opacity-80 transition-opacity rounded-md"
+                    className="hover:opacity-80 rounded-md"
                   />
-                </Link>
+                </button>
               </div>
             </div>
             <div className="flex-1 ml-20">
@@ -211,7 +224,7 @@ export default function Home() {
             Join Social Gems today and unlock endless opportunities for impactful influencer collaborations.
           </p>
 
-          {/* Buttons */}
+          {/* Links */}
           <div className="flex justify-center gap-4">
             <Link
               href="/signup"
@@ -220,7 +233,7 @@ export default function Home() {
               FOR BRANDS
             </Link>
             <Link
-              href="/services"
+              href="/influencers"
               className="px-6 py-2 bg-black text-white rounded-full border border-white hover:bg-brown hover:text-white transition-colors"
             >
               FOR INFLUENCERS
