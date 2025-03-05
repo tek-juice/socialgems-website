@@ -29,9 +29,6 @@ export default function Services() {
           {/* Why Social Gems Section */}
           <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
             <h2 className="text-3xl font-bold text-brown mb-4">Why Social Gems?</h2>
-            <p className="text-black text-lg mb-6">
-              Not Just a Marketplace—A Movement
-            </p>
             <div className="space-y-6">
               {/* Point 1 */}
               <div className="flex items-start">
@@ -67,7 +64,7 @@ export default function Services() {
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">More Than Just Deals, Real Growth</h3>
                   <p className="text-black">
-                    We don’t just facilitate gigs—we empower influencers with tools, training, and opportunities to turn influence into a sustainable career.
+                    We don’t just facilitate gigs, we empower influencers with tools, training, and opportunities to turn influence into a sustainable career.
                   </p>
                 </div>
               </div>
@@ -112,7 +109,7 @@ export default function Services() {
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Bespoke Campaign Strategies & Streamlined Management</h3>
                   <p className="text-black">
-                    No more chaotic influencer campaigns. We create tailored marketing strategies and handle the entire process - from discovery to content approval - ensuring smooth, results-driven collaborations.
+                    No more chaotic influencer campaigns. We create tailored marketing strategies and handle the entire process, from discovery to content approval ensuring smooth, results-driven collaborations.
                   </p>
                 </div>
               </div>
@@ -138,7 +135,7 @@ export default function Services() {
                 <div>
                   <h3 className="text-xl font-bold text-black mb-2">Training, Support & Community for Growth</h3>
                   <p className="text-black">
-                    We go beyond deals - Social Gems is a space for learning. We provide training, resources, and a supportive community to help influencers and brands succeed long-term.
+                    We go beyond deals: Social Gems is a space for learning. We provide training, resources, and a supportive community to help influencers and brands succeed long-term.
                   </p>
                 </div>
               </div>

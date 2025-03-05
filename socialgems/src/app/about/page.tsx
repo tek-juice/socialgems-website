@@ -10,27 +10,27 @@ export default function About() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-center bg-white overflow-hidden">
+      <section className="relative min-h-[50vh] flex flex-col md:flex-row md:text-left items-center justify-center text-center bg-white overflow-hidden px-4 sm:px-6 md:px-12">
         {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-r from-gold to-brown rounded-b-3xl z-0 shadow-2xl hover:shadow-3xl transition-shadow duration-300">
           {/* Hero Content */}
-          <div className="relative z-10 text-white container mx-auto px-6 flex items-center justify-between h-full">
+          <div className="relative z-10 text-white container mx-auto flex flex-col md:flex-row items-center justify-between h-full w-full">
             {/* Text Content */}
-            <div className="text-left max-w-2xl">
-              <h1 className="text-5xl font-bold mb-4 text-darkgold">Engage with customers through creators they trust</h1>
-              <p className="text-xl">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-darkgold">Engage with customers through creators they trust</h1>
+              <p className="text-lg sm:text-xl">
                 Discover the story behind Social Gems and our mission to connect brands with influencers.
               </p>
             </div>
 
             {/* Image */}
-            <div className="flex-1 flex justify-end">
+            <div className="flex justify-center md:justify-end w-full sm:w-auto h-full">
               <Image 
                 src="/Hannifah-about.webp" 
                 alt="about" 
                 width={407} 
                 height={600} 
-                className="rounded-md shadow-lg transform hover:scale-105 transition-transform duration-300"
+                className="rounded-md transform hover:scale-105 transition-transform duration-300 w-full sm:w-auto max-w-[300px] md:max-w-none"
               />
             </div>
           </div>

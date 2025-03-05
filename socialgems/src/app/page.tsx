@@ -22,19 +22,19 @@ export default function Home() {
 
       <Navbar />
       {/* Hero Section */}
-      <section className="relative h-screen flex flex-col items-center text-center py-20 px-8">
+      <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
         <Image src="/hero-image.webp" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black bg-opacity-50 z-10">
           <h1 className="text-4xl md:text-6xl font-bold mt-8">
             We Are Social Gems
           </h1>
-          <p className="text-lg md:text-xl mt-10 max-w-2xl">
+          <p className="text-lg md:text-xl mt-10 max-w-2xl px4">
             The Largest influencer marketplace where businesses and influencers connect. Download our app now to get started!
           </p>
 
           {/* Call to Action Buttons */}
-          <div className="flex gap-4 mt-8">
+          <div className="flex flex-col md:flex-row gap-4 mt-8">
             <button
               onClick={handleOpenModal}
               className="hover:opacity-80"
@@ -72,7 +72,7 @@ export default function Home() {
       <section className="bg-white py-12">
         <div className="container mx-auto px-4">
           {/* First Section */}
-          <div className="mb-12 flex items items-start gap-8">
+          <div className="mb-12 flex flex-col md:flex-row items items-start gap-8">
             <h3 className="text-black text-3xl font-bold mb-4 flex-1 text-yellow-800">
               WHERE INFLUENCE MEETS OPPORTUNITY
             </h3>
@@ -161,7 +161,7 @@ export default function Home() {
           </div>
 
           {/* Fouth Section */}
-          <div className="mb-12 mt-10 flex items items-start gap 8 rounded-2xl overflow-hidden transition-all durations-300 hover:shadow-xl hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
+          <div className="mb-12 mt-10 flex flex-col md:flex-row items items-start gap 8 rounded-2xl overflow-hidden transition-all durations-300 hover:shadow-xl hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.3)]">
             <div className="flex-1 ml-10">
               <h2 className="text-black text-3xl font-bold mt-20 gap-20 text-yellow-500">
                 OUR APPROACH

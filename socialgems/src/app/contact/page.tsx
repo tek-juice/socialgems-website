@@ -29,7 +29,7 @@ export default function Contact() {
           {/* Contact Form */}
           <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
             <h2 className="text-3xl font-bold text-brown mb-6">Get in Touch</h2>
-            <form className="space-y-6">
+            <form action="98b478297190bfcb2ae3b91c3b5bda48" method="POST" className="space-y-6">
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-black text-lg mb-2">
@@ -40,7 +40,7 @@ export default function Contact() {
                   id="name"
                   name="name"
                   placeholder="Your Name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full px-4 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   required
                 />
               </div>
@@ -55,7 +55,7 @@ export default function Contact() {
                   id="email"
                   name="email"
                   placeholder="Your Email"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   required
                 />
               </div>
@@ -70,7 +70,7 @@ export default function Contact() {
                   name="message"
                   placeholder="Your Message"
                   rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  className="w-full px-4 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   required
                 ></textarea>
               </div>
@@ -82,6 +82,7 @@ export default function Contact() {
               >
                 Send Message
               </button>
+              <input type="hidden" name="_next" value="https://yourdomain.co/thanks.html"></input>
             </form>
           </div>
 
