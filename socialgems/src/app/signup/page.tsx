@@ -174,7 +174,7 @@ export default function SignUpPage() {
                             {/* Social Media Checkboxes */}
                             <div>
                                 <label className="block text-sm font-medium text-[#4A5568] mb-4">Preferred Social Media Platforms</label>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="flex flex-wrap gap-4">
                                     {[
                                         { name: "Facebook", image: "/Facebook.webp" },
                                         { name: "Instagram", image: "/Instagram.webp" },
@@ -183,7 +183,7 @@ export default function SignUpPage() {
                                         { name: "LinkedIn", image: "/LinkedIn.webp" },
                                         { name: "YouTube", image: "/YouTube.webp" }
                                     ].map((platform) => (
-                                        <label key={platform.name} className="flex items-center space-x-3 p-3 border border-[#E2E8F0] rounded-lg hover:bg-[#F7FAFC]">
+                                        <label key={platform.name} className="flex items-center space-x-3 p-3 border border-[#E2E8F0] rounded-lg hover:bg-[#F7FAFC] flex-1 min-w-[150px] max-w-[200px]">
                                             <input 
                                                 type="checkbox" 
                                                 value={platform.name} 
@@ -191,8 +191,8 @@ export default function SignUpPage() {
                                                 checked={formData.social_media.includes(platform.name)} 
                                                 className="form-checkbox h-5 w-5 text-[#3182CE] rounded focus:ring-[#3182CE]"
                                             />
-                                            <Image src={platform.image} alt={platform.name} width={24} height={24} />
-                                            <span className="text-[#4A5568]">{platform.name}</span>
+                                            <Image src={platform.image} alt={platform.name} width={24} height={24} className="w-6 h-6"/>
+                                            <span className="text-[#4A5568] text-sm md:text-base">{platform.name}</span>
                                         </label>
                                     ))}
                                 </div>

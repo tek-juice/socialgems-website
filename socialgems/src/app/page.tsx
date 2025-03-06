@@ -76,18 +76,20 @@ export default function Home() {
             <h3 className="text-black text-3xl font-bold mb-4 flex-1 text-yellow-800">
               WHERE INFLUENCE MEETS OPPORTUNITY
             </h3>
-            <div className="flex-1 gap-4">
+            <div className="flex-1 flex-col md:flex-row md:items-center gap-4">
               <p className="text-black text-lg max-w-2xl mx-auto mb-6">
                 We're rewriting the influencer marketing playbook,
                 making it effortless for businesses to find the perfect
                 influencer and for creator to monetize their influence.
               </p>
-              <Link href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
-                FOR INFLUENCERS
-              </Link>
-              <Link href="/influencers" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
-                FOR BRANDS
-              </Link>
+              <div className="flex flex-col md:flex-row gap-4">
+                <Link href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
+                  FOR INFLUENCERS
+                </Link>
+                <Link href="/influencers" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
+                  FOR BRANDS
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -212,32 +214,32 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 px-8 bg-gradient-to-r from-gold to-brown rounded-2xl shadow-lg layout-fill mb-10 ml-20 mr-10">
-        <div className="text-center">
+      <section className="flex justify-center py-12 px-4 sm:px-8 bg-gradient-to-r from-gold to-brown rounded-2xl shadow-lg mb-10 mx-4 sm:mx-10 ml-20 mr-10">
+        <div className="text-center max-w-2xl w-full">
           {/* Title with Emoji */}
-          <h3 className="text-3xl font-bold text-black mb-4">
+          <h3 className="text-xl sm:text-3xl font-bold text-black mb-4">
             START YOUR JOURNEY WITH US ✨
           </h3>
 
           {/* Description */}
-          <p className="text-black text-lg mb-6">
+          <p className="text-black text-base sm:text-lg mb-6">
             Join Social Gems today and unlock endless opportunities for impactful influencer collaborations.
           </p>
 
           {/* Links */}
-          <div className="flex justify-center gap-4">
-            <Link
-              href="/signup"
-              className="px-6 py-2 bg-white text-black rounded-full hover:bg-black hover:text-white transition-colors"
-            >
-              FOR BRANDS
-            </Link>
-            <Link
-              href="/influencers"
-              className="px-6 py-2 bg-black text-white rounded-full border border-white hover:bg-brown hover:text-white transition-colors"
-            >
-              FOR INFLUENCERS
-            </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                href="/signup"
+                className="px-4 sm:px-6 py-2 bg-white text-black rounded-full hover:bg-black hover:text-white transition-colors text-sm sm:text-base"
+              >
+                FOR BRANDS
+              </Link>
+              <Link
+                href="/influencers"
+                className="px-4 sm:px-6 py-2 bg-black text-white rounded-full border border-white hover:bg-brown hover:text-white transition-colors text-sm sm:text-base"
+              >
+                FOR INFLUENCERS
+              </Link>
           </div>
 
           {/* Decorative Cubes */}

@@ -33,7 +33,9 @@ export async function POST(req: Request) {
     if (!secret) {
       throw new Error('JWT_SECRET is not defined in the environment variables');
     }
-    const token = jwt.sign({ id: admin.id, email: admin.email }, secret, { expiresIn: "1h" });
+
+    //include role in the jwt token payload
+    const token = jwt.sign({ id: admin.id, email: admin.email, role: admin.role }, secret, { expiresIn: "1h" });
 
     // Return the token to the client
     return NextResponse.json({ success: true, token }, { status: 200 });

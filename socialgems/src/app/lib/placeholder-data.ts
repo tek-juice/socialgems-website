@@ -1,5 +1,23 @@
+//seeding admins
+const admins = [
+    {
+      id: '410544b2-4001-4271-9855-fec4b6a6442a',
+      name: 'Admin',
+      email: 'admin@socialgems.me',
+      password: 'Today@123',
+      role: 'admin', //added role
+    },
+    {
+    id: '410544b2-4001-4271-9855-fec4b6a6442b',
+    name: 'Manager',
+    email: 'manager@socialgems.me',
+    password: 'Manager@123',
+    role: 'manager', // Add role
+  },
+  ];
+export { admins };
 //seeding for brands
-const users = [
+/*const users = [
   {
     "first_name": "Elvis",
     "last_name": "Senoga",
@@ -701,16 +719,9 @@ const users = [
 
 export { users };
 
+*/
 
-/*const admins = [
-    {
-      id: '410544b2-4001-4271-9855-fec4b6a6442a',
-      name: 'Admin',
-      email: 'admin@socialgems.com',
-      password: 'Today@123',
-    },
-  ];*/
-   //seed the influencer table
+//seed the influencer table
 /*const influencers = [
   {
     "first_name": "Otim",

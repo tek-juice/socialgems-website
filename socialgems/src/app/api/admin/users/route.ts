@@ -4,28 +4,52 @@ import { NextResponse } from "next/server";
 import { db } from "../../../lib/db"; // Adjusted path according to the folder level of the  DB connection file
 
 //Get function that retrieves users.
-export async function GET() {
-    try {
-        //fetch all uers from the database
-        const users = await db.query("SELECT * FROM users ORDER BY created_at DESC;");
+export async function GET(request: Request) {
+  const client = await db.connect();
 
-        return NextResponse.json({success: true, users: users.rows}, {status: 200});
+    try {
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1', 10); //Default to page 1
+        const limit = parseInt(searchParams.get('limit') || '10', 10); //Default to 10 records per page
+        const offset = (page - 1) * limit;
+
+        //fetch all users from the database
+        const usersResult = await client.sql`
+          SELECT * FROM users 
+          ORDER BY created_at DESC
+          LIMIT ${limit} OFFSET ${offset};
+          `;
+        
+        //fetch total count of users
+        const totalResult = await client.sql`
+          SELECT COUNT(*) as total FROM users;
+          `;
+        const total = totalResult.rows[0].total;
+
+        return NextResponse.json({success: true, users: usersResult.rows, total, page, limit,}, {status: 200});
     } catch (error) {
         console.error("Error fetching users:", error);
         return NextResponse.json({success: false, error: "Failed to fetch users"}, {status: 500});
+    } finally {
+      client.release();
     }
 }
 
 //delete function that deletes a user.
-export async function DELETE(req: Request) {
-    try {
-        const { id } = await req.json();
+export async function DELETE(request: Request) {
+  const client = await db.connect();
 
-        if (!id) {
-            return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 });
+    try {
+        const { email } = await request.json();
+
+        if (!email) {
+            return NextResponse.json({ success: false, error: "User Email is required" }, { status: 400 });
         }
 
-        await db.query("DELETE FROM users WHERE id = $1;", [id]);
+        // Log the id to verify it's correct
+        console.log("Deleting user with Email:", email);
+
+        await client.sql `DELETE FROM users WHERE email = ${email};`;
 
         return NextResponse.json({ success: true, message: "User deleted successfully" }, { status: 200 });
     } catch (error) {

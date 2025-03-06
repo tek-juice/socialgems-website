@@ -79,6 +79,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, user: insertUser.rows[0] }, { status: 201 });
     } catch (error) {
         console.error(error);
-        return NextResponse.json({ success: false, error: "Failed to sign up" }, { status: 500 });
+        return NextResponse.json({ success: false, error: "Failed to sign up. This email exists" }, { status: 500 });
     }
 }

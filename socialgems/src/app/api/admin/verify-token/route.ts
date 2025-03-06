@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     if (!secret) {
       throw new Error('JWT_SECRET is not defined in the environment variables');
     }
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret) as { id: string; email: string; role: string };
     console.log('Decoded token:', decoded);
 
     return NextResponse.json({ success: true, admin: decoded });

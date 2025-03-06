@@ -3,7 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SkeletonLoader from '@/app/components/skeletonLoader';
 import Footer from "../../components/footer";
+
 
 const Dashboard = () => {
   const router = useRouter();
@@ -14,6 +16,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"brands" | "influencers">("brands"); // Track active tab
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null); //Set success delete message.
+  const [ page, setPage ] = useState(1); //current page
+  const [ limit, setLimit ] = useState(10); //10 Records per page
+  const [total, setTotal] = useState(0); //Total records 
+  const [filteredAllData, setFilteredData] = useState<any[]>([]); //store filtered data for display
+
 
   // Modal State
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -39,7 +47,7 @@ const Dashboard = () => {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setAdminData(data.admin);
+          setAdminData(data.admin); //set admin data including role
           fetchData(); // Fetch data after successful authentication
         } else {
           setError('Invalid or expired token.');
@@ -52,10 +60,31 @@ const Dashboard = () => {
       });
   }, [router]);
 
+  //render buttons based on role
+  const renderActions = (record: any) => {
+    if (adminData?.role === 'admin') {
+      return (
+        <>
+          <button className="text-blue-500 hover:text-blue-900 mr-2" onClick={() => openViewModal(record)}>View</button>
+          <button className="text-green-600 hover:text-green-900 mr-2" onClick={() => openEditModal(record)}>Edit</button>
+          <button className="text-red-600 hover:text-red-900 mr-2" onClick={() => handleDelete(record.email)}>Delete</button>
+        </>
+      );
+    } else if (adminData?.role === 'manager') {
+      return (
+        <button className="text-blue-500 mr-2" onClick={() => openViewModal(record)}>View</button>
+      );
+    }
+    return null;
+  };
+  useEffect(() => {
+    fetchData();
+  }, [page, limit, activeTab]); //add page and limit as dependencies.
+
   // Function to fetch data based on active tab
   const fetchData = () => {
     setLoading(true);
-    const endpoint = activeTab === "brands" ? "/api/admin/users" : "/api/admin/influencers";
+    const endpoint = activeTab === "brands" ? `/api/admin/users?page=${page}&limit=${limit}` : `/api/admin/influencers?page=${page}&limit=${limit}`;
     fetch(endpoint)
       .then(res => res.json())
       .then(data => {
@@ -66,6 +95,7 @@ const Dashboard = () => {
           } else {
             setInfluencers(data.influencers); // Set influencers data
           }
+          setTotal(data.total); //sets total records
         } else {
           setError('Failed to fetch data.');
         }
@@ -77,9 +107,42 @@ const Dashboard = () => {
   // Handle tab change
   const handleTabChange = (tab: "brands" | "influencers") => {
     setActiveTab(tab);
+    setSearchQuery("");
+    setPage(1);
     fetchData(); // Fetch data for the selected tab
   };
 
+  //fetch all data for search within the current tab--just added
+  const fetchAllDataForSearch = async() => {
+    setLoading(true);
+    const endpoint = `/api/admin/search?query=${searchQuery}&type=${activeTab}`;
+    try {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      if (data.success) {
+        setFilteredData(data.data); //store filtered data
+        setTotal(data.data.length); //update total records
+      } else {
+        setError('Failed to fetch search results.');
+      }
+    } catch (error) {
+      setError('An error occured while searching.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Handle search query change
+  useEffect(() => {
+    if (searchQuery) {
+      fetchAllDataForSearch(); //Fetch all data for search within the current tab.
+    } else {
+      fetchData(); //Fetch paginated data if no search query
+    }
+  }, [searchQuery, activeTab]);
+
+  //Determine which data to display
+  const displayData = searchQuery ? filteredAllData.slice((page - 1) * limit, page * limit) : activeTab === "brands" ? users: influencers;
   // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -87,7 +150,7 @@ const Dashboard = () => {
   };
 
   // Handle searching of users/influencers
-  const filteredData = activeTab === "brands"
+  /*const filteredData = activeTab === "brands"
     ? users.filter(user =>
         user.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,10 +160,10 @@ const Dashboard = () => {
         influencer.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         influencer.last_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         influencer.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      );*/
 
   // Function to delete a user/influencer
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (email: string) => {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
 
     try {
@@ -108,16 +171,21 @@ const Dashboard = () => {
       const res = await fetch(endpoint, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
       if (data.success) {
+        setDeleteSuccessMessage(data.message); //set success message
         if (activeTab === "brands") {
-          setUsers(users.filter((user) => user.id !== id)); // Remove user from state
+          setUsers(users.filter((user) => user.email !== email)); // Remove user from state
         } else {
-          setInfluencers(influencers.filter((influencer) => influencer.id !== id)); // Remove influencer from state
+          setInfluencers(influencers.filter((influencer) => influencer.email !== email)); // Remove influencer from state
         }
+        //clear success message after 3 seconds
+        setTimeout(() => {
+          setDeleteSuccessMessage(null);
+        }, 3000);
       } else {
         alert(data.error);
       }
@@ -187,7 +255,14 @@ const Dashboard = () => {
           className="bg-red-500 px-4 py-2 rounded hover:bg-red-700"
         >Logout</button>
       </header>
-
+      {/*Success Message*/}
+      {deleteSuccessMessage && (
+        <div className="bg-green-100 
+          border border-green-400 
+          text-green-700 px-4 py-3 rounded relative mb-4">
+          <span className="block sm:inline">{deleteSuccessMessage}</span>
+        </div>
+      )}
       {/* Tabs */}
       <div className="flex mb-4">
         <button
@@ -207,12 +282,17 @@ const Dashboard = () => {
       {adminData && (
         <div className="mb-4">
           <p>Welcome back, {adminData.email}!</p>
+        
         </div>
       )}
 
       {loading ? (
-        <p>Loading...</p>
-      ) : (
+        <div>
+          Loading...
+          <SkeletonLoader /> 
+        {/*Used skeleton to keep layout while fetching data and searches*/}
+        </div>
+        ) : (
         <div className="border border-gray-300 rounded-lg overflow-auto mb-8" style={{maxWidth: "100vw"}}>
           <table className="min-w-full bg-white resizable">
             <thead>
@@ -220,30 +300,49 @@ const Dashboard = () => {
                 <th className="py-2 px-4 text-left">First Name</th>
                 <th className="py-2 px-4 text-left">Last Name</th>
                 <th className="py-2 px-4 text-left">Email</th>
-                <th className="py-2 px-4 text-left">Company</th>
                 <th className="py-2 px-4 text-left">Contact</th>
                 <th className="py-2 px-4 text-left">{activeTab === "brands" ? "Expertise" : "Influence"}</th>
                 <th className="py-2 px-4 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((record) => (
+              {displayData.map((record) => (
                 <tr key={record.id} className="border-t">
                   <td className="py-2 px-4">{record.first_name}</td>
                   <td className="py-2 px-4">{record.last_name}</td>
                   <td className="py-2 px-4">{record.email}</td>
-                  <td className="py-2 px-4">{record.company_name || "N/A"}</td>
                   <td className="py-2 px-4">{record.contact || "N/A"}</td>
                   <td className="py-2 px-4">{activeTab === "brands" ? record.expertise : record.influence}</td>
                   <td className="py-2 px-4">
-                    <button className="text-blue-500 mr-2" onClick={() => openViewModal(record)}>View</button>
-                    <button className="text-green-500 mr-2" onClick={() => openEditModal(record)}>Edit</button>
-                    <button className="text-red-500" onClick={() => handleDelete(record.id)}>Delete</button>
+                    {renderActions(record)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <div className="flex justify-between items-center mt-4">
+            <div>
+              <span className="text-gray-700">
+                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} records
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={page * limit >= total}
+                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
