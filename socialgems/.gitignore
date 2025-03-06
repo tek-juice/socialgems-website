@@ -36,6 +36,7 @@ yarn-error.log*
 #files
 convertCsvToJson.js
 placeholder-data.json
+src/app/lib/placeholder-data.ts
 brands-form-2025-03-03.csv
 brands-form-2025-03-032.csv
 influencer-form-2025-03-03.csv
