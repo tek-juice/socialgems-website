@@ -240,187 +240,248 @@ const Dashboard = () => {
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
-    <div className="w-full text-gray-700 bg-white p-6">
-      <header className="flex justify-between items-center bg-gray-800 text-white p-4 mb-4">
-        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-        <input 
-          type="text" 
-          placeholder="Search..." 
-          className="p-2 rounded text-black"
+    <div className="w-full text-gray-700 bg-white p-4 sm:p-6">
+    {/* Header */}
+    <header className="flex flex-col sm:flex-row justify-between items-center bg-gray-800 text-white p-4 mb-4 rounded-lg">
+      <h1 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Admin Dashboard</h1>
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+        <input
+          type="text"
+          placeholder="Search..."
+          className="p-2 rounded text-black w-full sm:w-48"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button 
-          onClick={handleLogout} 
-          className="bg-red-500 px-4 py-2 rounded hover:bg-red-700"
-        >Logout</button>
-      </header>
-      {/*Success Message*/}
-      {deleteSuccessMessage && (
-        <div className="bg-green-100 
-          border border-green-400 
-          text-green-700 px-4 py-3 rounded relative mb-4">
-          <span className="block sm:inline">{deleteSuccessMessage}</span>
-        </div>
-      )}
-      {/* Tabs */}
-      <div className="flex mb-4">
         <button
-          className={`px-4 py-2 ${activeTab === "brands" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          onClick={() => handleTabChange("brands")}
+          onClick={handleLogout}
+          className="bg-red-500 px-4 py-2 rounded hover:bg-red-700 text-sm sm:text-base"
         >
-          Brands
-        </button>
-        <button
-          className={`px-4 py-2 ${activeTab === "influencers" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          onClick={() => handleTabChange("influencers")}
-        >
-          Influencers
+          Logout
         </button>
       </div>
+    </header>
 
-      {adminData && (
-        <div className="mb-4">
-          <p>Welcome back, {adminData.email}!</p>
-        
-        </div>
-      )}
+    {/* Success Message */}
+    {deleteSuccessMessage && (
+      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-sm">
+        <span className="block sm:inline">{deleteSuccessMessage}</span>
+      </div>
+    )}
 
-      {loading ? (
-        <div>
-          Loading...
-          <SkeletonLoader /> 
-        {/*Used skeleton to keep layout while fetching data and searches*/}
-        </div>
-        ) : (
-        <div className="border border-gray-300 rounded-lg overflow-auto mb-8" style={{maxWidth: "100vw"}}>
-          <table className="min-w-full bg-white resizable">
-            <thead>
-              <tr className="bg-gray-200 resizable header">
-                <th className="py-2 px-4 text-left">First Name</th>
-                <th className="py-2 px-4 text-left">Last Name</th>
-                <th className="py-2 px-4 text-left">Email</th>
-                <th className="py-2 px-4 text-left">Contact</th>
-                <th className="py-2 px-4 text-left">{activeTab === "brands" ? "Expertise" : "Influence"}</th>
-                <th className="py-2 px-4 text-left">Actions</th>
+    {/* Tabs */}
+    <div className="flex mb-4">
+      <button
+        className={`px-4 py-2 text-sm sm:text-base ${
+          activeTab === "brands" ? "bg-blue-500 text-white" : "bg-gray-200"
+        }`}
+        onClick={() => handleTabChange("brands")}
+      >
+        Brands
+      </button>
+      <button
+        className={`px-4 py-2 text-sm sm:text-base ${
+          activeTab === "influencers" ? "bg-blue-500 text-white" : "bg-gray-200"
+        }`}
+        onClick={() => handleTabChange("influencers")}
+      >
+        Influencers
+      </button>
+    </div>
+
+    {/* Admin Data */}
+    {adminData && (
+      <div className="mb-4 text-sm sm:text-base">
+        <p>Welcome back, {adminData.email}!</p>
+      </div>
+    )}
+
+    {/* Loading State */}
+    {loading ? (
+      <div>
+        Loading...
+        <SkeletonLoader /> {/* Used skeleton to keep layout while fetching data and searches */}
+      </div>
+    ) : (
+      <div className="border border-gray-300 rounded-lg overflow-auto mb-8">
+        <table className="min-w-full bg-white">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">First Name</th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Last Name</th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Email</th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Contact</th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">
+                {activeTab === "brands" ? "Expertise" : "Influence"}
+              </th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayData.map((record) => (
+              <tr key={record.id} className="border-t">
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.first_name}</td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.last_name}</td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.email}</td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.contact || "N/A"}</td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">
+                  {activeTab === "brands" ? record.expertise : record.influence}
+                </td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{renderActions(record)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {displayData.map((record) => (
-                <tr key={record.id} className="border-t">
-                  <td className="py-2 px-4">{record.first_name}</td>
-                  <td className="py-2 px-4">{record.last_name}</td>
-                  <td className="py-2 px-4">{record.email}</td>
-                  <td className="py-2 px-4">{record.contact || "N/A"}</td>
-                  <td className="py-2 px-4">{activeTab === "brands" ? record.expertise : record.influence}</td>
-                  <td className="py-2 px-4">
-                    {renderActions(record)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-between items-center mt-4">
-            <div>
-              <span className="text-gray-700">
-                Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} records
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page === 1}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setPage((prev) => prev + 1)}
-                disabled={page * limit >= total}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+            ))}
+          </tbody>
+        </table>
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-4 p-2 sm:p-4">
+          <div className="mb-2 sm:mb-0">
+            <span className="text-gray-700 text-sm sm:text-base">
+              Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total} records
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+              disabled={page === 1}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 text-sm sm:text-base"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((prev) => prev + 1)}
+              disabled={page * limit >= total}
+              className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 text-sm sm:text-base"
+            >
+              Next
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* View Modal */}
-      {isViewModalOpen && selectedUser && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-[500px] max-w-full">
-            <h2 className="text-2xl font-bold mb-4 text-center">User Details</h2>
-            
-            <div className="space-y-3">
+    {/* View Modal */}
+    {isViewModalOpen && selectedUser && (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 p-4">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center">User Details</h2>
+          <div className="space-y-3">
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>First Name:</strong> {selectedUser.first_name}
+              </p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>Last Name:</strong> {selectedUser.last_name}
+              </p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>Email:</strong> {selectedUser.email}
+              </p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>Company:</strong> {selectedUser.company_name || "N/A"}
+              </p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>Contact:</strong> {selectedUser.contact || "N/A"}
+              </p>
+            </div>
+            <div className="bg-gray-100 p-3 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>{activeTab === "brands" ? "Expertise" : "Influence"}:</strong>{" "}
+                {activeTab === "brands" ? selectedUser.expertise : selectedUser.influence}
+              </p>
+            </div>
+            {/* Social Media */}
+            {selectedUser.social_media && (
               <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700"><strong>First Name:</strong> {selectedUser.first_name}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700"><strong>Last Name:</strong> {selectedUser.last_name}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700"><strong>Email:</strong> {selectedUser.email}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700"><strong>Company:</strong> {selectedUser.company_name || "N/A"}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700"><strong>Contact:</strong> {selectedUser.contact || "N/A"}</p>
-              </div>
-              <div className="bg-gray-100 p-3 rounded-lg shadow">
-                <p className="text-gray-700">
-                  <strong>{activeTab === "brands" ? "Expertise" : "Influence"}:</strong> 
-                  {activeTab === "brands" ? selectedUser.expertise : selectedUser.influence}
+                <p className="text-gray-700 text-sm sm:text-base">
+                  <strong>Social Media:</strong>
+                </p>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {Object.values(selectedUser.social_media).join(", ")}
                 </p>
               </div>
-
-              {/* Social Media */}
-              {selectedUser.social_media && (
-                <div className="bg-gray-100 p-3 rounded-lg shadow">
-                  <p className="text-gray-700"><strong>Social Media:</strong></p>
-                  <p className="text-gray-600">{Object.values(selectedUser.social_media).join(", ")}</p>
-                </div>
-              )}
-
-              {/* Message Box */}
-              <div className="bg-gray-100 p-4 rounded-lg shadow">
-                <p className="text-gray-700"><strong>Message:</strong></p>
-                <div className="bg-white p-3 rounded-lg shadow-md max-h-32 overflow-y-auto">
-                  <p className="text-gray-600">{selectedUser.message || "N/A"}</p>
-                </div>
+            )}
+            {/* Message Box */}
+            <div className="bg-gray-100 p-4 rounded-lg shadow">
+              <p className="text-gray-700 text-sm sm:text-base">
+                <strong>Message:</strong>
+              </p>
+              <div className="bg-white p-3 rounded-lg shadow-md max-h-32 overflow-y-auto">
+                <p className="text-gray-600 text-sm sm:text-base">
+                  {selectedUser.message || "N/A"}
+                </p>
               </div>
             </div>
-
-            {/* Centered Close Button */}
-            <div className="flex justify-center mt-6">
-              <button 
-                className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700"
-                onClick={() => setIsViewModalOpen(false)}
-              >
-                Close
-              </button>
-            </div>
+          </div>
+          {/* Centered Close Button */}
+          <div className="flex justify-center mt-6">
+            <button
+              className="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 text-sm sm:text-base"
+              onClick={() => setIsViewModalOpen(false)}
+            >
+              Close
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-
-      {/* Edit Modal */}
-      {isEditModalOpen && editedUser && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold">Edit {activeTab === "brands" ? "Brand" : "Influencer"}</h2>
-            <label className="w-full p-2 text-black">First Name<input name="first_name" value={editedUser.first_name} onChange={handleEditChange} className="block border p-2 my-2 w-full" /></label>
-            <label className="w-full p-2 text-black">Last Name<input name="last_name" value={editedUser.last_name} onChange={handleEditChange} className="block border p-2 my-2 w-full" /></label>
-            <label className="w-full p-2 text-black">Email<input name="email" value={editedUser.email} onChange={handleEditChange} className="block border p-2 my-2 w-full" /></label>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleUpdate}>Save</button>
-            <button className="ml-2 bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+    {/* Edit Modal */}
+    {isEditModalOpen && editedUser && (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 p-4">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <h2 className="text-xl font-bold mb-4">Edit {activeTab === "brands" ? "Brand" : "Influencer"}</h2>
+          <label className="w-full p-2 text-black text-sm sm:text-base">
+            First Name
+            <input
+              name="first_name"
+              value={editedUser.first_name}
+              onChange={handleEditChange}
+              className="block border p-2 my-2 w-full"
+            />
+          </label>
+          <label className="w-full p-2 text-black text-sm sm:text-base">
+            Last Name
+            <input
+              name="last_name"
+              value={editedUser.last_name}
+              onChange={handleEditChange}
+              className="block border p-2 my-2 w-full"
+            />
+          </label>
+          <label className="w-full p-2 text-black text-sm sm:text-base">
+            Email
+            <input
+              name="email"
+              value={editedUser.email}
+              onChange={handleEditChange}
+              className="block border p-2 my-2 w-full"
+            />
+          </label>
+          <div className="flex justify-end gap-2">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded text-sm sm:text-base"
+              onClick={handleUpdate}
+            >
+              Save
+            </button>
+            <button
+              className="bg-gray-500 text-white px-4 py-2 rounded text-sm sm:text-base"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
-      )}
-      <Footer />
-    </div>
+      </div>
+    )}
+
+    <Footer />
+  </div>
   );
 };
 

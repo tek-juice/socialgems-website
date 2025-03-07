@@ -395,7 +395,7 @@ export default function PrivacyPolicy() {
                         Preview The Updated Mobile application Terms of use Social Gems 5.3.24
                     </h2>
                     <iframe
-                        src="/Updated-Mobile-application-terms-of-Use-Social-Gems-5.3.24.pdf"
+                        src="/Updated-Mobile-application-Terms-of-Use-Social-Gems-5.3.24.pdf"
                         className="w-full h-96 border border-gray-300 rounded-lg"
                         title="Updated Mobile Application Terms of Use Preview"
                     />
