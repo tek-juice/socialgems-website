@@ -1,9 +1,32 @@
+'use client'
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 
 export default function Contact() {
+  interface FormData {
+    name: string;
+    email: string;
+    message: string;
+  }
+  const { register, handleSubmit } = useForm<FormData>();
+  const router = useRouter();
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    const response = await fetch('https://formsubmit.co/98b478297190bfcb2ae3b91c3b5bda48', {
+      method: 'POST',
+      headers: {
+        'content-Type':'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      router.push('/thanks'); //Redirect to thank you page.
+    }
+  }
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
@@ -29,7 +52,7 @@ export default function Contact() {
           {/* Contact Form */}
           <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
             <h2 className="text-3xl font-bold text-brown mb-6">Get in Touch</h2>
-            <form action="98b478297190bfcb2ae3b91c3b5bda48" method="POST" className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Name Field */}
               <div>
                 <label htmlFor="name" className="block text-black text-lg mb-2">
@@ -38,10 +61,9 @@ export default function Contact() {
                 <input
                   type="text"
                   id="name"
-                  name="name"
                   placeholder="Your Name"
                   className="w-full px-4 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                  required
+                  {...register('name', {required: 'Name is Required'})}
                 />
               </div>
 
@@ -82,7 +104,6 @@ export default function Contact() {
               >
                 Send Message
               </button>
-              <input type="hidden" name="_next" value="https://yourdomain.co/thanks.html"></input>
             </form>
           </div>
 
