@@ -8,32 +8,24 @@ export default function About() {
     <div className="min-h-screen flex flex-col">
       {/* Navbar */}
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="relative min-h-[50vh] flex flex-col md:flex-row md:text-left items-center justify-center text-center bg-white overflow-hidden px-4 sm:px-6 md:px-12">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-gold to-brown rounded-b-3xl z-0 shadow-2xl hover:shadow-3xl transition-shadow duration-300">
-          {/* Hero Content */}
-          <div className="relative z-10 text-white container mx-auto flex flex-col md:flex-row items-center justify-between h-full w-full">
-            {/* Text Content */}
-            <div className="max-w-2xl">
-              <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-darkgold">Engage with customers through creators they trust</h1>
-              <p className="text-lg sm:text-xl">
-                Discover the story behind Social Gems and our mission to connect brands with influencers.
-              </p>
-            </div>
-
-            {/* Image */}
-            <div className="flex justify-center md:justify-end w-full sm:w-auto h-full">
-              <Image 
-                src="/Hannifah-about.webp" 
-                alt="about" 
-                width={407} 
-                height={600} 
-                className="rounded-md transform hover:scale-105 transition-transform duration-300 w-full sm:w-auto max-w-[300px] md:max-w-none"
-              />
-            </div>
-          </div>
+      {/*Hero section*/}
+      <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="/about.jpg" 
+            alt="Hero Image" 
+            layout="fill"
+            className="object-cover"
+          />
+        </div>
+        {/* Overlay Text and Call to Action */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-10">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-darkgold">
+            Engage with customers through creators they trust
+          </h1>
+          <p className="text-lg sm:text-xl">
+            Discover the story behind Social Gems and our mission to connect brands with influencers.
+          </p>
         </div>
       </section>
 

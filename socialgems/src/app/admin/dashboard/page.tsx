@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"brands" | "influencers">("brands"); // Track active tab
   const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null); //Set success delete message.
+  const [updateSuccessMessage, setUpdateSuccessMessage] = useState<string | null>(null); //set the update success message.
   const [ page, setPage ] = useState(1); //current page
   const [ limit, setLimit ] = useState(10); //10 Records per page
   const [total, setTotal] = useState(0); //Total records 
@@ -223,13 +224,19 @@ const Dashboard = () => {
 
       const data = await res.json();
       if (data.success) {
+        setUpdateSuccessMessage(data.message);
         if (activeTab === "brands") {
           setUsers(users.map((user) => (user.id === editedUser.id ? editedUser : user)));
         } else {
           setInfluencers(influencers.map((influencer) => (influencer.id === editedUser.id ? editedUser : influencer)));
         }
         setIsEditModalOpen(false);
-      } else {
+        //set the success message
+        setTimeout(() => {
+          setUpdateSuccessMessage(null);
+        }, 3000);
+      }
+       else {
         alert(data.error);
       }
     } catch (error) {
@@ -265,6 +272,12 @@ const Dashboard = () => {
     {deleteSuccessMessage && (
       <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-sm">
         <span className="block sm:inline">{deleteSuccessMessage}</span>
+      </div>
+    )}
+    {/*Update Success Message*/}
+    {updateSuccessMessage && (
+      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4 text-sm">
+        <span className="block sm:inline">{updateSuccessMessage}</span>
       </div>
     )}
 

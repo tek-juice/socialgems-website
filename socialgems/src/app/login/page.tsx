@@ -49,10 +49,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white-100">
+    <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
       <div className="flex-grow flex items-center justify-center p-4 sm:p-6">
-        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-md">
+        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.3)] w-full max-w-md">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-6">
             Admin Login
           </h1>
@@ -92,7 +92,7 @@ export default function LoginPage() {
             </div>
             <button
               type="submit"
-              className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 text-sm sm:text-base"
+              className="w-full bg-gold text-black py-2 rounded hover:bg-brown text-sm sm:text-base"
             >
               Login
             </button>

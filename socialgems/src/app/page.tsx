@@ -26,10 +26,10 @@ export default function Home() {
         <Image src="/hero-image.webp" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black bg-opacity-50 z-10">
-          <h1 className="text-4xl md:text-6xl font-bold mt-8">
+          <h1 className="text-2xl md:text-5xl font-bold mt-8">
             We Are Social Gems
           </h1>
-          <p className="text-lg md:text-xl mt-10 max-w-2xl px4">
+          <p className="text-lg md:text-lg mt-10 max-w-2xl px4">
             The Largest influencer marketplace where businesses and influencers connect. Download our app now to get started!
           </p>
 
@@ -73,7 +73,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           {/* First Section */}
           <div className="mb-12 flex flex-col md:flex-row items items-start gap-8">
-            <h3 className="text-black text-3xl font-bold mb-4 flex-1 text-yellow-800">
+            <h3 className="text-black text-xl font-bold mb-4 flex-1 text-yellow-800">
               WHERE INFLUENCE MEETS OPPORTUNITY
             </h3>
             <div className="flex-1 flex-col md:flex-row md:items-center gap-4">
@@ -83,10 +83,10 @@ export default function Home() {
                 influencer and for creator to monetize their influence.
               </p>
               <div className="flex flex-col md:flex-row gap-4">
-                <Link href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
+                <Link hidden href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
                   FOR INFLUENCERS
                 </Link>
-                <Link href="/influencers" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
+                <Link hidden href="/influencers" className="px-6 py-2 ml-4 bg-white text-black border border-black rounded-md hover:bg-gold hover:text-black">
                   FOR BRANDS
                 </Link>
               </div>
@@ -153,10 +153,10 @@ export default function Home() {
           {/* Final CTA Section */}
           <div className="text-center">
             <div className="flex gap-4">
-              <Link href="/influencers" className="px-6 py-2 text-black rounded-md border border-black hover:bg-black hover:text-white">
+              <Link hidden href="/influencers" className="px-6 py-2 text-black rounded-md border border-black hover:bg-black hover:text-white">
                 FOR INFLUENCERS
               </Link>
-              <Link href="/signup" className="px-6 py-2 text-black rounded-md hover:bg-black hover:text-white">
+              <Link hidden href="/signup" className="px-6 py-2 text-black rounded-md hover:bg-black hover:text-white">
                 FOR BRANDS <span className="ml-2">&gt;</span>
               </Link>
             </div>

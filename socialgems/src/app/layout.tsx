@@ -7,10 +7,6 @@ const urbanist = Urbanist({
   subsets: ["latin"],
 });
 
-/*const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});*/
 
 export const metadata: Metadata = {
   title: "Social Gems",
@@ -25,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${urbanist.variable} antialiased`}
+        className={`${urbanist.variable} font-sans antialiased`}
       >
         {children}
       </body>

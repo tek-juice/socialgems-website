@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 const Navbar = () => {
     return (
-      <nav className="w-full py-4 px-4 bg-white shadow-md flex flex-col md:flex-row justify-between items-center rounded-md">
+      <nav className="w-full py-4 px-4 bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] flex flex-col md:flex-row justify-between items-center rounded-md">
         <div className="flex-shrink-0">
           <Image 
             src="/social-gems-fn-200.png" 
@@ -27,7 +27,7 @@ const Navbar = () => {
         </div>
         <div className="flex">
           {/* Right section: Signup and Login */}
-          <Link hidden href="/login" className=" px-2 py-2 bg-white text-black border border-black rounded-md hover:bg-black hover:text-white hover:border hover:border-black">Login</ Link>
+          <Link href="/login" className="w-32 h-10 flex justify-center items-center bg-white text-black border-2 border-black rounded-lg hover:bg-gold hover:text-black hover:border-gold transition duration-300">Login</ Link>
         </div>
       </nav>
     );

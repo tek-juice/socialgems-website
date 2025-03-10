@@ -47,7 +47,7 @@ export async function DELETE(request: Request) {
         }
 
         // Log the id to verify it's correct
-        console.log("Deleting user with Email:", email);
+        //console.log("Deleting user with Email:", email);
 
         await client.sql `DELETE FROM users WHERE email = ${email};`;
 
@@ -69,7 +69,7 @@ export async function PUT(req: Request) {
       "UPDATE users SET first_name = $1, last_name = $2, email = $3 WHERE id = $4 RETURNING *;",
       [first_name, last_name, email, id]
     );
-    return NextResponse.json({ success: true, user: updatedUser.rows[0] }, { status: 200 });
+    return NextResponse.json({ success: true, user: updatedUser.rows[0], message: "User Updated Successfully." }, { status: 200 });
   } catch (error) {
     console.error("Error updating user:", error);
     return NextResponse.json({ success: false, error: "Failed to update user" }, { status: 500 });

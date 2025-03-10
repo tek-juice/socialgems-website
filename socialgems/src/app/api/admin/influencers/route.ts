@@ -45,7 +45,7 @@ export async function DELETE(request: Request) {
         }
 
         // Log the id to verify it's correct
-        console.log("Deleting user with Email:", email);
+        //console.log("Deleting user with Email:", email);
 
         await client.sql `DELETE FROM influencers WHERE email = ${email};`;
 
@@ -81,7 +81,7 @@ export async function PUT(req: Request) {
       "UPDATE influencers SET first_name = $1, last_name = $2, email = $3 WHERE email = $3 RETURNING *;",
       [first_name, last_name, email]
     );
-    return NextResponse.json({ success: true, influencer: updatedInfluencer.rows[0] }, { status: 200 });
+    return NextResponse.json({ success: true, influencer: updatedInfluencer.rows[0], message: "User Updated Successfully" }, { status: 200 });
   } catch (error) {
     console.error("Error updating influencer:", error);
     return NextResponse.json({ success: false, error: "Failed to update influencer" }, { status: 500 });

@@ -4,20 +4,20 @@ import { db } from "../../lib/db";
 import { Users } from "../../lib/definitions";
 
 export async function POST(req: Request) {
-    console.log("Testing database connection...");
+    //console.log("Testing database connection...");
 
     //test database connection
     try {
         const testQuery = await db.query(`SELECT 1 + 1 AS result;`);
-        console.log("Database connection successful:", testQuery.rows[0].result);
+        //console.log("Database connection successful:", testQuery.rows[0].result);
     } catch (error) {
-        console.error("Database connection failed:", error);
+        //console.error("Database connection failed:", error);
         return NextResponse.json({ success: false, error: "Database connection failed" }, { status: 500 });
     }
 
     try {
         const body = await req.json();
-        console.log("Recieved data:", body); //debugging log
+        //console.log("Recieved data:", body); //debugging log
 
         // Validate input before inserting
         if (!body.first_name || !body.last_name || !body.email || !body.contact) {
@@ -25,14 +25,14 @@ export async function POST(req: Request) {
         }
 
         // Check if the "influencers" table exists
-        console.log("Checking if 'influencers' table exists...");
+        //console.log("Checking if 'influencers' table exists...");
         const checkTable = await db.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables
                 WHERE table_name = 'influencers'
             ) AS exists;
         `);
-        console.log("Table exists query completed.");
+        //console.log("Table exists query completed.");
 
         const tableExists = checkTable.rows[0].exists;
 

@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+const { fontFamily } = require('tailwindcss/defaultTheme');
 
 export default {
   content: [
@@ -13,6 +14,9 @@ export default {
         brown: '#AB7A2B',
         background: "var(--background)",
         foreground: "var(--foreground)",
+      },
+      fontFamily: {
+        sans: ['var(--font-urbanist)', ...fontFamily.sans],
       },
     },
   },
