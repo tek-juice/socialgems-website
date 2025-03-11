@@ -31,23 +31,37 @@ export default function Contact() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
       <Navbar />
-  
-      {/* Hero Section (Words on Top) */}
-      <section className="relative py-20 flex items-center justify-center text-center">
-        <div className="relative z-10 text-black">
-          <h1 className="text-5xl font-bold mb-4">Contact Us</h1>
+
+      {/* Hero Section at the top*/}
+      <div className="relative h-[400px] flex items-center justify-center text-center text-black shadow-lg">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/Frame-3882.svg" // image path
+            alt="Hero Background"
+            fill
+            className="object-cover"
+          />
+        </div>
+
+        {/* Overlay */}
+        <div className="absolute inset-0 z-10"></div>
+
+        {/* Hero Content */}
+        <div className="relative z-20">
+          <h1 className="text-5xl font-bold mb-4 text-shadow">Contact Us</h1>
           <p className="text-xl max-w-2xl mx-auto">
             We'd love to hear from you! Reach out to us for any inquiries or collaborations.
           </p>
         </div>
-      </section>
+      </div>
   
       {/* Main Content (Form and Image) */}
       <section className="flex-1 py-12 px-8">
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row gap-8 items-stretch">
             {/* Form Section (Left) */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg w-full lg:w-1/2">
+            <div className="bg-white p-8 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] w-full lg:w-1/2">
               <h2 className="text-3xl font-bold text-brown mb-6">Get in Touch</h2>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Name Field */}
@@ -97,7 +111,7 @@ export default function Contact() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full px-6 py-2 bg-brown text-white rounded-lg hover:bg-gold hover:text-black transition-colors"
+                  className="w-full bg-gold text-black px-6 py-2 rounded-lg hover:text-black hover:bg-white hover:border-2 hover:border-[#FFD700] hover:bg-opacity-90 transition duration-300"
                 >
                   Send Message
                 </button>

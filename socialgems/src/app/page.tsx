@@ -23,7 +23,7 @@ export default function Home() {
       <Navbar />
       {/* Hero Section */}
       <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
-        <Image src="/hero-image.webp" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
+        <Image src="/SG-web-banner.jpg" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black bg-opacity-50 z-10">
           <h1 className="text-2xl md:text-5xl font-bold mt-8">

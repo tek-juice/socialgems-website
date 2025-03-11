@@ -5,20 +5,33 @@ import Footer from "../components/footer";
 
 export default function Services() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}
       <Navbar />
   
       {/* Hero Section */}
-      <section className="flex items-center justify-center text-center text-black bg-white py-20">
+      <div className="relative h-[400px] flex items-center justify-center text-center text-black shadow-lg">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/Frame-3882.svg" // Image path
+            alt="Hero Background"
+            fill
+            className="object-cover"
+          />
+        </div>
+
+        {/* Overlay */}
+        <div className="absolute inset-0 z-10"></div>
+
         {/* Hero Content */}
-        <div className="relative z-10 text-black bg-white shadow-lg">
-          <h1 className="text-5xl font-bold mb-4">Our Services</h1>
+        <div className="relative z-20">
+          <h1 className="text-5xl font-bold mb-4 text-shadow">Our Services</h1>
           <p className="text-xl max-w-2xl mx-auto">
             Empowering brands and influencers with smart solutions for authentic collaborations and real growth.
           </p>
         </div>
-      </section>
+      </div>
   
       {/* Main Content */}
       <section className="flex-1 py-12 px-8 bg-white shadow-lg">

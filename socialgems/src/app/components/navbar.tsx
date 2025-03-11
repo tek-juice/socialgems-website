@@ -17,17 +17,18 @@ const Navbar = () => {
           {/* Left section: Logo and Navigation Links */}
           <ul className="flex flex-wrap justify-center gap-2 md:gap-4">
             <li><Link href="/" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Home</ Link></li>
+            <li><Link href="/about" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">About</ Link></li>
             <li><Link href="/influencers" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Influencers</ Link></li>
             <li><Link href="/signup" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Brands</ Link></li>
-            <li><Link href="/about" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">About</ Link></li>
-            <li><Link href="/contact" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Contact</ Link></li>
             <li><Link href="/services" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Services</ Link></li>
+            <li><Link href="/contact" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Contact</ Link></li>
+            
             <li><Link hidden href="blogpost" className="px-2 py-2 rounded-md text-black hover:bg-gold hover:text-black transition-colors">Blog Posts</ Link></li>
           </ul>
         </div>
         <div className="flex">
           {/* Right section: Signup and Login */}
-          <Link href="/login" className="w-32 h-10 flex justify-center items-center bg-white text-black border-2 border-black rounded-lg hover:bg-gold hover:text-black hover:border-gold transition duration-300">Login</ Link>
+          <Link href="/login" className="w-32 h-10 flex justify-center items-center bg-gold text-black px-6 py-2 rounded-lg hover:text-black hover:bg-white hover:border-2 hover:border-[#FFD700] hover:bg-opacity-90 transition duration-300">Login</ Link>
         </div>
       </nav>
     );
