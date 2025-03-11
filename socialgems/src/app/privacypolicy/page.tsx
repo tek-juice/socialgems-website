@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
                     <h2 className="text-xl sm:text-2xl font-bold text-gold mb-2 sm:mb-4">
                     We use the following cookies:
                     </h2>
-                    <p className="text-sm sm:text-base text-gray-700 mb-4">
+                    <p className="text-sm sm:text-base text-gray-700 mb-4"></p>
                         <ul className="text-sm sm:text-base text-gray-700 mb-4 list-disc list-inside">
                             <li>
                                 <strong>Strictly necessary cookies. </strong> 
@@ -83,7 +83,6 @@ export default function PrivacyPolicy() {
                                 advertising on their websites or APPs.
                             </li>
                         </ul>
-                    </p>
                     <p className="text-sm sm:text-base text-gray-700 mb-4">
                         You can find more here!{" "}
                         <button 

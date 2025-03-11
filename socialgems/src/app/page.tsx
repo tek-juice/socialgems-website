@@ -25,7 +25,7 @@ export default function Home() {
       <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
         <Image src="/SG-web-banner.jpg" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
         {/* Overlay Text and Call to Action */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black bg-opacity-50 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-10">
           <h1 className="text-2xl md:text-5xl font-bold mt-8">
             We Are Social Gems
           </h1>
@@ -40,7 +40,7 @@ export default function Home() {
               className="hover:opacity-80"
             >
               <Image
-                src="/GooglePlay.webp" // Replace with your Google Play logo path
+                src="/Google-Play-store.svg" // Replace with your Google Play logo path
                 alt="Download on Google Play"
                 width={150}
                 height={50}
@@ -53,7 +53,7 @@ export default function Home() {
               className="hover:opacity-80"
             >
               <Image
-                src="/App-Store-Black.webp" // Replace with your App Store logo path
+                src="/App-Store.svg" // Replace with your App Store logo path
                 alt="Download on the App Store"
                 width={150}
                 height={50}
@@ -184,7 +184,7 @@ export default function Home() {
                   className="hover:opacity-80"
                 >
                   <Image
-                    src="/GooglePlay.webp" // Replace with your Google Play logo path
+                    src="/Google-Play-store.svg" // Replace with your Google Play logo path
                     alt="Download on Google Play"
                     width={150}
                     height={50}
@@ -197,7 +197,7 @@ export default function Home() {
                   className="hover:opacity-80"
                 >
                   <Image
-                    src="/App-Store-Black.webp" // Replace with your App Store logo path
+                    src="/App-Store.svg" // Replace with your App Store logo path
                     alt="Download on the App Store"
                     width={150}
                     height={50}
