@@ -351,7 +351,7 @@ export default function SignUpPage() {
                                         disabled={loading} 
                                         className="w-full bg-gold text-black px-6 py-2 rounded-lg hover:text-black hover:bg-white hover:border-2 hover:border-[#FFD700] hover:bg-opacity-90 transition duration-300"
                                     >
-                                        {loading ? "Submitting..." : "Register"}
+                                        {loading ? "Submitting..." : "Submit"}
                                     </button>
                                 </form>
                             )}
