@@ -40,7 +40,7 @@ export default function Home() {
               className="hover:opacity-80"
             >
               <Image
-                src="/Google-Play-store.svg" // Replace with your Google Play logo path
+                src="/Google-play-store.svg" // Replace with your Google Play logo path
                 alt="Download on Google Play"
                 width={150}
                 height={50}
@@ -53,7 +53,7 @@ export default function Home() {
               className="hover:opacity-80"
             >
               <Image
-                src="/App-Store.svg" // Replace with your App Store logo path
+                src="/App-store.svg" // Replace with your App Store logo path
                 alt="Download on the App Store"
                 width={150}
                 height={50}
