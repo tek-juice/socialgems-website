@@ -78,9 +78,9 @@ export default function Home() {
             </h3>
             <div className="flex-1 flex-col md:flex-row md:items-center gap-4">
               <p className="text-black text-lg max-w-2xl mx-auto mb-6">
-                We're rewriting the influencer marketing playbook,
-                making it effortless for businesses to find the perfect
-                influencer and for creator to monetize their influence.
+                We're simplifying influencer marketing, helping businesses 
+                connect with the right creators while enabling influencers 
+                to earn from their content effortlessly.
               </p>
               <div className="flex flex-col md:flex-row gap-4">
                 <Link hidden href="/signup" className="px-6 py-2 bg-gold text-black rounded-md hover:bg-black hover:text-gold hover:border hover:border-black">
@@ -169,13 +169,13 @@ export default function Home() {
                 OUR APPROACH
               </h2>
               <p className="text-black text-lg gpa-20 mt-10">
-                Social Gems makes influencer marketing effortless. 
-                Powered by smart tech and real data, we connect
-                brands and creators with precision. 
-                More than a platform, we’re a vibrant marketplace
-                where partnerships thrive; from beauty and gaming
-                to food and fitness. Authentic, impactful, and built 
-                for Africa’s creative pulse.
+                Social Gems streamlines influencer marketing, 
+                harnessing cutting-edge tech and real-time data 
+                to connect brands and creators with precision. 
+                Our marketplace opens doors for businesses and 
+                influencers of all sizes, fostering seamless, 
+                transparent collaborations that drive meaningful 
+                results.
               </p>
               {/* Call to Action Buttons */}
               <div className="flex gap-4 mt-8 animate-gradient-x">
@@ -184,7 +184,7 @@ export default function Home() {
                   className="hover:opacity-80"
                 >
                   <Image
-                    src="/Google-Play-store.svg" // Replace with your Google Play logo path
+                    src="/Google-play-store.svg" // Replace with your Google Play logo path
                     alt="Download on Google Play"
                     width={150}
                     height={50}
@@ -197,7 +197,7 @@ export default function Home() {
                   className="hover:opacity-80"
                 >
                   <Image
-                    src="/App-Store.svg" // Replace with your App Store logo path
+                    src="/App-store.svg" // Replace with your App Store logo path
                     alt="Download on the App Store"
                     width={150}
                     height={50}
@@ -218,12 +218,12 @@ export default function Home() {
         <div className="text-center max-w-2xl w-full">
           {/* Title with Emoji */}
           <h3 className="text-xl sm:text-3xl font-bold text-black mb-4">
-            START YOUR JOURNEY WITH US ✨
+            Ready To Make Waves Together ✨
           </h3>
 
           {/* Description */}
           <p className="text-black text-base sm:text-lg mb-6">
-            Join Social Gems today and unlock endless opportunities for impactful influencer collaborations.
+            Let's Talk
           </p>
 
           {/* Links */}
