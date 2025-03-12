@@ -9,12 +9,12 @@ import Image from "next/image";
 
 const BackgroundImageSwitcher = () => {
     const [currentImage, setCurrentImage] = useState(0);
-    const images = ["/background1.webp", "/background2.webp"]; // Add your image paths
+    const images = [ "/background2.webp"]; // Add your image paths
   
     useEffect(() => {
       const interval = setInterval(() => {
         setCurrentImage((prev) => (prev + 1) % images.length);
-      }, 3000); // Switch every 3 seconds
+      }, 5000); // Switch every 3 seconds
   
       return () => clearInterval(interval); // Cleanup interval on unmount
     }, [images.length]);
@@ -39,11 +39,11 @@ const BackgroundImageSwitcher = () => {
         ))}
   
         {/* Text Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-center p-8 bg-black/10 text-white">
+        <div className="absolute inset-0 flex flex-col justify-center p-8 bg-black/10 text-gold">
           <h1 className="text-4xl font-bold mb-4">
             Join our influencer community
           </h1>
-          <p className="text-lg">
+          <p className="text-lg font-bold">
             Social Gems is all about fueling creativity in an industry that never
             stops evolving. From beauty, sports, gaming, or food, our African
             network of creators is breaking boundaries; and we want you in. Want
@@ -225,8 +225,8 @@ export default function SignUpPage() {
               <div className="flex flex-col lg:flex-row gap-8 items-stretch">
                 {/* Form Section (Left) */}
                 <div className="bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] p-8 rounded-xl w-full lg:w-1/2">
-                  <h1 className="text-2xl font-bold mb-4 text-[#1A1A1A]">Are you an Influencer?</h1>
-                  <h2 className="text-2xl font-bold mb-6 text-[#1A1A1A]">Sign Up with Social Gems</h2>
+                  <h1 className="text-2xl font-bold mb-4 text-[#CC9813]">Are you an Influencer?</h1>
+                  <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Sign Up with Social Gems</h2>
       
                   {success ? (
                     <p className="text-green-600 font-bold text-center">✅ Sign-up successful! We’ll contact you soon.</p>

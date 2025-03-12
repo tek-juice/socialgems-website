@@ -12,7 +12,7 @@ const BackgroundImageSwitcher = () => {
     useEffect(() => {
       const interval = setInterval(() => {
         setCurrentImage((prev) => (prev + 1) % images.length);
-      }, 3000); // Switch every 3 seconds
+      }, 5000); // Switch every 3 seconds
   
       return () => clearInterval(interval); // Cleanup interval on unmount
     }, [images.length]);
@@ -37,11 +37,11 @@ const BackgroundImageSwitcher = () => {
         ))}
   
         {/* Text Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-center p-8 bg-black/30 text-white">
+        <div className="absolute inset-0 flex flex-col justify-center p-8 bg-black/30 text-gold">
           <h1 className="text-4xl font-bold mb-4">
             Find Niche Influencers Faster
           </h1>
-          <p className="text-lg">
+          <p className="text-lg font-bold">
             Effortlessly discover niche creators who align with your business’s
             goals. No more guesswork; our smart tech pairs you with the right
             influencers, saving you time. We do the search for you so you can
@@ -209,8 +209,8 @@ export default function SignUpPage() {
                     <div className="flex flex-col lg:flex-row gap-8 items-stretch">
                         {/* Form Section */}
                         <div className="bg-white p-8 rounded-xl shadow-lg w-full lg:w-1/2">
-                            <h1 className="text-2xl font-bold mb-4 text-[#1A1A1A]">Are you a Brand?</h1>
-                            <h2 className="text-2xl font-bold mb-6 text-[#1A1A1A]">Sign Up with Social Gems</h2>
+                            <h1 className="text-2xl font-bold mb-4 text-[#CC9813]">Are you a Brand?</h1>
+                            <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Sign Up with Social Gems</h2>
 
                             {success ? (
                                 <p className="text-green-600 font-bold text-center">✅ Sign-up successful! We’ll contact you soon.</p>

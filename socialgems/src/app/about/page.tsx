@@ -19,11 +19,11 @@ export default function About() {
           />
         </div>
         {/* Overlay Text and Call to Action */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4 text-darkgold">
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-gold bg-black/30 z-10">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
             Engage with customers through creators they trust
           </h1>
-          <p className="text-lg sm:text-xl">
+          <p className="text-lg font-bold sm:text-xl">
             Discover the story behind Social Gems and our mission to connect brands with influencers.
           </p>
         </div>

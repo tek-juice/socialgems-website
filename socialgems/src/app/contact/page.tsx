@@ -49,8 +49,8 @@ export default function Contact() {
 
         {/* Hero Content */}
         <div className="relative z-20">
-          <h1 className="text-5xl font-bold mb-4 text-shadow">Contact Us</h1>
-          <p className="text-xl max-w-2xl mx-auto">
+          <h1 className="text-5xl text-brown font-bold mb-4 text-shadow">Contact Us</h1>
+          <p className="text-xl text-brown font-bold max-w-2xl mx-auto">
             We'd love to hear from you! Reach out to us for any inquiries or collaborations.
           </p>
         </div>

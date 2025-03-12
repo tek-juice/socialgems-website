@@ -26,8 +26,8 @@ export default function Services() {
 
         {/* Hero Content */}
         <div className="relative z-20">
-          <h1 className="text-5xl font-bold mb-4 text-shadow">Our Services</h1>
-          <p className="text-xl max-w-2xl mx-auto">
+          <h1 className="text-5xl font-bold text-brown mb-4 text-shadow">Our Services</h1>
+          <p className="text-xl text-brown font-bold max-w-2xl mx-auto">
             Empowering brands and influencers with smart solutions for authentic collaborations and real growth.
           </p>
         </div>

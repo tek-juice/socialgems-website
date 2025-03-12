@@ -26,10 +26,10 @@ export default function Home() {
         <Image src="/SG-web-banner.jpg" alt="Hero Image" layout="fill" className="w-full z-0 object-cover rounded-md" />
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/30 z-10">
-          <h1 className="text-2xl md:text-5xl font-bold mt-8">
+          <h1 className="text-2xl text-gold md:text-5xl font-bold mt-8">
             We Are Social Gems
           </h1>
-          <p className="text-lg md:text-lg mt-10 max-w-2xl px4">
+          <p className="text-lg text-gold font-bold md:text-lg mt-10 max-w-2xl px4">
             The Largest influencer marketplace where businesses and influencers connect. Download our app now to get started!
           </p>
 
