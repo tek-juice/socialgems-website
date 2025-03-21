@@ -18,6 +18,9 @@ export default {
       fontFamily: {
         sans: ['var(--font-urbanist)', ...fontFamily.sans],
       },
+      fontSize: {
+        '10xl': '10rem', // Custom font size
+      }
     },
   },
   plugins: [],

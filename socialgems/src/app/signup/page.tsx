@@ -1,6 +1,8 @@
 "use client";
 
 import {useEffect, useState } from "react";
+import PhoneInput, { Value } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import Image from "next/image";
@@ -41,7 +43,7 @@ const BackgroundImageSwitcher = () => {
           <h1 className="text-4xl font-bold mb-4">
             Find Niche Influencers Faster
           </h1>
-          <p className="text-lg font-bold">
+          <p className="text-lg text-white font-bold">
             Effortlessly discover niche creators who align with your business’s
             goals. No more guesswork; our smart tech pairs you with the right
             influencers, saving you time. We do the search for you so you can
@@ -92,7 +94,7 @@ export default function SignUpPage() {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format validation
         return regex.test(email);
     }
-    //validate country dial codes
+    /*validate country dial codes
     const countryDialCodes = [
         {code: "+1", name:"USA", flag: "🇺🇸" },
         { code: "+44", name: "UK", flag: "🇬🇧" },
@@ -105,7 +107,11 @@ export default function SignUpPage() {
         { code: "+233", name: "Ghana", flag: "🇬🇭" },
     ];
     //add state for selected dial code
-    const [dialCode, setDialCode] = useState("+256");
+    const [dialCode, setDialCode] = useState("+256");*/
+    //handle phone change
+    const handlePhoneChange = (value: Value) =>{
+        setFormData({ ...formData, contact: value || "" });
+    };
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -268,30 +274,23 @@ export default function SignUpPage() {
                                     <div>
                                         <label className="block text-sm font-medium text-[#4A5568]">Contact</label>
                                         <div className="flex gap-2">
-                                            {/* Dial Code Dropdown with Flag */}
-                                            <div className="flex items-center border border-[#E2E8F0] rounded-lg focus:ring-2 focus:ring-[#3182CE] focus:border-transparent">
-                                                <select
-                                                    value={dialCode}
-                                                    onChange={(e) => setDialCode(e.target.value)}
-                                                    className="p-3 text-[#1A1A1A] bg-transparent outline-none"
-                                                    >
-                                                    {countryDialCodes.map((country) => (
-                                                    <option key={country.code} value={country.code}>
-                                                        {country.flag} {country.code} {country.name}
-                                                    </option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                        {/* Dial Code Dropdown with Flag */}
 
-                                            {/* Contact Input */}
-                                            <input
-                                            name="contact"
-                                            type="text"
-                                            placeholder="757xxxxxx"
+                                        {/* Contact Input */}
+                                        <PhoneInput
+                                            international
+                                            defaultCountry="UG"
+                                            value={formData.contact}
+                                            onChange={handlePhoneChange}
+                                            placeholder="Enter Phone Number"
+                                            className="flex-1 block p-3 border border-[#E2E8F0] rounded-lg placeholder-[#A0AEC0] text-black focus:ring-2 focus:ring-[#3182CE] focus:border-transparent"
+                                            style={{
+                                                '--PhoneInputCountryFlag-height': '1em', // Adjust flag height
+                                                '--PhoneInputCountryFlag-width': '1.5em', // Adjust flag width
+                                                '--PhoneInputCountrySelectArrow-color': '#3182CE', // Customize dropdown arrow color
+                                            }}
                                             required
-                                            className="flex-1 p-3 border border-[#E2E8F0] rounded-lg placeholder-[#A0AEC0] text-[#1A1A1A] focus:ring-2 focus:ring-[#3182CE] focus:border-transparent"
-                                            onChange={handleChange}
-                                            />
+                                        />
                                         </div>
                                     </div>
 
