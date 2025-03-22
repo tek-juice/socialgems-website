@@ -1,8 +1,8 @@
-'use client'
+'use client';
 import Image from "next/image";
 import Link from "next/link";
 import ComingSoonModal from "./components/comingSoonModal"; // Import the modal
-import Navbar from "./components/navbar"
+import Navbar from "./components/navbar";
 import Footer from "./components/footer";
 import { useState, useEffect } from 'react';
 import Router from "next/router";
@@ -42,20 +42,20 @@ export default function Home() {
   }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
-    <div className="min-h-screen flex flex-col relative bg-white">
-
+    <div className="min-h-screen flex flex-col relative bg-white overflow-x-hidden">
       <Navbar />
+
       {/* Hero Section */}
-      <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
+      <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8 overflow-hidden">
         <Image 
           src="/SG-web-banner.jpg" 
           alt="Hero Image" 
           layout="fill" 
           className="w-full z-0 object-cover rounded-md" 
-          />
+        />
         {/* Overlay Text and Call to Action */}
-        <div className="absolute inset-0 flex flex-col items-start justify-center text-left text-white bg-black/40 z-10 pl-8 md:pl-16">
-          <h1 className="text-10xl text-gold md:text-5xl font-bold mt-8" data-aos="fade-up">
+        <div className="absolute inset-0 flex flex-col items-start justify-center text-left text-white bg-black/40 z-10 px-4 md:pl-16">
+          <h1 className="text-4xl md:text-5xl font-bold mt-8 text-gold" data-aos="fade-up">
             #WeAreSocialGems
           </h1>
           <div>
@@ -64,7 +64,7 @@ export default function Home() {
             </p>
           </div>
           
-         {/* Call to Action Buttons */}
+          {/* Call to Action Buttons */}
           <div className="flex flex-col items-start" data-aos="fade-up">
             {/* Paragraph */}
             <p className="text-lg text-white font-bold md:text-lg mb-4 max-w-2xl">
@@ -103,12 +103,11 @@ export default function Home() {
             <ComingSoonModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </div>
         </div>
-
       </section>
 
+      {/* Rest of the Sections */}
       <section className="bg-white py-12">
         <div className="container mx-auto px-4">
-
           {/* First Section: Connect, Inspire, Glow */}
           <div className="mb-12">
             {/* Connect, Inspire, Glow Row */}
@@ -121,7 +120,7 @@ export default function Home() {
                     alt="Connect Image"
                     width={400}
                     height={400}
-                    className="rounded-md"
+                    className="rounded-md w-full h-auto"
                   />
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-gold rounded-full mb-4">
@@ -147,7 +146,7 @@ export default function Home() {
                     alt="Inspire Image"
                     width={400}
                     height={400}
-                    className="rounded-md"
+                    className="rounded-md w-full h-auto"
                   />
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-amber-600 rounded-full mb-4">
@@ -173,7 +172,7 @@ export default function Home() {
                     alt="Glow Image"
                     width={400}
                     height={400}
-                    className="rounded-md"
+                    className="rounded-md w-full h-auto"
                   />
                 </div>
                 <div className="flex items-center justify-center w-12 h-12 bg-brown rounded-full mb-4">
@@ -330,7 +329,7 @@ export default function Home() {
                 alt="Mission Image"
                 width={500}
                 height={300}
-                className="rounded-md"
+                className="rounded-md w-full h-auto"
               />
             </div>
           </div>
