@@ -1,9 +1,13 @@
+'use client'
 import Image from "next/image";
 import Link from "next/link";
+import { useMediaQuery } from "react-responsive";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
 export default function About() {
+  const isMobile = useMediaQuery({ maxWidth: 767 }); 
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navbar */}
@@ -11,13 +15,26 @@ export default function About() {
       {/*Hero section*/}
       <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8">
         <div className="absolute inset-0 w-full h-full">
-          <Image 
-            src="/SG-web-banner0.jpg" 
-            alt="Hero Image" 
-            layout="fill"
-            objectFit="cover"
-            className="z-0"
-          />
+          {isMobile ? (
+            <Image
+              src="/SG-web-small-banner-about.jpg" 
+              alt="Hero Image" 
+              layout="fill" 
+              objectFit="cover"
+              className="z-0 rounded-md"
+              priority
+            />
+          ) : (
+            <Image 
+              src="/SG-web-banner-about.jpg"
+              alt="Hero Image"
+              layout="fill"
+              objectFit="cover"
+              className="z-0 rounded-md"
+              priority
+            />
+          )}
+          
         </div>
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-gold bg-black/30 z-10">

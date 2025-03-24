@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { saveAs } from 'file-saver';
 import { useRouter } from 'next/navigation';
 import SkeletonLoader from '@/app/components/skeletonLoader';
 import Footer from "../../components/footer";
@@ -144,10 +145,22 @@ const Dashboard = () => {
 
   //Determine which data to display
   const displayData = searchQuery ? filteredAllData.slice((page - 1) * limit, page * limit) : activeTab === "brands" ? users: influencers;
+
   // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     router.push('/login'); // Redirects to login page after log out
+  };
+
+  //handle download of records
+  const handleDownload = async () => {
+    const response = await fetch(`/api/admin/export?type=${activeTab}`);
+    if (!response.ok) {
+      alert("failed to downlaod file");
+      return;
+    }
+    const blob = await response.blob();
+    saveAs(blob, `${activeTab}_List.xlsx`);
   };
 
   // Handle searching of users/influencers
@@ -300,11 +313,19 @@ const Dashboard = () => {
         Influencers
       </button>
     </div>
+    <div className="felx justify-between mb-4">
+      <button 
+        className="bg-green-400 text-white px-4 py-2 rounded "
+        onClick={handleDownload}
+        >
+          Download {activeTab === "brands" ? "Brands List ": "Influencers List"}
+        </button>
+    </div>
 
     {/* Admin Data */}
     {adminData && (
       <div className="mb-4 text-sm sm:text-base">
-        <p>Welcome back, {adminData.email}!</p>
+        <p>Welcome back, {adminData.role}!</p>
       </div>
     )}
 

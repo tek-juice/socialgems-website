@@ -8,9 +8,12 @@ import { useState, useEffect } from 'react';
 import Router from "next/router";
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { useMediaQuery } from "react-responsive";
 import { warnOptionHasBeenMovedOutOfExperimental } from "next/dist/server/config";
 
 export default function Home() {
+  const isMobile = useMediaQuery({ maxWidth: 767 }); 
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = () => {
@@ -48,13 +51,26 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative h-screen flex flex-col items-center justify-center text-center py-20 px-4 md:px-8 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
-          <Image 
-            src="/SG-web-banner.jpg" 
-            alt="Hero Image" 
-            layout="fill" 
-            objectFit="cover"
-            className="z-0 rounded-md" 
-          />
+          {isMobile ? (
+            <Image
+              src="/SG-web-small-banner.jpg" 
+              alt="Hero Image" 
+              layout="fill" 
+              objectFit="cover"
+              className="z-0 rounded-md"
+              priority
+            />
+          ) : (
+            <Image 
+              src="/SG-web-banner.jpg"
+              alt="Hero Image"
+              layout="fill"
+              objectFit="cover"
+              className="z-0 rounded-md"
+              priority
+            />
+          )}
+          
         </div> 
         {/* Overlay Text and Call to Action */}
         <div className="absolute inset-0 flex flex-col items-start justify-center text-left text-white bg-black/40 z-10 px-4 md:pl-16">

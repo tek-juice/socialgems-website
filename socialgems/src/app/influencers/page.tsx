@@ -211,7 +211,12 @@ export default function SignUpPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Something went wrong");
+            if (!res.ok) {
+              if (data.error?.includes("Email exists")) {
+                throw new Error("This email is already registered");
+              }
+              throw new Error(data.error || "Something went wrong");
+            }
 
             setSuccess(true);
         } catch (err) {
