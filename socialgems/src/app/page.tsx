@@ -12,7 +12,7 @@ import { useMediaQuery } from "react-responsive";
 import { warnOptionHasBeenMovedOutOfExperimental } from "next/dist/server/config";
 
 export default function Home() {
-  const isMobile = useMediaQuery({ maxWidth: 767 }); 
+  const isMobile = useMediaQuery({ maxWidth: 600 }); 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -53,7 +53,7 @@ export default function Home() {
         <div className="absolute inset-0 w-full h-full">
           {isMobile ? (
             <Image
-              src="/SG-web-small-banner.jpg" 
+              src="/connect-image.jpg" 
               alt="Hero Image" 
               layout="fill" 
               objectFit="cover"

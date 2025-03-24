@@ -17,7 +17,7 @@ export default function About() {
         <div className="absolute inset-0 w-full h-full">
           {isMobile ? (
             <Image
-              src="/SG-web-small-banner-about.jpg" 
+              src="/connect-image.jpg" 
               alt="Hero Image" 
               layout="fill" 
               objectFit="cover"
