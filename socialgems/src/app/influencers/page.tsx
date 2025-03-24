@@ -239,7 +239,7 @@ export default function SignUpPage() {
                 {/* Form Section (Left) */}
                 <div className="bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] p-8 rounded-xl w-full lg:w-1/2">
                   <h1 className="text-2xl font-bold mb-4 text-[#CC9813]">Are you an Influencer?</h1>
-                  <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Sign Up with Social Gems</h2>
+                  <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Join the Influencers List</h2>
       
                   {success ? (
                     <p className="text-green-600 font-bold text-center">✅ Sign-up successful! We’ll contact you soon.</p>

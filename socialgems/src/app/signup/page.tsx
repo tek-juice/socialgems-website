@@ -9,7 +9,7 @@ import Image from "next/image";
 
 const BackgroundImageSwitcher = () => {
     const [currentImage, setCurrentImage] = useState(0);
-    const images = ["/brands.jpg"]; // Add your image paths
+    const images = ["/brands1.jpg","/brands2.jpg"]; // Add your image paths
   
     useEffect(() => {
       const interval = setInterval(() => {
@@ -216,7 +216,7 @@ export default function SignUpPage() {
                         {/* Form Section */}
                         <div className="bg-white p-8 rounded-xl shadow-lg w-full lg:w-1/2">
                             <h1 className="text-2xl font-bold mb-4 text-[#CC9813]">Are you a Brand?</h1>
-                            <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Sign Up with Social Gems</h2>
+                            <h2 className="text-2xl font-bold mb-6 text-[#CC9813]">Join the Brands List</h2>
 
                             {success ? (
                                 <p className="text-green-600 font-bold text-center">✅ Sign-up successful! We’ll contact you soon.</p>
