@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { saveAs } from 'file-saver';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import SkeletonLoader from '@/app/components/skeletonLoader';
 import Footer from "../../components/footer";
 
@@ -23,7 +24,7 @@ const Dashboard = () => {
   const [ limit, setLimit ] = useState(10); //10 Records per page
   const [total, setTotal] = useState(0); //Total records 
   const [filteredAllData, setFilteredData] = useState<any[]>([]); //store filtered data for display
-
+  const [ isProfileOpen, setIsProfileOpen ] = useState(false);
 
   // Modal State
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -106,14 +107,15 @@ const Dashboard = () => {
       .finally(() => setLoading(false));
   };
 
-  // Handle tab change
+  // Handle tab change 
+  /*
   const handleTabChange = (tab: "brands" | "influencers") => {
     setActiveTab(tab);
     setSearchQuery("");
     setPage(1);
     fetchData(); // Fetch data for the selected tab
   };
-
+*/
   //fetch all data for search within the current tab--just added
   const fetchAllDataForSearch = async() => {
     setLoading(true);
@@ -143,8 +145,22 @@ const Dashboard = () => {
     }
   }, [searchQuery, activeTab]);
 
+  //effect handle click outside of profile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (isProfileOpen && target && !target.closest('.relative')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
   //Determine which data to display
-  const displayData = searchQuery ? filteredAllData.slice((page - 1) * limit, page * limit) : activeTab === "brands" ? users: influencers;
+  const displayData = searchQuery ? 
+    filteredAllData.slice((page - 1) * limit, page * limit) : 
+    activeTab === "brands" ? users: influencers;
 
   // Handle Logout
   const handleLogout = () => {
@@ -156,7 +172,7 @@ const Dashboard = () => {
   const handleDownload = async () => {
     const response = await fetch(`/api/admin/export?type=${activeTab}`);
     if (!response.ok) {
-      alert("failed to downlaod file");
+      alert("failed to download file");
       return;
     }
     const blob = await response.blob();
@@ -262,8 +278,103 @@ const Dashboard = () => {
   return (
     <div className="w-full text-gray-700 bg-white p-4 sm:p-6">
     {/* Header */}
-    <header className="flex flex-col sm:flex-row justify-between items-center bg-gray-800 text-white p-4 mb-4 rounded-lg">
-      <h1 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Admin Dashboard</h1>
+    <header className="flex flex-col sm:flex-row justify-between items-center bg-gold text-black p-4 mb-4 rounded-lg">
+      
+      {/* Logo */}
+      <div className="flex-shrink-0">
+        <Image
+          src="/social-gems-fn-200.png"
+          width={100}
+          height={100}
+          alt="Social Gems"
+          className="object-contain"
+        />
+      </div>
+
+      {/* Right side controls */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0">
+        {/* Table Selection */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <label htmlFor="table-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+            Select Table:
+          </label>
+          <select
+            id="table-select"
+            value={activeTab}
+            onChange={(e) => {
+              setActiveTab(e.target.value as "brands" | "influencers");
+              setPage(1);
+              setSearchQuery("");
+            }}
+            className="block p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold text-sm"
+          >
+            <option value="talent">Brands</option>
+            <option value="enquiry">Influencers</option>
+          </select>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative w-full sm:w-64">
+          <input
+            type="text"
+            placeholder="Search..."
+            className="w-full p-2 pl-3 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold shadow-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <svg
+            className="absolute right-2.5 top-2.5 h-4 w-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+
+        {/* Profile Dropdown */}
+        <div className="relative">
+          <button
+            className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#F6931B]"
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+          >
+            <svg
+              className="h-6 w-6 text-gray-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </button>
+          
+          {/* Dropdown Menu */}
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/*<h1 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">Admin Dashboard</h1>
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
         <input
           type="text"
@@ -278,7 +389,7 @@ const Dashboard = () => {
         >
           Logout
         </button>
-      </div>
+      </div>*/}
     </header>
 
     {/* Success Message */}
@@ -294,7 +405,7 @@ const Dashboard = () => {
       </div>
     )}
 
-    {/* Tabs */}
+    {/* Tabs 
     <div className="flex mb-4">
       <button
         className={`px-4 py-2 text-sm sm:text-base ${
@@ -312,10 +423,10 @@ const Dashboard = () => {
       >
         Influencers
       </button>
-    </div>
+    </div>*/}
     <div className="felx justify-between mb-4">
       <button 
-        className="bg-green-400 text-white px-4 py-2 rounded "
+        className="bg-gold text-black px-4 py-2 rounded "
         onClick={handleDownload}
         >
           Download {activeTab === "brands" ? "Brands List ": "Influencers List"}
@@ -344,6 +455,7 @@ const Dashboard = () => {
               <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Last Name</th>
               <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Email</th>
               <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Contact</th>
+              <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">Date Submitted</th>
               <th className="py-2 px-2 sm:px-4 text-left text-sm sm:text-base">
                 {activeTab === "brands" ? "Expertise" : "Influence"}
               </th>
@@ -357,6 +469,7 @@ const Dashboard = () => {
                 <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.last_name}</td>
                 <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.email}</td>
                 <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{record.contact || "N/A"}</td>
+                <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">{new Date (record.created_at).toISOString().split('T')[0]}</td>
                 <td className="py-2 px-2 sm:px-4 text-sm sm:text-base">
                   {activeTab === "brands" ? record.expertise : record.influence}
                 </td>
