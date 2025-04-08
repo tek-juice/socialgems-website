@@ -24,7 +24,15 @@ const Dashboard = () => {
   const [ limit, setLimit ] = useState(10); //10 Records per page
   const [total, setTotal] = useState(0); //Total records 
   const [filteredAllData, setFilteredData] = useState<any[]>([]); //store filtered data for display
-  const [ isProfileOpen, setIsProfileOpen ] = useState(false);
+  const [ isProfileOpen, setIsProfileOpen ] = useState(false); //state for user profile to open and signout
+  const [ isChangePasswordOpen, setIsChangePasswordOpen ] = useState(false); //change password state
+  const [ currentPassword, setCurrentPassword ] = useState('');
+  const [ newPassword, setNewPassword ] = useState('');
+  const [ confirmPassword, setConfirmPassword ] = useState('');
+  const [ success, setSuccess ] = useState('');//till here on new states for change passord.
+  const [showDownloadModal, setShowDownloadModal] = useState(false); //added state for download
+  const [dateRange, setDateRange] = useState({startDate: '', endDate: ''}); //added state for date range
+  const [ isMobileMenuOpen, setIsMobileMenuOpen ] = useState(false); //this is for mobile view
 
   // Modal State
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -33,7 +41,7 @@ const Dashboard = () => {
   const [editedUser, setEditedUser] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = sessionStorage.getItem('adminToken');
     if (!token) {
       setError('Unauthorized. Please log in.');
       router.push('/login');
@@ -49,12 +57,12 @@ const Dashboard = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.success) {
+        if (!data.success) {
+          sessionStorage.removeItem('adminToken');
+          router.push('/login');
+        } else {
           setAdminData(data.admin); //set admin data including role
           fetchData(); // Fetch data after successful authentication
-        } else {
-          setError('Invalid or expired token.');
-          router.push('/login');
         }
       })
       .catch(() => {
@@ -168,16 +176,93 @@ const Dashboard = () => {
     router.push('/login'); // Redirects to login page after log out
   };
 
+  //Handle password change
+  const handleChangePassword = async (e: any) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    // Basic validation
+    /*if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }*/
+
+    try {
+      // API call to change password
+      const response = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('adminToken')}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          confirmPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        sessionStorage.removeItem('adminToken');
+        router.push('/login');
+        return;
+      } else {
+        throw new Error(data.message || 'Failed to change password');
+      }
+      //if password change succeeded, clear token and redirect to login again
+      /*if (data.clearToken) {
+        sessionStorage.removeItem('adminToken');
+        router.push('/login');
+      }
+
+      setSuccess('Password changed successfully, Please login with your new password');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsChangePasswordOpen(false);*/
+    } catch (error) {
+      alert("Password change failed, check your password and try again!")
+      //setError(error.message);
+    }
+  };
+
   //handle download of records
   const handleDownload = async () => {
-    const response = await fetch(`/api/admin/export?type=${activeTab}`);
+    setShowDownloadModal(true);
+  };
+
+  const validateDates = () => {
+    if (!dateRange.startDate || !dateRange.endDate) {
+      alert("Please select both start and end dates");
+      return false;
+    }
+    if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
+      alert("End date must be after start date");
+      return false;
+    }
+    return true;
+  }
+  const handleConfirmDownload = async () => {
+    if (!validateDates()) {
+      return;
+    }
+    const response = await fetch(`/api/admin/export?type=${activeTab}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`);
     if (!response.ok) {
       alert("failed to download file");
       return;
     }
     const blob = await response.blob();
-    saveAs(blob, `${activeTab}_List.xlsx`);
-  };
+    saveAs(blob, `${activeTab}_List_${dateRange.startDate}_to_${dateRange.endDate}.xlsx`);
+    setShowDownloadModal(false);
+  }
 
   // Handle searching of users/influencers
   /*const filteredData = activeTab === "brands"
@@ -278,7 +363,7 @@ const Dashboard = () => {
   return (
     <div className="w-full text-gray-700 bg-white p-4 sm:p-6">
     {/* Header */}
-    <header className="flex flex-col sm:flex-row justify-between items-center bg-gold text-black p-4 mb-4 rounded-lg">
+    <header className="flex sm:flex-row justify-between items-center bg-gold text-black p-4 mb-4 rounded-lg">
       
       {/* Logo */}
       <div className="flex-shrink-0">
@@ -291,8 +376,101 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Right side controls */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0">
+      {/* mobile view menu*/}
+      <div className="flex items-center gap-4">
+        {/* Hamburger Menu Button (Mobile Only) */}
+        <button 
+          className="sm:hidden p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#F6931B]"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+          <svg
+            className="h-6 w-6 text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="sm:hidden absolute right-4 top-16 mt-2 w-64 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-200">
+            {/* Table Selection */}
+            <div className="px-4 py-2">
+              <label htmlFor="mobile-table-select" className="block text-sm font-medium text-gray-700 mb-1">
+                Select Table:
+              </label>
+              <select
+                id="mobile-table-select"
+                value={activeTab}
+                onChange={(e) => {
+                  setActiveTab(e.target.value as "brands" | "influencers");
+                  setPage(1);
+                  setSearchQuery("");
+                  setIsMobileMenuOpen(false);
+                }}
+                className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold text-sm"
+              >
+                <option value="brands">Brands</option>
+                <option value="influencers">Influencers</option>
+              </select>
+            </div>
+
+            {/* Search Input */}
+            <div className="px-4 py-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full p-2 pl-3 pr-8 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold shadow-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <svg
+                  className="absolute right-2.5 top-2.5 h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Profile Dropdown Items */}
+            <button
+              onClick={() => {
+                setIsChangePasswordOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+            >
+              Change Password
+            </button>
+            <button
+              onClick={handleLogout}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+            >
+              Sign Out
+            </button>
+          </div>
+        )}
+      </div>
+      {/* Right side controls for desktop view */}
+      <div className="hidden sm:flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0">
         {/* Table Selection */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <label htmlFor="table-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
@@ -308,8 +486,8 @@ const Dashboard = () => {
             }}
             className="block p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gold focus:border-gold text-sm"
           >
-            <option value="talent">Brands</option>
-            <option value="enquiry">Influencers</option>
+            <option value="brands">Brands</option>
+            <option value="influencers">Influencers</option>
           </select>
         </div>
 
@@ -364,11 +542,101 @@ const Dashboard = () => {
           {isProfileOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
               <button
+                onClick={() => {
+                  setIsChangePasswordOpen(true);
+                  setIsProfileOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600"
+              >
+                Change Password
+              </button>
+              <button
                 onClick={handleLogout}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-orange-600"
               >
                 Sign Out
               </button>
+            </div>
+          )}
+
+          {/* Change Password Modal */}
+          {isChangePasswordOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-30">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+                
+                {error && (
+                  <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">
+                    {error}
+                  </div>
+                )}
+                
+                {success && (
+                  <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+                    {success}
+                  </div>
+                )}
+
+                <form onSubmit={handleChangePassword}>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="currentPassword">
+                      Current Password
+                    </label>
+                    <input
+                      type="password"
+                      id="currentPassword"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="newPassword">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="newPassword"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="mb-6">
+                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="confirmPassword">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setIsChangePasswordOpen(false)}
+                      className="mr-2 px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-[#F6931B] text-white rounded-md hover:bg-[#E07F0C]"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
         </div>
@@ -432,6 +700,51 @@ const Dashboard = () => {
           Download {activeTab === "brands" ? "Brands List ": "Influencers List"}
         </button>
     </div>
+
+    {/* Download Modal */}
+    {showDownloadModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg w-full max-w-md">
+          <h3 className="text-lg font-semibold mb-4">Select Date Range</h3>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Start Date</label>
+            <input
+              type="date"
+              className="w-full p-2 border rounded"
+              value={dateRange.startDate}
+              onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+            />
+          </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">End Date</label>
+            <input
+              type="date"
+              className="w-full p-2 border rounded"
+              value={dateRange.endDate}
+              onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+              min={dateRange.startDate}
+            />
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <button
+              className="px-4 py-2 bg-gray-300 rounded"
+              onClick={() => setShowDownloadModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-gold text-black rounded"
+              onClick={handleConfirmDownload}
+            >
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Admin Data */}
     {adminData && (

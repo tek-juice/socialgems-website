@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     //verify token using JWT_SECRET
     const secret = process.env.JWT_SECRET;
     if (!secret) {
-      throw new Error('JWT_SECRET is not defined in the environment variables');
+      throw new Error('Missig JWT Secret');
     }
     const decoded = jwt.verify(token, secret) as { id: string; email: string; role: string };
     //console.log('Decoded token:', decoded);
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, admin: decoded });
   } catch (error) {
     //console.log('Error decoding token:', error);
-    return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
   }
 }
 

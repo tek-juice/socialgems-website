@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
     try {
       const url = new URL(request.url);
       const type = url.searchParams.get("type");
+      const startDate = url.searchParams.get("startDate");
+      const endDate = url.searchParams.get("endDate");
   
       if (!type || (type !== "brands" && type !== "influencers")) {
         return NextResponse.json(
@@ -16,9 +18,24 @@ export async function GET(request: NextRequest) {
       }
   
       const client = await db.connect();
-      const collection = type === "brands" ? "users" : "influencers";
-      const query = `SELECT * FROM ${collection}`;
-      const { rows: data } = await client.query(query);
+      const collection = type === "brands" ? "users" : "influencers" ;
+
+      //build query for data filtering
+      let query = `SELECT * FROM ${collection}`;
+      const params = [];
+
+      if (startDate && endDate) {
+        query += ` WHERE created_at BETWEEN $1 AND $2`;
+        params.push(startDate, endDate + 'T23:59:59.999Z'); // Include entire end day
+      } else if (startDate) {
+        query += ` WHERE created_at >= $1`;
+        params.push(startDate);
+      } else if (endDate) {
+        query += ` WHERE created_at <= $1`;
+        params.push(endDate + 'T23:59:59.999Z');
+      }
+
+      const { rows: data } = await client.query(query, params); //pass params
   
       if (!data.length) {
         return NextResponse.json(
@@ -28,7 +45,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Transform the data before adding to worksheet
-    const transformedData = data.map((row: any) => {
+      const transformedData = data.map((row: any) => {
         // Clone the row to avoid modifying the original
         const newRow = { ...row };
         
@@ -79,7 +96,7 @@ export async function GET(request: NextRequest) {
       return new NextResponse(buffer, {
         status: 200,
         headers: new Headers({
-          "Content-Disposition": `attachment; filename=${type}_list.xlsx`,
+          "Content-Disposition": `attachment; filename=${type}_list_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`,
           "Content-Type":
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         }),
