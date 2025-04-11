@@ -21,7 +21,7 @@ jobs:
       - name: Copy code to remote server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST_LIVE }}:/home/ec2-user/apps/sgwebsite/
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST_LIVE }}:/home/ec2-user/apps/sgwebsite
 
       - name: Run docker-compose on remote server
         run: |
