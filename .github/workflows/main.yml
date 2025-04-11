@@ -24,14 +24,14 @@ jobs:
       - name: Copy code to remote server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }}:/home/ec2-user/apps/socialgems-website
+            ./ ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }}:/home/ec2-user/apps/sgwebsite
 
 
       - name: Run docker-compose on remote server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }} << 'EOF'
 
-          cd /home/ec2-user/apps/socialgems-website
+          cd /home/ec2-user/apps/sgwebsite
           docker-compose build sgwebsite
           docker-compose up -d sgwebsite
           EOF
