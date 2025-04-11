@@ -1,11 +1,9 @@
-name: Deploy to Remote Server
+name: Deploy to Production Server
 
 on:
   push:
     branches:
-      - stage
       - main
-
 
 jobs:
   deploy:
@@ -18,19 +16,16 @@ jobs:
       - name: Install SSH key for remote server access
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: ${{ github.ref == 'refs/heads/main' && secrets.SERVER_PRIVATE_KEY || secrets.SERVER_PRIVATE_KEY }}
-
+          ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
 
       - name: Copy code to remote server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }}:/home/ec2-user/apps/sgwebsite
-
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/ec2-user/apps/sgwebsite/
 
       - name: Run docker-compose on remote server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }} << 'EOF'
-
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
           cd /home/ec2-user/apps/sgwebsite
           docker-compose build sgwebsite
           docker-compose up -d sgwebsite
