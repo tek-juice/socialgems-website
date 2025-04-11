@@ -30,4 +30,4 @@ jobs:
           cd /home/ec2-user/apps/socialgems-website
           docker-compose build sgwebsite
           docker-compose up -d sgwebsite
-EOF
+          EOF
