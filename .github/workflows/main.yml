@@ -6,6 +6,7 @@ on:
       - stage
       - main
 
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,16 +18,19 @@ jobs:
       - name: Install SSH key for remote server access
         uses: webfactory/ssh-agent@v0.7.0
         with:
-          ssh-private-key: "${{ github.ref == 'refs/heads/main' ? secrets.SERVER_PRIVATE_KEY : secrets.STAGE_SERVER_PRIVATE_KEY }}"
+          ssh-private-key: ${{ github.ref == 'refs/heads/main' && secrets.SERVER_PRIVATE_KEY || secrets.SERVER_PRIVATE_KEY }}
+
 
       - name: Copy code to remote server
         run: |
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
-            ./ ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' ? secrets.SERVER_HOST_LIVE : secrets.STAGE_SERVER_HOST }}:/home/ec2-user/apps/socialgems-website
+            ./ ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }}:/home/ec2-user/apps/socialgems-website
+
 
       - name: Run docker-compose on remote server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' ? secrets.SERVER_HOST_LIVE : secrets.STAGE_SERVER_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ github.ref == 'refs/heads/main' && secrets.SERVER_HOST_LIVE || secrets.SERVER_HOST }} << 'EOF'
+
           cd /home/ec2-user/apps/socialgems-website
           docker-compose build sgwebsite
           docker-compose up -d sgwebsite
