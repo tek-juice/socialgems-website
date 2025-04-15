@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   
       if (!data.length) {
         return NextResponse.json(
-          { error: "No records found" },
+          { error: "No records found, check the date range" },
           { status: 404 }
         );
       }
