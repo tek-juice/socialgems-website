@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
             <div className="flex-grow p-4 sm:p-6">
                 <div className="max-w-4xl mx-auto bg-white p-4 sm:p-8 rounded-lg shadow-lg">
                 <h1 className="text-xl sm:text-2xl font-bold text-gold mb-2 sm:mb-4">
-                    Updated Cookie Policy - Social Gems 5.3.25
+                    Updated Cookie Policy - Social Gems 5.3.25 Last Updated 2 April
                 </h1>
 
                 {/* Introduction */}
