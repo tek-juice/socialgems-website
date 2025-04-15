@@ -1,0 +1,32 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install SSH key for remote server access
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_PRIVATE_KEY }}
+
+      - name: Copy code to remote server
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST_LIVE }}:/home/ec2-user/apps/sgwebsite
+
+      - name: Run docker-compose on remote server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST_LIVE }} << 'EOF'
+          cd /home/ec2-user/apps/sgwebsite
+          docker-compose build sgwebsite
+          docker-compose up -d sgwebsite
+          EOF
