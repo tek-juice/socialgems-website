@@ -255,7 +255,7 @@ export default function TermsofUse() {
                                 <li>
                                     not use the App or any Service to harass, 
                                     abuse, stalk, threaten or defame any person 
-                                    or entity or to post any objectionable conten;
+                                    or entity or to post any objectionable content;
                                 </li>
                                 <li>not collect or harvest any information or data from 
                                     any Service or our systems or attempt to 
