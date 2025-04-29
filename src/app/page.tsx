@@ -13,17 +13,6 @@ import { warnOptionHasBeenMovedOutOfExperimental } from "next/dist/server/config
 
 export default function Home() {
   const isMobile = useMediaQuery({ maxWidth: 600 }); 
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
   useEffect(() => {
     // Initialize AOS
     AOS.init({
@@ -92,34 +81,34 @@ export default function Home() {
 
             {/* Buttons Container */}
             <div className="flex flex-col md:flex-row gap-4">
-              <button
-                onClick={handleOpenModal}
+              <Link href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:opacity-80"
               >
                 <Image
-                  src="/Google-play-store.svg" // Replace with your Google Play logo path
+                  src="/Google-play-store.svg"
                   alt="Download on Google Play"
                   width={150}
                   height={50}
                   className="hover:opacity-80 rounded-md"
                 />
-              </button>
+              </Link>
 
-              <button
-                onClick={handleOpenModal}
+              <Link href=" https://apps.apple.com/ug/app/social-gems/id6736918664"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:opacity-80"
               >
                 <Image
-                  src="/App-store.svg" // Replace with your App Store logo path
+                  src="/App-store.svg" 
                   alt="Download on the App Store"
                   width={150}
                   height={50}
                   className="hover:opacity-80 transition-opacity rounded-md"
                 />
-              </button>
+              </Link>
             </div>
-            {/* Coming Soon Modal */}
-            <ComingSoonModal isOpen={isModalOpen} onClose={handleCloseModal} />
           </div>
         </div>
       </section>
