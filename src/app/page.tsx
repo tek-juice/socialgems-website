@@ -194,7 +194,7 @@ export default function Home() {
                 </div>
                 <h4 className="text-black text-xl font-bold mb-4">GLOW</h4>
                 <p className="text-black">
-                  With cutting-edge technology and smart insights, we help both businesses and influencers shine.
+                  With cutting-edge technology and smart insights, we help both brands and influencers shine.
                 </p>
               </div>
             </div>
