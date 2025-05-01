@@ -210,7 +210,7 @@ export default function Home() {
                   className="w-full rounded-md"
                   style={{ objectFit: "cover" }}
                 >
-                  <source src="/web-video.mp4" type="video/mp4" /> {/* Replace with your video path */}
+                  <source src="/web-video1.mp4" type="video/mp4" /> {/* Replace with your video path */}
                   Your browser does not support the video tag.
                 </video>
               </div>
