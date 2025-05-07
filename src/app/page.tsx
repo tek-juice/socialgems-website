@@ -230,8 +230,8 @@ export default function Home() {
                   We empower creators to build thriving careers and reach 
                   their full potential. By joining Social Gems, 
                   you can earn <strong>Gem Points</strong> for your influence 
-                  and engagement. These points can be exchanged for real 
-                  currency, giving you more opportunities to benefit 
+                  and engagement. These points can be exchanged for rewards and discounts,
+                  giving you more opportunities to benefit 
                   from your hard work.
                 </p>
                 <div className="mb-4">
