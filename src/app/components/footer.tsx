@@ -44,9 +44,11 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-2">Contact Us</h3>
               <ul className="space-y-2">
                 <li><Link href="/contact" className="text-gray-400 hover:text-white">Email Us</ Link></li>
-                <li><Link hidden href="#" className="text-gray-400 hover:text-white">Support</ Link></li>
-                <li><Link hidden href="#" className="text-gray-400 hover:text-white">Help Center</ Link></li>
+                
               </ul>
+            </div>
+            <div>
+              <span>Call us on +256767458425</span>
             </div>
           </div>
   

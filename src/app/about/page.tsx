@@ -104,7 +104,7 @@ export default function About() {
               </div>
 
               {/* Team Member 2 */}
-              <div className="text-center">
+              {/*<div className="text-center">
                 <Image
                   src="/barbra.jpg" // Replace with your image path
                   alt="Team Member 4"
@@ -114,7 +114,7 @@ export default function About() {
                 />
                 <h3 className="text-xl font-bold text-black">Ampaire Babra</h3>
                 <p className="text-brown">Copywriter/Digital Marketer</p>
-              </div>
+              </div>*/}
 
               {/* Team Member 5 */}
               <div className="text-center">
@@ -143,7 +143,7 @@ export default function About() {
               </div>
 
               {/* Team Member 5 */}
-              <div className="text-center">
+              {/*<div className="text-center">
                 <Image
                   src="/social-gems-web-hanie.jpg" // Replace with your image path
                   alt="Team Member 7"
@@ -153,7 +153,7 @@ export default function About() {
                 />
                 <h3 className="text-xl font-bold text-black">Hanifah Wanyana</h3>
                 <p className="text-brown">Brand Relationships Associate</p>
-              </div>
+              </div>*/}
             </div>
           </div>
 

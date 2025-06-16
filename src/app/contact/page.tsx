@@ -62,7 +62,7 @@ export default function Contact() {
           <div className="flex flex-col lg:flex-row gap-8 items-stretch">
             {/* Form Section (Left) */}
             <div className="bg-white p-8 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] w-full lg:w-1/2">
-              <h2 className="text-3xl font-bold text-brown mb-6">Get in Touch</h2>
+              <h2 className="text-3xl font-bold text-brown mb-6">Send Us a Message</h2>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Name Field */}
                 <div>
