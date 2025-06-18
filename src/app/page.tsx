@@ -176,7 +176,7 @@ export default function Home() {
               <div className="flex flex-col items-center text-center" data-aos="fade-up" data-aos-delay="400">
                 <div className="w-full mb-4">
                   <Image
-                    src="/glow-image.jpg" // Replace with your image path
+                    src="/social-gems-web-leinah.jpg" // Replace with your image path
                     alt="Glow Image"
                     width={400}
                     height={400}
@@ -200,7 +200,7 @@ export default function Home() {
             </div>
 
             {/* Video Section */}
-            <div className="flex justify-center mt-8" data-aos="fade-up">
+            {/*<div className="flex justify-center mt-8" data-aos="fade-up">
               <div className="w-full max-w-4xl">
                 <video
                   autoPlay
@@ -210,11 +210,11 @@ export default function Home() {
                   className="w-full rounded-md"
                   style={{ objectFit: "cover" }}
                 >
-                  <source src="/web-video1.mp4" type="video/mp4" /> {/* Replace with your video path */}
+                  <source src="/web-video1.mp4" type="video/mp4" /> 
                   Your browser does not support the video tag.
                 </video>
               </div>
-            </div>
+            </div>*/}
           </div>
 
           {/* Second Section: Influencer and Brand */}

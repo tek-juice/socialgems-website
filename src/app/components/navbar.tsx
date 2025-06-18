@@ -39,7 +39,7 @@ const Navbar = () => {
               { name: "About", path: "/about" },
               { name: "Influencers", path: "/influencers" },
               { name: "Brands", path: "/signup" },
-              //{ name: "Services", path: "/services" },
+              //{ name: "Blog", path: "/blogpost" },
               { name: "Contact", path: "/contact" }
             ].map(({ name, path }) => (
               <li key={path}>
@@ -74,7 +74,7 @@ const Navbar = () => {
               { name: "About", path: "/about" },
               { name: "Influencers", path: "/influencers" },
               { name: "Brands", path: "/signup" },
-              //{ name: "Services", path: "/services" },
+              //{ name: "Blog", path: "/blogpost" },
               { name: "Contact", path: "/contact" }
             ].map(({ name, path }) => (
               <Link 

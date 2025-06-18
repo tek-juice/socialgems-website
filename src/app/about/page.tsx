@@ -104,16 +104,17 @@ export default function About() {
               </div>
 
               {/* Team Member 2 */}
-              {/*<div className="text-center">
+              {/*}
+              <div className="text-center">
                 <Image
-                  src="/barbra.jpg" // Replace with your image path
+                  src="/usan.jpg"
                   alt="Team Member 4"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
                 />
-                <h3 className="text-xl font-bold text-black">Ampaire Babra</h3>
-                <p className="text-brown">Copywriter/Digital Marketer</p>
+                <h3 className="text-xl font-bold text-black">Susan Tushabe</h3>
+                <p className="text-brown">Marketing Manager</p>
               </div>*/}
 
               {/* Team Member 5 */}

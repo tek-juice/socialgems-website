@@ -5,6 +5,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { FaPhone, FaEnvelope } from 'react-icons/fa';
 
 export default function Contact() {
   interface FormData {
@@ -37,7 +38,7 @@ export default function Contact() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/Frame-3882.svg" // image path
+            src="/Frame-3882.svg"
             alt="Hero Background"
             fill
             className="object-cover"
@@ -63,6 +64,25 @@ export default function Contact() {
             {/* Form Section (Left) */}
             <div className="bg-white p-8 rounded-2xl shadow-[0_0_20px_rgba(0,0,0,0.3)] w-full lg:w-1/2">
               <h2 className="text-3xl font-bold text-brown mb-6">Send Us a Message</h2>
+              
+              {/* Contact Information */}
+              <div className="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="flex items-center space-x-4 mb-4">
+                  <FaPhone className="text-gold text-xl" />
+                  <div>
+                    <p className="text-gray-600 text-sm">Landline</p>
+                    <p className="text-brown font-semibold text-lg">+256 (767)458425</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <FaEnvelope className="text-gold text-xl" />
+                  <div>
+                    <p className="text-gray-600 text-sm">Email</p>
+                    <p className="text-brown font-semibold text-lg">Fill up the form below to send us an email</p>
+                  </div>
+                </div>
+              </div>
+
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Name Field */}
                 <div>
@@ -86,10 +106,9 @@ export default function Contact() {
                   <input
                     type="email"
                     id="email"
-                    name="email"
                     placeholder="Your Email"
                     className="w-full text-black px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                    required
+                    {...register('email', { required: 'Email is Required' })}
                   />
                 </div>
   
@@ -100,11 +119,10 @@ export default function Contact() {
                   </label>
                   <textarea
                     id="message"
-                    name="message"
                     placeholder="Your Message"
                     rows={5}
                     className="w-full px-4 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                    required
+                    {...register('message', { required: 'Message is Required' })}
                   ></textarea>
                 </div>
   
@@ -122,7 +140,7 @@ export default function Contact() {
             <div className="w-full lg:w-1/2">
               <div className="relative h-full rounded-2xl overflow-hidden">
                 <Image
-                  src="/contact.jpg" // Replace with your image path
+                  src="/contact.jpg"
                   alt="Contact Image"
                   fill
                   className="object-cover"

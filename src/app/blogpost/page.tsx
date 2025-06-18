@@ -1,101 +1,166 @@
+'use client'
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
+import { useState, useEffect } from "react";
+import { FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
+interface Blog {
+  id: number;
+  title: string;
+  tagline: string;
+  description: string;
+  attachment: string;
+  created_at: string;
+  approved: string;
+}
 
 export default function BlogPost() {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchApprovedBlogs();
+  }, []);
+
+  const fetchApprovedBlogs = async () => {
+    try {
+      const response = await fetch('/api/admin/approved-blog');
+      const data = await response.json();
+      if (data.success) {
+        // Filter blogs that are 21 days or older
+        const currentDate = new Date();
+        const filteredBlogs = data.blogs.filter((blog: Blog) => {
+          const blogDate = new Date(blog.created_at);
+          const diffTime = Math.abs(currentDate.getTime() - blogDate.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          return diffDays <= 21;
+        });
+        console.log('Filtered blogs:', filteredBlogs); // Debug log
+        setBlogs(filteredBlogs);
+      }
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openModal = (blog: Blog) => {
+    setSelectedBlog(blog);
+    setIsModalOpen(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative h-96 flex items-center justify-center text-center bg-white">
-        {/* Gradient Background */}
+      <section className="relative h-[40vh] flex items-center justify-center text-center bg-white">
         <div className="absolute inset-0 bg-gradient-to-r from-gold to-brown rounded-b-3xl z-0"></div>
-
-        {/* Hero Content */}
-        <div className="relative z-10 text-white">
-          <h1 className="text-5xl font-bold mb-4">The Power of Influencer Marketing in Africa</h1>
+        <div className="relative z-10 text-white max-w-4xl mx-auto px-4">
+          <h1 className="text-5xl font-bold mb-4">Our Blog</h1>
           <p className="text-xl max-w-2xl mx-auto">
-            Discover how Social Gems is transforming the influencer marketing landscape across Africa.
+            Discover insights, trends, and stories from the world of influencer marketing
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="flex-1 py-12 px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          {/* Blog Content */}
-          <div className="bg-white p-8 rounded-2xl shadow-lg mb-8">
-            {/* Blog Meta */}
-            <div className="flex items-center text-brown mb-4">
-              <span className="mr-4">By John Doe</span>
-              <span>•</span>
-              <span className="ml-4">October 10, 2023</span>
+      <section className="flex-1 py-12 px-4 md:px-8 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          {blogs.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 text-lg">No blog posts available at the moment.</p>
             </div>
-
-            {/* Blog Image */}
-            <div className="relative h-96 mb-8">
-              <Image
-                src="/blog-image.webp" // Replace with your blog image path
-                alt="Blog Image"
-                fill
-                className="rounded-2xl object-cover"
-              />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogs.map((blog) => (
+                <div 
+                  key={blog.id}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                  onClick={() => openModal(blog)}
+                >
+                  {blog.attachment && (
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={`/${blog.attachment}`}
+                        alt={blog.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-brown mb-2">{blog.title}</h3>
+                    <p className="text-gray-600 mb-3">{blog.tagline}</p>
+                    <p className="text-gray-700 line-clamp-3">{blog.description}</p>
+                    <div className="mt-4 text-sm text-gray-500">
+                      {new Date(blog.created_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            {/* Blog Text */}
-            <div className="space-y-6 text-black">
-              <p>
-                Influencer marketing is no longer just a trend—it’s a powerful tool for brands to connect with their audiences. In Africa, where social media usage is skyrocketing, influencers are becoming key players in shaping consumer behavior. At Social Gems, we’re proud to be at the forefront of this movement, connecting brands with authentic voices that resonate with their target audiences.
-              </p>
-
-              <h2 className="text-2xl font-bold text-brown">Why Africa?</h2>
-              <p>
-                Africa is home to some of the fastest-growing economies and youngest populations in the world. With over 500 million internet users, the continent is a goldmine for brands looking to tap into new markets. However, traditional advertising methods often fall short in reaching these audiences. That’s where influencer marketing comes in.
-              </p>
-
-              <h2 className="text-2xl font-bold text-brown">The Social Gems Advantage</h2>
-              <p>
-                At Social Gems, we’ve built a platform that makes it easy for brands to find the right influencers for their campaigns. Our data-driven approach ensures that every collaboration is meaningful and impactful. Here’s how we do it:
-              </p>
-
-              <ul className="list-disc list-inside space-y-2">
-                <li><strong>Smart Matchmaking:</strong> Our algorithms pair brands with influencers who align with their values and target audience.</li>
-                <li><strong>Authentic Content:</strong> We empower influencers to create content that feels genuine and resonates with their followers.</li>
-                <li><strong>Real-Time Analytics:</strong> Brands can track the performance of their campaigns in real-time, ensuring maximum ROI.</li>
-              </ul>
-
-              <h2 className="text-2xl font-bold text-brown">Success Stories</h2>
-              <p>
-                One of our recent campaigns involved a global fashion brand looking to expand its presence in East Africa. By partnering with local influencers, we were able to generate a 300% increase in brand awareness within just three months. This is just one example of how Social Gems is helping brands unlock the potential of influencer marketing in Africa.
-              </p>
-
-              <h2 className="text-2xl font-bold text-brown">Join the Movement</h2>
-              <p>
-                Whether you’re a brand looking to connect with influencers or an influencer seeking new opportunities, Social Gems is here to help. Together, we can create meaningful collaborations that drive real results.
-              </p>
-            </div>
-          </div>
-
-          {/* Call-to-Action Section */}
-          <div className="bg-gradient-to-r from-gold to-brown p-8 rounded-2xl shadow-lg text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
-            <p className="text-white text-lg mb-6">
-              Join Social Gems today and discover the power of authentic influencer marketing.
-            </p>
-            <Link
-              href="/signup"
-              className="bg-white text-brown px-6 py-3 rounded-full font-bold hover:bg-gray-100 transition duration-300"
-            >
-              Sign Up Now
-            </Link>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Blog Preview Modal */}
+      {isModalOpen && selectedBlog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-brown">{selectedBlog.title}</h2>
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes size={24} />
+                </button>
+              </div>
+              {selectedBlog.attachment && (
+                <div className="relative h-96 mb-6">
+                  <Image
+                    src={`/${selectedBlog.attachment}`}
+                    alt={selectedBlog.title}
+                    fill
+                    className="rounded-lg object-cover"
+                  />
+                </div>
+              )}
+              <div className="space-y-4">
+                <p className="text-xl text-gray-600 italic">{selectedBlog.tagline}</p>
+                <p className="text-gray-700 whitespace-pre-line">{selectedBlog.description}</p>
+                <div className="text-sm text-gray-500">
+                  {new Date(selectedBlog.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
