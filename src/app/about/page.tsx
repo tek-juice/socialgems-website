@@ -135,7 +135,7 @@ export default function About() {
               <div className="text-center">
                 <Image
                   src="/Tushabe.jpg"
-                  alt="Team Member 7"
+                  alt="Senior Digital Executive"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
@@ -148,7 +148,7 @@ export default function About() {
                <div className="text-center">
                 <Image
                   src="/Jean.jpg"
-                  alt="Team Member 7"
+                  alt="Sales Associate"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
@@ -161,7 +161,7 @@ export default function About() {
               <div className="text-center">
                 <Image
                   src="/Beewol.jpg"
-                  alt="Team Member 7"
+                  alt="Head Of Influencers, Africa"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
