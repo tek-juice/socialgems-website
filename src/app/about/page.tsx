@@ -79,7 +79,7 @@ export default function About() {
 
             {/* Rest of the Team Members (Bottom Row) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Team Member 3 */}
+              {/* Team Member 1 */}
               <div className="text-center">
                 <Image
                   src="/social-gems-web-eve.jpg" // Replace with your image path
@@ -91,6 +91,8 @@ export default function About() {
                 <h3 className="text-xl font-bold text-black">Evelyn Luganda:</h3>
                 <p className="text-brown">Project Manager</p>
               </div>
+
+              {/* Team Member 2 */}
               <div className="text-center">
                 <Image
                   src="/social-gems-web-christine.jpg" // Replace with your image path
@@ -100,24 +102,10 @@ export default function About() {
                   className="rounded-full mx-auto mb-4"
                 />
                 <h3 className="text-xl font-bold text-black">Nampeera Christine</h3>
-                <p className="text-brown">Brand/Influencer Recruitment Specialist</p>
+                <p className="text-brown">Brand Ambassador</p>
               </div>
 
-              {/* Team Member 2 */}
-              {/*}
-              <div className="text-center">
-                <Image
-                  src="/usan.jpg"
-                  alt="Team Member 4"
-                  width={150}
-                  height={150}
-                  className="rounded-full mx-auto mb-4"
-                />
-                <h3 className="text-xl font-bold text-black">Susan Tushabe</h3>
-                <p className="text-brown">Marketing Manager</p>
-              </div>*/}
-
-              {/* Team Member 5 */}
+              {/* Team Member 3 */}
               <div className="text-center">
                 <Image
                   src="/social-gems-web-leinah.jpg" // Replace with your image path
@@ -130,7 +118,7 @@ export default function About() {
                 <p className="text-brown">Digital Marketer</p>
               </div>
 
-              {/* Team Member 6 */}
+              {/* Team Member 4 */}
               <div className="text-center">
                   <Image
                     src="/social-gems-web-martha.jpg" // Replace with your image path
@@ -140,21 +128,47 @@ export default function About() {
                     className="rounded-full mx-auto mb-4"
                   />
                   <h3 className="text-xl font-bold text-black">Martha Twesime</h3>
-                  <p className="text-brown">Sales Associate</p>
+                  <p className="text-brown">Administration & Operations  Support</p>
               </div>
 
               {/* Team Member 5 */}
-              {/*<div className="text-center">
+              <div className="text-center">
                 <Image
-                  src="/social-gems-web-hanie.jpg" // Replace with your image path
+                  src="/Tushabe.jpg"
                   alt="Team Member 7"
                   width={150}
                   height={150}
                   className="rounded-full mx-auto mb-4"
                 />
-                <h3 className="text-xl font-bold text-black">Hanifah Wanyana</h3>
-                <p className="text-brown">Brand Relationships Associate</p>
-              </div>*/}
+                <h3 className="text-xl font-bold text-black">Susan Tushabe</h3>
+                <p className="text-brown">Senior Digital Executive</p>
+              </div>
+
+               {/* Team Member 6 */}
+               <div className="text-center">
+                <Image
+                  src="/Jean.jpg"
+                  alt="Team Member 7"
+                  width={150}
+                  height={150}
+                  className="rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-bold text-black">Jean Biryahwaho</h3>
+                <p className="text-brown">Sales Associate</p>
+              </div>
+
+              {/* Team Member 7 */}
+              <div className="text-center">
+                <Image
+                  src="/Beewol.jpg"
+                  alt="Team Member 7"
+                  width={150}
+                  height={150}
+                  className="rounded-full mx-auto mb-4"
+                />
+                <h3 className="text-xl font-bold text-black">Bernard E. Olupot</h3>
+                <p className="text-brown"> Head Of Influencers, Africa</p>
+              </div>
             </div>
           </div>
 
