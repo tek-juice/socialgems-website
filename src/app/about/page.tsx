@@ -140,8 +140,8 @@ export default function About() {
                   height={150}
                   className="rounded-full mx-auto mb-4"
                 />
-                <h3 className="text-xl font-bold text-black">Susan Tushabe</h3>
-                <p className="text-brown">Senior Digital Executive</p>
+                <h3 className="text-xl font-bold text-black">Susan Haley Tushabe</h3>
+                <p className="text-brown">Marketing Manager</p>
               </div>
 
                {/* Team Member 6 */}
@@ -160,7 +160,7 @@ export default function About() {
               {/* Team Member 7 */}
               <div className="text-center">
                 <Image
-                  src="/Beewol.jpg"
+                  src="/beewol.jpg"
                   alt="Head Of Influencers, Africa"
                   width={150}
                   height={150}
