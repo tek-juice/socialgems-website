@@ -160,7 +160,7 @@ export default function About() {
               {/* Team Member 7 */}
               <div className="text-center">
                 <Image
-                  src="/beewol.jpg"
+                  src="/Beewol.jpg"
                   alt="Head Of Influencers, Africa"
                   width={150}
                   height={150}
