@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import Navbar from '../components/navbar';
+import Footer from '../components/footer';
 
 export default function DownloadPage() {
   const router = useRouter();
@@ -26,6 +28,7 @@ export default function DownloadPage() {
 
   return (
     <>
+    <Navbar />
       <Head>
         <title>Download Social Gems</title>
         <meta name="description" content="Download the Social Gems app" />
@@ -99,6 +102,7 @@ export default function DownloadPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
