@@ -25,7 +25,7 @@ export default function DownloadPage() {
 
   // Device detection (optional)
   const isAndroid = isClient ? /android/i.test(navigator.userAgent) : false;
-  const isIOS = isClient ? /iphone|ipad|ipod/i.test(navigator.userAgent) : false;
+  const isIOS = isClient ? /iphone|ipad|macintosh|ipod/i.test(navigator.userAgent) : false;
 
   if (!isClient) return null; //or a loading state.
 
@@ -39,18 +39,38 @@ export default function DownloadPage() {
           <h1 className="text-3xl font-bold mb-4 text-black">Download Social Gems</h1>
           <p className="mb-6 text-black">Choose your platform to download the app:</p>
           <div className="space-y-4">
-            <a
-              href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
-              className="block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors"
-            >
-              Download for Android
-            </a>
-            <a
-              href="https://apps.apple.com/ug/app/social-gems/id6736918664"
-              className="block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
-            >
-              Download for iOS
-            </a>
+            {isAndroid && (
+              <a
+                href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
+                className="block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors"
+              >
+                Download for Android
+              </a>
+            )}
+            {isIOS && (
+              <a
+                href="https://apps.apple.com/ug/app/social-gems/id6736918664"
+                className="block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Download for iOS
+              </a>
+            )}
+            {!isAndroid && !isIOS && (
+              <>
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
+                  className="block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors"
+                >
+                  Download for Android
+                </a>
+                <a
+                  href="https://apps.apple.com/ug/app/social-gems/id6736918664"
+                  className="block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                >
+                  Download for iOS
+                </a>
+              </>
+            )}
           </div>
         </div>
 
@@ -80,22 +100,38 @@ export default function DownloadPage() {
               <p className="mb-6 text-black">Get the app for your device:</p>
               
               <div className="space-y-4">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
-                  className={`block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors ${
-                    isAndroid ? 'ring-4 ring-[#3ddc84]/50' : ''
-                  }`}
-                >
-                  Google Play Store
-                </a>
-                <a
-                  href="https://apps.apple.com/ug/app/social-gems/id6736918664"
-                  className={`block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors ${
-                    isIOS ? 'ring-4 ring-gray-400' : ''
-                  }`}
-                >
-                  Apple App Store
-                </a>
+                {isAndroid && (
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
+                    className="block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors"
+                  >
+                    Google Play Store
+                  </a>
+                )}
+                {isIOS && (
+                  <a
+                    href="https://apps.apple.com/ug/app/social-gems/id6736918664"
+                    className="block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Apple App Store
+                  </a>
+                )}
+                {!isAndroid && !isIOS && (
+                  <>
+                    <a
+                      href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
+                      className="block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors"
+                    >
+                      Google Play Store
+                    </a>
+                    <a
+                      href="https://apps.apple.com/ug/app/social-gems/id6736918664"
+                      className="block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    >
+                      Apple App Store
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           </div>
