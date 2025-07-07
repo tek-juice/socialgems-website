@@ -1,12 +1,24 @@
 'use client'
+import { useEffect, useState } from 'react';
+
 import Image from "next/image";
-import Link from "next/link";
-import { useMediaQuery } from "react-responsive";
+//import { useMediaQuery } from "react-responsive";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 
 export default function About() {
-  const isMobile = useMediaQuery({ maxWidth: 767 }); 
+  const [ isMobile, setIsMobile ] = useState(false);
+
+  useEffect(() => {
+    //this will only run on client side
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -156,9 +168,9 @@ export default function About() {
               </div>
 
               {/* Team Member 3 - Leinah */}
-              <div className="group relative h-80 w-full perspective-1000">
+              {/*<div className="group relative h-80 w-full perspective-1000">
                 <div className="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
-                  {/* Front Side */}
+                  
                   <div className="absolute inset-0 w-full h-full backface-hidden">
                     <div className="relative w-full h-full">
                       <Image
@@ -182,7 +194,7 @@ export default function About() {
                     </div>
                   </div>
                   
-                  {/* Back Side */}
+                  
                   <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-black font-bold rounded-lg p-6 flex flex-col justify-center">
                     <h3 className="text-xl font-bold text-white mb-2">Leinah Nabukenya</h3>
                     <p className="text-white/90 text-sm mb-3">Digital Marketer, Uganda</p>
@@ -191,7 +203,7 @@ export default function About() {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Team Member 4 - Martha */}
               <div className="group relative h-80 w-full perspective-1000">

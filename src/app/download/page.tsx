@@ -1,17 +1,18 @@
 // Download page with styled modal
 'use client'
-import { useEffect } from 'react';
-import Head from 'next/head';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
 
 export default function DownloadPage() {
+  const [ isClient, setIsClient ] = useState(false);
   const router = useRouter();
 
   // Auto-show modal on page load
   useEffect(() => {
+    setIsClient(true);
     const modal = document.getElementById('downloadModal');
     if (modal) modal.style.display = 'flex';
   }, []);
@@ -23,16 +24,14 @@ export default function DownloadPage() {
   };
 
   // Device detection (optional)
-  const isAndroid = () => /android/i.test(navigator.userAgent);
-  const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isAndroid = isClient ? /android/i.test(navigator.userAgent) : false;
+  const isIOS = isClient ? /iphone|ipad|ipod/i.test(navigator.userAgent) : false;
+
+  if (!isClient) return null; //or a loading state.
 
   return (
     <>
     <Navbar />
-      <Head>
-        <title>Download Social Gems</title>
-        <meta name="description" content="Download the Social Gems app" />
-      </Head>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
         {/* Fallback content */}
@@ -84,7 +83,7 @@ export default function DownloadPage() {
                 <a
                   href="https://play.google.com/store/apps/details?id=com.tekjuice.social_gems"
                   className={`block bg-[#3ddc84] text-white py-3 px-6 rounded-lg font-medium hover:bg-[#2fc272] transition-colors ${
-                    isAndroid() ? 'ring-4 ring-[#3ddc84]/50' : ''
+                    isAndroid ? 'ring-4 ring-[#3ddc84]/50' : ''
                   }`}
                 >
                   Google Play Store
@@ -92,7 +91,7 @@ export default function DownloadPage() {
                 <a
                   href="https://apps.apple.com/ug/app/social-gems/id6736918664"
                   className={`block bg-black text-white py-3 px-6 rounded-lg font-medium hover:bg-gray-800 transition-colors ${
-                    isIOS() ? 'ring-4 ring-gray-400' : ''
+                    isIOS ? 'ring-4 ring-gray-400' : ''
                   }`}
                 >
                   Apple App Store
