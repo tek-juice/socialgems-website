@@ -1,6 +1,12 @@
 //file to handle db creation for blogpost.
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
+import  { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function POST(request: NextRequest) {
     const client = await db.connect();
@@ -28,18 +34,29 @@ export async function POST(request: NextRequest) {
         const description = formData.get('description') as string;
         const attachment = formData.get('attachment') as File | null;
 
-        // Handle file upload if present
-        let attachmentPath = null;
+        // Handle file upload to Supabase if present
+        let attachmentUrl = null;
         if (attachment) {
-            // For now, just store the filename
-            // In a production environment, you would want to save the file to a storage service
-            attachmentPath = attachment.name;
+            const fileExt = attachment.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `blog-attachments/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('blog-attachments')
+                .upload(filePath, attachment);
+
+            if (error) throw error;
+            //Get public URL
+            attachmentUrl = supabase.storage
+                .from('blog-attachments')
+                .getPublicUrl(filePath).data.publicUrl;
+            
         }
 
-        //insert value in table
+        //insert value in neon PostgreSQL table
         const insertBlog = await client.sql`
             INSERT INTO blog_post (title, tagline, description, attachment)
-            VALUES (${title}, ${tagline}, ${description}, ${attachmentPath})
+            VALUES (${title}, ${tagline}, ${description}, ${attachmentUrl})
             RETURNING *
         `;
         return NextResponse.json({ 

@@ -34,3 +34,5 @@ yarn-error.log*
 .env
 
 src/app/lib/placeholder-data.ts
+src/app/lib/schema.sql
+src/app/api/check_user/route.ts

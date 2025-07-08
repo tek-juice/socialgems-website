@@ -61,6 +61,18 @@ const Dashboard = () => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [previewContent, setPreviewContent] = useState({ title: '', description: '' });
 
+  // User Story States
+  const [stories, setStories] = useState<any[]>([]);
+  const [storyLoading, setStoryLoading] = useState(false);
+  const [storySuccessMessage, setStorySuccessMessage] = useState<string | null>(null);
+  const [storyErrorMessage, setStoryErrorMessage] = useState<string | null>(null);
+  const [activeStoryTab, setActiveStoryTab] = useState<'text' | 'picture' | 'audio' | 'poll' | 'trivia'>('text');
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [selectedStory, setSelectedStory] = useState<any>(null);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [isViewStoryModalOpen, setIsViewStoryModalOpen] = useState(false);
+  const [viewingStory, setViewingStory] = useState<any>(null);
+
   useEffect(() => {
     const token = sessionStorage.getItem('adminToken');
     if (!token) {
@@ -503,6 +515,126 @@ const Dashboard = () => {
     setIsPreviewModalOpen(true);
   };
 
+  // User Story Functions
+  useEffect(() => {
+    if (activeMenu === 'user-story') {
+      fetchStories();
+    }
+  }, [activeMenu, activeStoryTab]);
+
+  const fetchStories = async () => {
+    setStoryLoading(true);
+    setStoryErrorMessage(null); // Clear error before fetching
+    try {
+      const response = await fetch('/api/stories/checkStory');
+      const data = await response.json();
+      
+      if (data.success !== false) {
+        const filteredStories = data.stories.filter((story: any) => {
+          switch (activeStoryTab) {
+            case 'text': return story.type === 'story';
+            case 'picture': return story.type === 'picture_comic';
+            case 'audio': return story.type === 'audio';
+            case 'poll': return story.type === 'poll';
+            case 'trivia': return story.type === 'trivia_quiz';
+            default: return false;
+          }
+        });
+        setStories(filteredStories);
+        setStoryErrorMessage(null); // Clear error after successful fetch
+      } else {
+        setStoryErrorMessage('Failed to fetch stories');
+      }
+    } catch (error) {
+      setStoryErrorMessage('Error fetching stories');
+    } finally {
+      setStoryLoading(false);
+    }
+  };
+
+  const handleStoryAction = async (storyId: number, action: 'approve' | 'feedback' | 'reject') => {
+    if (action === 'feedback') {
+      setSelectedStory(stories.find(s => s.story_id === storyId));
+      setIsFeedbackModalOpen(true);
+      return;
+    }
+
+    try {
+      let response;
+      if (action === 'approve') {
+        response = await fetch('/api/stories/approveStory', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ storyId })
+        });
+      } else if (action === 'reject') {
+        response = await fetch('/api/stories/deleteStory', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: storyId })
+        });
+      }
+
+      if (!response) {
+        setStoryErrorMessage('Failed to perform action');
+        setTimeout(() => setStoryErrorMessage(null), 3000);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setStorySuccessMessage(data.message);
+        fetchStories();
+        setTimeout(() => setStorySuccessMessage(null), 3000);
+      } else {
+        setStoryErrorMessage(data.error || 'Action failed');
+        setTimeout(() => setStoryErrorMessage(null), 3000);
+      }
+    } catch (error) {
+      setStoryErrorMessage('Failed to perform action');
+      setTimeout(() => setStoryErrorMessage(null), 3000);
+    }
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!selectedStory || !feedbackText.trim()) return;
+
+    try {
+      const response = await fetch('/api/stories/adminFeedback', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storyId: selectedStory.story_id,
+          status: selectedStory.status,
+          adminFeedback: feedbackText
+        })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setStorySuccessMessage('Feedback submitted successfully');
+        setIsFeedbackModalOpen(false);
+        setFeedbackText('');
+        setSelectedStory(null);
+        fetchStories();
+        setTimeout(() => setStorySuccessMessage(null), 3000);
+      } else {
+        setStoryErrorMessage(data.error || 'Failed to submit feedback');
+        setTimeout(() => setStoryErrorMessage(null), 3000);
+      }
+    } catch (error) {
+      setStoryErrorMessage('Failed to submit feedback');
+      setTimeout(() => setStoryErrorMessage(null), 3000);
+    }
+  };
+
+  const handleViewStory = (story: any) => {
+    setViewingStory(story);
+    setIsViewStoryModalOpen(true);
+  };
+
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
@@ -528,11 +660,10 @@ const Dashboard = () => {
         </div>
 
         <nav className="mt-8">
-          <button
+          <button 
             onClick={() => setActiveMenu('overview')}
-            className={`flex items-center px-4 py-3 w-full ${
-              activeMenu === 'overview' ? 'bg-gold text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`flex items-center px-4 py-3 w-full rounded-lg transition-colors font-medium mb-2
+              ${activeMenu === 'overview' ? 'bg-gold text-black' : 'bg-transparent text-brown hover:bg-brown/10'}`}
           >
             <FaChartLine className="text-xl" />
             {isSidebarOpen && <span className="ml-4">Overview</span>}
@@ -540,9 +671,8 @@ const Dashboard = () => {
 
           <button
             onClick={() => setActiveMenu('users')}
-            className={`flex items-center px-4 py-3 w-full ${
-              activeMenu === 'users' ? 'bg-gold text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`flex items-center px-4 py-3 w-full rounded-lg transition-colors font-medium mb-2
+              ${activeMenu === 'users' ? 'bg-gold text-black' : 'bg-transparent text-brown hover:bg-brown/10'}`}
           >
             <FaUsers className="text-xl" />
             {isSidebarOpen && <span className="ml-4">Users</span>}
@@ -550,12 +680,20 @@ const Dashboard = () => {
 
           <button
             onClick={() => setActiveMenu('blog')}
-            className={`flex items-center px-4 py-3 w-full ${
-              activeMenu === 'blog' ? 'bg-gold text-white' : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            className={`flex items-center px-4 py-3 w-full rounded-lg transition-colors font-medium mb-2
+              ${activeMenu === 'blog' ? 'bg-gold text-black' : 'bg-transparent text-brown hover:bg-brown/10'}`}
           >
             <FaNewspaper className="text-xl" />
             {isSidebarOpen && <span className="ml-4">Blog</span>}
+          </button>
+
+          <button
+            onClick={() => setActiveMenu('user-story')}
+            className={`flex items-center px-4 py-3 w-full rounded-lg transition-colors font-medium mb-2
+              ${activeMenu === 'user-story' ? 'bg-gold text-black' : 'bg-transparent text-brown hover:bg-brown/10'}`}
+          >
+            <FaUsers className="text-xl" />
+            {isSidebarOpen && <span className="ml-4">User Stories</span>}
           </button>
         </nav>
       </div>
@@ -1019,6 +1157,527 @@ const Dashboard = () => {
               )}
             </div>
           )}
+
+          {/* User Story Section */}
+          {activeMenu === 'user-story' && (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold text-gray-800">User Stories Management</h2>
+              </div>
+
+              {/* Story Type Tabs */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                {[
+                  { key: 'text', label: 'Text Stories', count: stories.filter(s => s.type === 'story').length },
+                  { key: 'picture', label: 'Picture/Comic', count: stories.filter(s => s.type === 'picture_comic').length },
+                  { key: 'audio', label: 'Audio Stories', count: stories.filter(s => s.type === 'audio').length },
+                  { key: 'poll', label: 'Polls', count: stories.filter(s => s.type === 'poll').length },
+                  { key: 'trivia', label: 'Trivia Quizzes', count: stories.filter(s => s.type === 'trivia_quiz').length }
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveStoryTab(tab.key as any)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border 
+                      ${activeStoryTab === tab.key
+                        ? 'bg-brown text-white border-brown'
+                        : 'bg-brown/10 text-brown border-brown/30 hover:bg-brown/20'}
+                    `}
+                  >
+                    {tab.label} ({tab.count})
+                  </button>
+                ))}
+              </div>
+
+              {/* Success/Error Messages */}
+              {storySuccessMessage && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                  {storySuccessMessage}
+                </div>
+              )}
+              {storyErrorMessage && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                  {storyErrorMessage}
+                </div>
+              )}
+
+              {/* Loading State */}
+              {storyLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  {/* Text Stories Table */}
+                  {activeStoryTab === 'text' && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stories.filter(s => s.type === 'story').map((story) => (
+                          <tr key={story.story_id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.fname} {story.lname}<br/>
+                              <span className="text-gray-500">{story.email}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.user_image ? (
+                                <Image
+                                  src={story.user_image}
+                                  alt={`${story.fname} ${story.lname}`}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs">
+                                    {story.fname?.charAt(0)}{story.lname?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              <div className="max-w-xs">
+                                <p className="truncate">{story.text_content}</p>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                story.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                story.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {story.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(story.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleViewStory(story)}
+                                className="text-purple-600 hover:text-purple-900 mr-3"
+                              >
+                                View
+                              </button>
+                              {story.status === 'draft' && (
+                                <button
+                                  onClick={() => handleStoryAction(story.story_id, 'approve')}
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'feedback')}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                Feedback
+                              </button>
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'reject')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {/* Picture/Comic Stories Table */}
+                  {activeStoryTab === 'picture' && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stories.filter(s => s.type === 'picture_comic').map((story) => (
+                          <tr key={story.story_id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.fname} {story.lname}<br/>
+                              <span className="text-gray-500">{story.email}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.user_image ? (
+                                <Image
+                                  src={story.user_image}
+                                  alt={`${story.fname} ${story.lname}`}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs">
+                                    {story.fname?.charAt(0)}{story.lname?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {story.image_urls ? story.image_urls.length : 0} images
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              <div className="max-w-xs">
+                                <p className="truncate">{story.picture_description || 'No description'}</p>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                story.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                story.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {story.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(story.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleViewStory(story)}
+                                className="text-purple-600 hover:text-purple-900 mr-3"
+                              >
+                                View
+                              </button>
+                              {story.status === 'draft' && (
+                                <button
+                                  onClick={() => handleStoryAction(story.story_id, 'approve')}
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'feedback')}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                Feedback
+                              </button>
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'reject')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {/* Audio Stories Table */}
+                  {activeStoryTab === 'audio' && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audio File</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stories.filter(s => s.type === 'audio').map((story) => (
+                          <tr key={story.story_id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.fname} {story.lname}<br/>
+                              <span className="text-gray-500">{story.email}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.user_image ? (
+                                <Image
+                                  src={story.user_image}
+                                  alt={`${story.fname} ${story.lname}`}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs">
+                                    {story.fname?.charAt(0)}{story.lname?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              <a href={story.audio_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900">
+                                Listen to Audio
+                              </a>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                story.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                story.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {story.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(story.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleViewStory(story)}
+                                className="text-purple-600 hover:text-purple-900 mr-3"
+                              >
+                                View
+                              </button>
+                              {story.status === 'draft' && (
+                                <button
+                                  onClick={() => handleStoryAction(story.story_id, 'approve')}
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'feedback')}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                Feedback
+                              </button>
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'reject')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {/* Polls Table */}
+                  {activeStoryTab === 'poll' && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Options</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stories.filter(s => s.type === 'poll').map((story) => (
+                          <tr key={story.story_id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.poll_question}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.fname} {story.lname}<br/>
+                              <span className="text-gray-500">{story.email}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.user_image ? (
+                                <Image
+                                  src={story.user_image}
+                                  alt={`${story.fname} ${story.lname}`}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs">
+                                    {story.fname?.charAt(0)}{story.lname?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {story.poll_options ? story.poll_options.length : 0} options
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                story.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                story.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {story.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(story.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleViewStory(story)}
+                                className="text-purple-600 hover:text-purple-900 mr-3"
+                              >
+                                View
+                              </button>
+                              {story.status === 'draft' && (
+                                <button
+                                  onClick={() => handleStoryAction(story.story_id, 'approve')}
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'feedback')}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                Feedback
+                              </button>
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'reject')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {/* Trivia Quizzes Table */}
+                  {activeStoryTab === 'trivia' && (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correct Answer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Options</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {stories.filter(s => s.type === 'trivia_quiz').map((story) => (
+                          <tr key={story.story_id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.trivia_question}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.fname} {story.lname}<br/>
+                              <span className="text-gray-500">{story.email}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {story.user_image ? (
+                                <Image
+                                  src={story.user_image}
+                                  alt={`${story.fname} ${story.lname}`}
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                  <span className="text-gray-500 text-xs">
+                                    {story.fname?.charAt(0)}{story.lname?.charAt(0)}
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-900">{story.correct_answer}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {story.trivia_options ? story.trivia_options.length : 0} options
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                story.status === 'approved' ? 'bg-green-100 text-green-800' :
+                                story.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {story.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {new Date(story.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleViewStory(story)}
+                                className="text-purple-600 hover:text-purple-900 mr-3"
+                              >
+                                View
+                              </button>
+                              {story.status === 'draft' && (
+                                <button
+                                  onClick={() => handleStoryAction(story.story_id, 'approve')}
+                                  className="text-green-600 hover:text-green-900 mr-3"
+                                >
+                                  Approve
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'feedback')}
+                                className="text-blue-600 hover:text-blue-900 mr-3"
+                              >
+                                Feedback
+                              </button>
+                              <button
+                                onClick={() => handleStoryAction(story.story_id, 'reject')}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+
+                  {/* No Stories Message */}
+                  {stories.filter(s => {
+                    switch (activeStoryTab) {
+                      case 'text': return s.type === 'story';
+                      case 'picture': return s.type === 'picture_comic';
+                      case 'audio': return s.type === 'audio';
+                      case 'poll': return s.type === 'poll';
+                      case 'trivia': return s.type === 'trivia_quiz';
+                      default: return false;
+                    }
+                  }).length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No {activeStoryTab} stories found.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1211,6 +1870,244 @@ const Dashboard = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Modal */}
+      {isFeedbackModalOpen && selectedStory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={() => {
+                setIsFeedbackModalOpen(false);
+                setFeedbackText('');
+                setSelectedStory(null);
+              }}
+            >
+              &times;
+            </button>
+            <h3 className="text-xl text-black font-bold mb-4">Provide Feedback</h3>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Story: {selectedStory.title}</label>
+              <label className="block text-gray-700 mb-2">User: {selectedStory.fname} {selectedStory.lname}</label>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Feedback</label>
+              <textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                className="w-full border text-black rounded px-3 py-2 min-h-[120px]"
+                placeholder="Enter your feedback for this story..."
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 text-black bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => {
+                  setIsFeedbackModalOpen(false);
+                  setFeedbackText('');
+                  setSelectedStory(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-gold text-black rounded hover:bg-gold/90"
+                onClick={handleSubmitFeedback}
+              >
+                Submit Feedback
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Story Modal */}
+      {isViewStoryModalOpen && viewingStory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800">{viewingStory.title}</h3>
+                <p className="text-gray-600 mt-1">
+                  By {viewingStory.fname} {viewingStory.lname} • {new Date(viewingStory.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+                onClick={() => {
+                  setIsViewStoryModalOpen(false);
+                  setViewingStory(null);
+                }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {/* User Info */}
+              <div className="flex items-center mb-6 p-4 bg-gray-50 rounded-lg">
+                {viewingStory.user_image ? (
+                  <Image
+                    src={viewingStory.user_image}
+                    alt={`${viewingStory.fname} ${viewingStory.lname}`}
+                    width={60}
+                    height={60}
+                    className="rounded-full object-cover mr-4"
+                  />
+                ) : (
+                  <div className="w-15 h-15 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                    <span className="text-gray-500 text-lg font-bold">
+                      {viewingStory.fname?.charAt(0)}{viewingStory.lname?.charAt(0)}
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-800">
+                    {viewingStory.fname} {viewingStory.lname}
+                  </h4>
+                  <p className="text-gray-600">{viewingStory.email}</p>
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${
+                    viewingStory.status === 'approved' ? 'bg-green-100 text-green-800' :
+                    viewingStory.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {viewingStory.status}
+                  </span>
+                </div>
+              </div>
+
+              {/* Story Content Based on Type */}
+              {viewingStory.type === 'story' && (
+                <div className="bg-white p-6 rounded-lg border">
+                  <h4 className="text-xl font-semibold mb-4 text-gray-800">Story Content</h4>
+                  <div className="prose max-w-none">
+                    <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+                      {viewingStory.text_content}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {viewingStory.type === 'picture_comic' && (
+                <div className="bg-white p-6 rounded-lg border">
+                  <h4 className="text-xl font-semibold mb-4 text-gray-800">Picture/Comic Story</h4>
+                  {viewingStory.picture_description && (
+                    <div className="mb-6">
+                      <h5 className="font-semibold text-gray-700 mb-2">Description:</h5>
+                      <p className="text-gray-700 leading-relaxed">
+                        {viewingStory.picture_description}
+                      </p>
+                    </div>
+                  )}
+                  {viewingStory.image_urls && viewingStory.image_urls.length > 0 && (
+                    <div>
+                      <h5 className="font-semibold text-gray-700 mb-4">Images ({viewingStory.image_urls.length}):</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {viewingStory.image_urls.map((url: string, index: number) => (
+                          <div key={index} className="relative">
+                            <Image
+                              src={url}
+                              alt={`Story image ${index + 1}`}
+                              width={400}
+                              height={300}
+                              className="rounded-lg object-cover w-full h-64"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {viewingStory.type === 'audio' && (
+                <div className="bg-white p-6 rounded-lg border">
+                  <h4 className="text-xl font-semibold mb-4 text-gray-800">Audio Story</h4>
+                  {viewingStory.audio_url && (
+                    <div className="mb-6">
+                      <h5 className="font-semibold text-gray-700 mb-2">Audio File:</h5>
+                      <audio controls className="w-full">
+                        <source src={viewingStory.audio_url} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
+                      <a 
+                        href={viewingStory.audio_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block mt-2 text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Open audio in new tab
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {viewingStory.type === 'poll' && (
+                <div className="bg-white p-6 rounded-lg border">
+                  <h4 className="text-xl font-semibold mb-4 text-gray-800">Poll</h4>
+                  <div className="mb-6">
+                    <h5 className="font-semibold text-gray-700 mb-2">Question:</h5>
+                    <p className="text-gray-700 text-lg font-medium">
+                      {viewingStory.poll_question}
+                    </p>
+                  </div>
+                  {viewingStory.poll_options && viewingStory.poll_options.length > 0 && (
+                    <div>
+                      <h5 className="font-semibold text-gray-700 mb-4">Options:</h5>
+                      <div className="space-y-3">
+                        {viewingStory.poll_options.map((option: string, index: number) => (
+                          <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <span className="w-8 h-8 bg-gold text-brown rounded-full flex items-center justify-center font-semibold mr-3">
+                              {index + 1}
+                            </span>
+                            <span className="text-gray-700">{option}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {viewingStory.type === 'trivia_quiz' && (
+                <div className="bg-white p-6 rounded-lg border">
+                  <h4 className="text-xl font-semibold mb-4 text-gray-800">Trivia Quiz</h4>
+                  <div className="mb-6">
+                    <h5 className="font-semibold text-gray-700 mb-2">Question:</h5>
+                    <p className="text-gray-700 text-lg font-medium">
+                      {viewingStory.trivia_question}
+                    </p>
+                  </div>
+                  <div className="mb-6">
+                    <h5 className="font-semibold text-gray-700 mb-2">Correct Answer:</h5>
+                    <p className="text-green-700 font-medium">
+                      {viewingStory.correct_answer}
+                    </p>
+                  </div>
+                  {viewingStory.trivia_options && viewingStory.trivia_options.length > 0 && (
+                    <div>
+                      <h5 className="font-semibold text-gray-700 mb-4">Options:</h5>
+                      <div className="space-y-3">
+                        {viewingStory.trivia_options.map((option: string, index: number) => (
+                          <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <span className="w-8 h-8 bg-gold text-brown rounded-full flex items-center justify-center font-semibold mr-3">
+                              {String.fromCharCode(65 + index)}
+                            </span>
+                            <span className="text-gray-700">{option}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
