@@ -110,9 +110,12 @@ interface FeedbackStory {
   time_limit?: number;
 }
 
-const fetcher = (url: string) => fetch(url, {
-  headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
-}).then(res => res.json());
+const fetcher = (url: string) => {
+  if (typeof window === 'undefined') return Promise.resolve(null);
+  return fetch(url, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
+  }).then(res => res.json());
+};
 
 export default function CreateStoryPage() {
   const [openModal, setOpenModal] = useState<string | null>(null);
@@ -1012,9 +1015,11 @@ export default function CreateStoryPage() {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const url = window.prompt('Enter the URL');
-                                      if (url) {
-                                        editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+                                      if (typeof window !== 'undefined') {
+                                        const url = window.prompt('Enter the URL');
+                                        if (url) {
+                                          editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+                                        }
                                       }
                                     }}
                                     className={`p-2 rounded transition-colors ${editor?.isActive('link') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
@@ -1228,7 +1233,10 @@ export default function CreateStoryPage() {
 function StatsTile() {
   const { data, error, isLoading } = useSWR(
     typeof window !== 'undefined' && localStorage.getItem('token') ? '/api/stories/getReport' : null,
-    (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(res => res.json()),
+    (url) => {
+      if (typeof window === 'undefined') return Promise.resolve(null);
+      return fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(res => res.json());
+    },
     { refreshInterval: 10000 }
   );
   if (isLoading) return (

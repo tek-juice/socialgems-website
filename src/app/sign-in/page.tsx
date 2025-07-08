@@ -48,8 +48,10 @@ export default function SignInPage() {
         if (response.ok){
             const data = await response.json();
             // Store token in sessionStorage for better persistence
-            sessionStorage.setItem('userToken', data.token);
-            localStorage.setItem('token', data.token);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('userToken', data.token);
+              localStorage.setItem('token', data.token);
+            }
             //store user data in state
             setUser(data.user);
             setProfile(data.user);

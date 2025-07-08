@@ -131,6 +131,8 @@ export default function BlogPost() {
 
   // Function to fetch metrics for all stories
   const fetchStoryMetrics = async () => {
+    if (typeof window === 'undefined') return;
+    
     const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
     
     for (const story of stories) {
@@ -176,6 +178,8 @@ export default function BlogPost() {
 
   // Function to record a view
   const recordView = async (storyId: number) => {
+    if (typeof window === 'undefined') return;
+    
     try {
       const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
       const response = await fetch('/api/stories/views', {
@@ -199,8 +203,10 @@ export default function BlogPost() {
   // Function to handle like/unlike
   const handleLike = async (storyId: number) => {
     if (!isUserLoggedIn) {
-      const currentUrl = window.location.href;
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.href;
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      }
       return;
     }
 
@@ -234,8 +240,10 @@ export default function BlogPost() {
   // Function to handle save/unsave
   const handleSave = async (storyId: number) => {
     if (!isUserLoggedIn) {
-      const currentUrl = window.location.href;
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.href;
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      }
       return;
     }
 
@@ -284,46 +292,59 @@ export default function BlogPost() {
         setStoryShares(prev => ({ ...prev, [storyId]: data.shareCount }));
         
         // Handle actual sharing based on platform
-        const storyUrl = `${window.location.origin}/blogpost`;
-        const storyTitle = currentStory?.title || 'Check out this story';
-        
-        let shareUrl = '';
-        switch (platform) {
-          case 'facebook':
-            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storyUrl)}`;
-            break;
-          case 'twitter':
-            shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(storyUrl)}&text=${encodeURIComponent(storyTitle)}`;
-            break;
-          case 'linkedin':
-            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(storyUrl)}`;
-            break;
-          case 'whatsapp':
-            shareUrl = `https://wa.me/?text=${encodeURIComponent(`${storyTitle} ${storyUrl}`)}`;
-            break;
-          case 'email':
-            shareUrl = `mailto:?subject=${encodeURIComponent(storyTitle)}&body=${encodeURIComponent(`Check out this story: ${storyUrl}`)}`;
-            break;
-          case 'copy_link':
-            try {
-              await navigator.clipboard.writeText(storyUrl);
-              alert('Link copied to clipboard!');
-            } catch (err) {
-              // Fallback for older browsers
-              const textArea = document.createElement('textarea');
-              textArea.value = storyUrl;
-              document.body.appendChild(textArea);
-              textArea.select();
-              document.execCommand('copy');
-              document.body.removeChild(textArea);
-              alert('Link copied to clipboard!');
-            }
-            setShowShareDropdown(null);
-            return;
-        }
-        
-        if (shareUrl) {
-          window.open(shareUrl, '_blank', 'width=600,height=400');
+        if (typeof window !== 'undefined') {
+          const storyUrl = `${window.location.origin}/blogpost`;
+          const storyTitle = currentStory?.title || 'Check out this story';
+          
+          let shareUrl = '';
+          switch (platform) {
+            case 'facebook':
+              shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storyUrl)}`;
+              break;
+            case 'twitter':
+              shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(storyUrl)}&text=${encodeURIComponent(storyTitle)}`;
+              break;
+            case 'linkedin':
+              shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(storyUrl)}`;
+              break;
+            case 'whatsapp':
+              shareUrl = `https://wa.me/?text=${encodeURIComponent(`${storyTitle} ${storyUrl}`)}`;
+              break;
+            case 'email':
+              shareUrl = `mailto:?subject=${encodeURIComponent(storyTitle)}&body=${encodeURIComponent(`Check out this story: ${storyUrl}`)}`;
+              break;
+            case 'copy_link':
+              try {
+                if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                  await navigator.clipboard.writeText(storyUrl);
+                  alert('Link copied to clipboard!');
+                } else {
+                  // Fallback for older browsers
+                  const textArea = document.createElement('textarea');
+                  textArea.value = storyUrl;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(textArea);
+                  alert('Link copied to clipboard!');
+                }
+              } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = storyUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Link copied to clipboard!');
+              }
+              setShowShareDropdown(null);
+              return;
+          }
+          
+          if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=400');
+          }
         }
         setShowShareDropdown(null);
       } else {
@@ -373,7 +394,9 @@ export default function BlogPost() {
       }
     };
     
-    checkAuth();
+    if (typeof window !== 'undefined') {
+      checkAuth();
+    }
   }, []);
 
   const fetchApprovedStories = async () => {
@@ -457,8 +480,10 @@ export default function BlogPost() {
   // Poll voting function
   const handlePollVote = async (pollId: number, voteOption: string) => {
     if (!isUserLoggedIn) {
-      const currentUrl = window.location.href;
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.href;
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      }
       return;
     }
 
@@ -467,7 +492,9 @@ export default function BlogPost() {
       const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
       if (!token) {
         alert('Please log in to vote');
-        window.location.href = '/sign-in';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/sign-in';
+        }
         return;
       }
 
@@ -522,8 +549,10 @@ export default function BlogPost() {
   // Trivia answering function
   const handleTriviaAnswer = async (triviaId: number, answer: string) => {
     if (!isUserLoggedIn) {
-      const currentUrl = window.location.href;
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      if (typeof window !== 'undefined') {
+        const currentUrl = window.location.href;
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(currentUrl)}`;
+      }
       return;
     }
 
@@ -537,7 +566,9 @@ export default function BlogPost() {
       const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
       if (!token) {
         alert('Please log in to answer trivia');
-        window.location.href = '/sign-in';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/sign-in';
+        }
         return;
       }
 

@@ -80,12 +80,14 @@ const Navbar = () => {
 
   // Handle sign out
   const handleSignOut = () => {
-    sessionStorage.removeItem('userToken');
-    localStorage.removeItem('token');
-    setUser(null);
-    setProfile(null);
-    setIsProfileOpen(false);
-    window.location.href = '/';
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('userToken');
+      localStorage.removeItem('token');
+      setUser(null);
+      setProfile(null);
+      setIsProfileOpen(false);
+      window.location.href = '/';
+    }
   };
 
   // Handle Share Your Story click: always open dropdown
@@ -97,7 +99,9 @@ const Navbar = () => {
   const handleShareOptionClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
     if (!user) {
       e.preventDefault();
-      window.location.href = `/sign-in?redirect=${encodeURIComponent(href)}`;
+      if (typeof window !== 'undefined') {
+        window.location.href = `/sign-in?redirect=${encodeURIComponent(href)}`;
+      }
     }
     // else, allow normal navigation
   };
@@ -123,8 +127,10 @@ const Navbar = () => {
     const handleClick = (e: MouseEvent) => {
       setShowResults(false);
     };
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
   }, [showResults]);
 
   return (
@@ -246,13 +252,22 @@ const Navbar = () => {
               <div className="text-black font-bold mb-1">{profile?.email || user?.email || 'Not signed in'}</div>
               {/* Hide Sign In if signed in */}
               {!user && (
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setIsProfileOpen(false); window.location.href = '/sign-in'; }}>Sign In</button>
+                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
+                  setIsProfileOpen(false); 
+                  if (typeof window !== 'undefined') {
+                    window.location.href = '/sign-in'; 
+                  }
+                }}>Sign In</button>
               )}
               {/* Change Password option if logged in */}
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
               )}
-              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { window.location.href = '/login';}}>Go to Admin Dashboard</button>
+              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
+                if (typeof window !== 'undefined') {
+                  window.location.href = '/login';
+                }
+              }}>Go to Admin Dashboard</button>
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
               )}
@@ -379,12 +394,21 @@ const Navbar = () => {
                 )}
                 <div className="text-black font-bold mb-1">{profile?.email || user?.email || 'Not signed in'}</div>
                 {!user && (
-                  <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setIsProfileOpen(false); window.location.href = '/sign-in'; }}>Sign In</button>
+                  <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
+                    setIsProfileOpen(false); 
+                    if (typeof window !== 'undefined') {
+                      window.location.href = '/sign-in'; 
+                    }
+                  }}>Sign In</button>
                 )}
                 {user && (
                   <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
                 )}
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { window.location.href = '/login';}}>Go to Admin Dashboard</button>
+                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
+                  if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                  }
+                }}>Go to Admin Dashboard</button>
                 {user && (
                   <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
                 )}

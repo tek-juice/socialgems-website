@@ -46,6 +46,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           setIsLoading(false);
           router.push('/sign-in');
         }
+      } else {
+        // Server-side rendering - set loading to false
+        setIsLoading(false);
       }
     };
 

@@ -41,7 +41,9 @@ export default function LoginPage() {
       // Check if the login was successful
       if (data.success && data.token) {
         // Save the token (you could also store it in a cookie)
-        sessionStorage.setItem('adminToken', data.token);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('adminToken', data.token);
+        }
 
         // Redirect to the admin dashboard
         router.push('/admin/dashboard');
@@ -57,7 +59,9 @@ export default function LoginPage() {
     }
   };
   useEffect(() => {
-    sessionStorage.removeItem('adminToken');
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('adminToken');
+    }
   },[]);
 
   return (
