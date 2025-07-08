@@ -129,23 +129,32 @@ export default function CreateStoryPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [ isClient, setIsClient ] = useState(false);
 
-  // SWR for feedbackStories
+  // Set isClient to true after hydration
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // SWR for feedbackStories - only run when client is ready
   const { data: feedbackData, error: feedbackError, mutate: mutateFeedback } = useSWR(
-    typeof window !== 'undefined' && localStorage.getItem('token') ? '/api/stories/getFeedback' : null,
+    isClient && typeof window !== 'undefined' && localStorage.getItem('token') ? '/api/stories/getFeedback' : null,
     fetcher,
     { refreshInterval: 10000 } // Poll every 10s for live updates
   );
   const feedbackStories = feedbackData?.stories || [];
   const loadingFeedback = !feedbackData && !feedbackError;
 
-  // Initialize the editor only once
+  // Initialize the editor only once after client is ready
   const editor = useEditor({
     extensions: [StarterKit, TextStyle, Color, Link],
     content: '',
     onUpdate: ({ editor }) => {
-      setFormData((prev: any) => ({ ...prev, description: editor.getHTML() }));
+      if (isClient) {
+        setFormData((prev: any) => ({ ...prev, description: editor.getHTML() }));
+      }
     },
+    editable: isClient, // Only make editor editable after client hydration
   });
 
   const getStoryTypeIcon = (type: string) => {
@@ -189,6 +198,8 @@ export default function CreateStoryPage() {
   };
 
   const handleEditStory = async (story: FeedbackStory) => {
+    if (!isClient) return;
+    
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -259,7 +270,7 @@ export default function CreateStoryPage() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingStory) return;
+    if (!editingStory || !isClient) return;
 
     setIsSubmitting(true);
     const submitData = new FormData();
@@ -446,7 +457,7 @@ export default function CreateStoryPage() {
   //handle submit for story
   const handleSubmitStory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.description) return;
+    if (!formData.title || !formData.description || !isClient) return;
     
     setIsSubmitting(true);
     const submitData = new FormData();
@@ -493,7 +504,7 @@ export default function CreateStoryPage() {
   const handleSubmitPictureComic = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.images.length) {
+    if (!formData.title || !formData.images.length || !isClient) {
       return;
     }
     
@@ -553,7 +564,7 @@ export default function CreateStoryPage() {
   const handleSubmitAudio = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.audio) {
+    if (!formData.title || !formData.audio || !isClient) {
       return;
     }
     
@@ -611,7 +622,7 @@ export default function CreateStoryPage() {
   const handleSubmitPoll = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.question || !formData.option1 || !formData.option2) {
+    if (!formData.question || !formData.option1 || !formData.option2 || !isClient) {
       return;
     }
     
@@ -670,7 +681,7 @@ export default function CreateStoryPage() {
   const handleSubmitTrivia = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.question || !formData.correct || !formData.option1 || !formData.option2) {
+    if (!formData.question || !formData.correct || !formData.option1 || !formData.option2 || !isClient) {
       return;
     }
     
@@ -791,113 +802,126 @@ export default function CreateStoryPage() {
         <main className="flex-1 flex flex-col items-center justify-start py-8 px-4 bg-white">
           <h1 className="text-4xl font-bold text-brown mb-8 tracking-widest text-center">CREATE</h1>
           
-          {/* Feedback Section */}
-          {feedbackStories.length > 0 && (
-            <div className="w-full max-w-6xl mb-8">
-              <div className="bg-gradient-to-r from-gold/10 to-brown/10 rounded-2xl p-6 border border-gold/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <FaComments className="text-2xl text-brown" />
-                    <h2 className="text-2xl font-bold text-brown flex items-center gap-2">
-                      Feedback & Reviews
-                      <span className="ml-2 px-3 py-1 rounded-full bg-brown text-white text-sm font-semibold">{feedbackStories.length}</span>
-                    </h2>
-                  </div>
-                  <button
-                    onClick={() => setShowFeedback(!showFeedback)}
-                    className="text-brown hover:text-gold transition-colors"
-                  >
-                    {showFeedback ? 'Hide' : 'Show'} Feedback
-                  </button>
-                </div>
-                
-                {showFeedback && (
-                  <div className="space-y-4">
-                    {feedbackStories.map((story: any) => (
-                      <div key={story.story_id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            {getStoryTypeIcon(story.type)}
-                            <div>
-                              <h3 className="font-semibold text-gray-900">{story.title}</h3>
-                              <p className="text-sm text-gray-500">{getStoryTypeLabel(story.type)}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(story.status)}`}>
-                              {getStatusIcon(story.status)}
-                              <span className="capitalize">{story.status}</span>
-                            </div>
-                            <button
-                              onClick={() => handleEditStory(story)}
-                              className="px-3 py-1 bg-gold text-brown rounded-lg hover:bg-brown hover:text-white transition-colors text-sm font-medium"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <FaComments className="text-brown" />
-                            <span className="font-medium text-gray-700">Admin Feedback:</span>
-                          </div>
-                          <p className="text-gray-700 text-sm leading-relaxed">{story.admin_feedback}</p>
-                        </div>
-                        
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>Submitted: {new Date(story.created_at).toLocaleDateString()}</span>
-                          <span>Updated: {new Date(story.updated_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          {/* Show loading state during SSR */}
+          {!isClient && (
+            <div className="w-full max-w-6xl text-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+              <p className="text-brown font-medium">Loading...</p>
             </div>
           )}
-
-          {/* Divider */}
-          <div className="w-full max-w-6xl mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gold/30"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-brown font-medium">Create New Content</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Story Options Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-            {storyOptions.map((option, index) => (
-              <div key={option.key}>
-                <div
-                  className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-gold/10 hover:border-gold transition-all duration-200 min-h-[200px] group"
-                  onClick={() => handleOpenModal(option.key)}
-                >
-                  <div className="group-hover:scale-110 transition-transform duration-200">
-                    {option.icon}
+          
+          {/* Main content - only show when client is ready */}
+          {isClient && (
+            <>
+              {/* Feedback Section */}
+              {feedbackStories.length > 0 && (
+                <div className="w-full max-w-6xl mb-8">
+                  <div className="bg-gradient-to-r from-gold/10 to-brown/10 rounded-2xl p-6 border border-gold/20">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <FaComments className="text-2xl text-brown" />
+                        <h2 className="text-2xl font-bold text-brown flex items-center gap-2">
+                          Feedback & Reviews
+                          <span className="ml-2 px-3 py-1 rounded-full bg-brown text-white text-sm font-semibold">{feedbackStories.length}</span>
+                        </h2>
+                      </div>
+                      <button
+                        onClick={() => setShowFeedback(!showFeedback)}
+                        className="text-brown hover:text-gold transition-colors"
+                      >
+                        {showFeedback ? 'Hide' : 'Show'} Feedback
+                      </button>
+                    </div>
+                    
+                    {showFeedback && (
+                      <div className="space-y-4">
+                        {feedbackStories.map((story: any) => (
+                          <div key={story.story_id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                {getStoryTypeIcon(story.type)}
+                                <div>
+                                  <h3 className="font-semibold text-gray-900">{story.title}</h3>
+                                  <p className="text-sm text-gray-500">{getStoryTypeLabel(story.type)}</p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(story.status)}`}>
+                                  {getStatusIcon(story.status)}
+                                  <span className="capitalize">{story.status}</span>
+                                </div>
+                                <button
+                                  onClick={() => handleEditStory(story)}
+                                  className="px-3 py-1 bg-gold text-brown rounded-lg hover:bg-brown hover:text-white transition-colors text-sm font-medium"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <FaComments className="text-brown" />
+                                <span className="font-medium text-gray-700">Admin Feedback:</span>
+                              </div>
+                              <p className="text-gray-700 text-sm leading-relaxed">{story.admin_feedback}</p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span>Submitted: {new Date(story.created_at).toLocaleDateString()}</span>
+                              <span>Updated: {new Date(story.updated_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <h2 className="text-lg font-bold text-black mb-2 text-center">{option.title}</h2>
-                  <p className="text-gray-600 text-center text-sm leading-relaxed">{option.description}</p>
                 </div>
-                
-                {/* Add divider after every 3rd item (except the last one) */}
-                {index % 3 === 2 && index < storyOptions.length - 1 && (
-                  <div className="hidden lg:block mt-6">
-                    <div className="w-full border-t border-gold/20"></div>
+              )}
+
+              {/* Divider */}
+              <div className="w-full max-w-6xl mb-8">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gold/30"></div>
                   </div>
-                )}
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-4 bg-white text-brown font-medium">Create New Content</span>
+                  </div>
+                </div>
               </div>
-            ))}
-            {/* Stats Tile */}
-            <StatsTile />
-          </div>
+
+              {/* Story Options Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+                {storyOptions.map((option, index) => (
+                  <div key={option.key}>
+                    <div
+                      className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-gold/10 hover:border-gold transition-all duration-200 min-h-[200px] group"
+                      onClick={() => handleOpenModal(option.key)}
+                    >
+                      <div className="group-hover:scale-110 transition-transform duration-200">
+                        {option.icon}
+                      </div>
+                      <h2 className="text-lg font-bold text-black mb-2 text-center">{option.title}</h2>
+                      <p className="text-gray-600 text-center text-sm leading-relaxed">{option.description}</p>
+                    </div>
+                    
+                    {/* Add divider after every 3rd item (except the last one) */}
+                    {index % 3 === 2 && index < storyOptions.length - 1 && (
+                      <div className="hidden lg:block mt-6">
+                        <div className="w-full border-t border-gold/20"></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {/* Stats Tile */}
+                <StatsTile />
+              </div>
+            </>
+          )}
 
           {/* Modal */}
-          {openModal && (
+          {openModal && isClient && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
               <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full relative animate-slide-up max-h-[90vh] flex flex-col">
                 <div className="flex-shrink-0 p-6 pb-4">
@@ -1201,7 +1225,7 @@ export default function CreateStoryPage() {
           )}
 
           {/* Success Modal */}
-          {showSuccessModal && (
+          {showSuccessModal && isClient && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
                 <div className="mb-6">
@@ -1239,6 +1263,16 @@ function StatsTile() {
     },
     { refreshInterval: 10000 }
   );
+  
+  // Show loading state during SSR
+  if (typeof window === 'undefined') {
+    return (
+      <div className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 min-h-[200px]">
+        <span className="text-brown font-bold text-lg">Loading stats...</span>
+      </div>
+    );
+  }
+  
   if (isLoading) return (
     <div className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 min-h-[200px]">
       <span className="text-brown font-bold text-lg">Loading stats...</span>
