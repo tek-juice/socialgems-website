@@ -44,8 +44,8 @@ export default function Home() {
             <Image
               src="/connect-image.jpg" 
               alt="Hero Image" 
-              layout="fill" 
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               className="z-0 rounded-md"
               priority
             />
@@ -53,8 +53,8 @@ export default function Home() {
             <Image 
               src="/SG-web-banner.jpg"
               alt="Hero Image"
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               className="z-0 rounded-md"
               priority
             />
@@ -291,7 +291,7 @@ export default function Home() {
                   With Social Gems, you can:
                 </p>
                 <ul className="text-black list-disc list-inside mb-4">
-                  <li>Find influencers tailored to your brand’s niche.</li>
+                  <li>Find influencers tailored to your brand's niche.</li>
                   <li>Track campaign performance in real-time.</li>
                   <li>Maximize ROI with data-driven insights.</li>
                 </ul>

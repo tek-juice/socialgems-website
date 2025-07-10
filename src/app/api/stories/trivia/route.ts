@@ -46,7 +46,12 @@ export async function POST(request: NextRequest) {
     try {
         //console.log('\n🗄️ Connecting to database...');
         
-        const userRes = await client.sql`SELECT id FROM profile WHERE email = ${session.user.email}`;
+        const userEmail = session.user.email;
+        if (typeof userEmail !== 'string') {
+            return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
+        }
+
+        const userRes = await client.sql`SELECT id FROM profile WHERE email = ${userEmail}`;
         if (userRes.rows.length === 0) {
             //console.log('❌ User not found in database');
             return NextResponse.json({ error: 'User not found' }, { status: 404 });

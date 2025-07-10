@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         if (!isPasswordValid || rows.length ===0 ) {
             return NextResponse.json({ error: 'Invalid email or password'}, { status: 401});
         }
-        // Generate JWT token with 24 hour expiry for better user experience
+        // Generate JWT token with 2 hour expiry for better user experience
         const token = jwt.sign(
             { email: user.email,
              image: user.image || null
@@ -36,12 +36,33 @@ export async function POST(request: NextRequest) {
             secret,
             { expiresIn: '2h' }
         );
-        return NextResponse.json({ 
+
+        // Create response with JSON data
+        const response = NextResponse.json({ 
             message: 'Sign in successful', 
             token, 
             email: user.email, 
             image: user.image || null
          }, { status: 200});
+
+        // Set cookies for middleware access
+        response.cookies.set('token', token, {
+            httpOnly: false, // Allow client-side access
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: 'lax',
+            maxAge: 2 * 60 * 60, // 2 hours in seconds
+            path: '/'
+        });
+
+        response.cookies.set('userToken', token, {
+            httpOnly: false, // Allow client-side access
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: 'lax',
+            maxAge: 2 * 60 * 60, // 2 hours in seconds
+            path: '/'
+        });
+
+        return response;
     } catch (error) {
         console.error('Error signing in:', error);
         return NextResponse.json({ error: 'Internal server error'}, { status: 500});

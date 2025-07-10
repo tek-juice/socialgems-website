@@ -1,5 +1,5 @@
 //this route picks approved blogs from database.
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
 
 export async function GET() {

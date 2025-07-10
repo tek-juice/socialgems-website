@@ -1,9 +1,8 @@
 //this page shows the full options to create a story.
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
-import ProtectedRoute from '../components/protected_route/page';
 import { FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaTimes, FaBold, FaItalic, FaHeading, FaListUl, FaListOl, FaLink, FaSpinner, FaComments, FaEye, FaClock, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -11,6 +10,7 @@ import TextStyle from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Link from '@tiptap/extension-link';
 import useSWR from 'swr';
+import './prosemirror-black.css';
 
 const storyOptions = [
   {
@@ -113,7 +113,8 @@ interface FeedbackStory {
 const fetcher = (url: string) => {
   if (typeof window === 'undefined') return Promise.resolve(null);
   return fetch(url, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
+    //headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
+    credentials: 'include'
   }).then(res => res.json());
 };
 
@@ -138,25 +139,31 @@ export default function CreateStoryPage() {
 
   // SWR for feedbackStories - only run when client is ready
   const { data: feedbackData, error: feedbackError, mutate: mutateFeedback } = useSWR(
-    isClient && typeof window !== 'undefined' && localStorage.getItem('token') ? '/api/stories/getFeedback' : null,
+    isClient && typeof window !== 'undefined' ? '/api/stories/getFeedback' : null,
     fetcher,
-    { refreshInterval: 10000 } // Poll every 10s for live updates
+    { refreshInterval: 10000 } // Pull feedback stories every 10s for live updates
   );
   const feedbackStories = feedbackData?.stories || [];
   const loadingFeedback = !feedbackData && !feedbackError;
 
-  // Initialize the editor only once after client is ready
+  // At the top level of the component:
   const editor = useEditor({
     extensions: [StarterKit, TextStyle, Color, Link],
     content: '',
     onUpdate: ({ editor }) => {
-      if (isClient) {
-        setFormData((prev: any) => ({ ...prev, description: editor.getHTML() }));
-      }
+      setFormData((prev: any) => ({ ...prev, description: editor.getHTML() }));
     },
-    editable: isClient, // Only make editor editable after client hydration
+    editable: true,
   });
 
+  // Reset editor content when opening the story modal for a new story
+  useEffect(() => {
+    if (openModal === 'story' && editor) {
+      editor.commands.setContent(formData.description || '');
+    }
+  }, [openModal, editor]);
+
+  // Only initialize the editor when the modal is open and client is ready
   const getStoryTypeIcon = (type: string) => {
     switch (type) {
       case 'story': return <FaAlignLeft className="text-lg text-brown" />;
@@ -201,13 +208,8 @@ export default function CreateStoryPage() {
     if (!isClient) return;
     
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
       const response = await fetch(`/api/stories/getStory?id=${story.story_id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -333,12 +335,9 @@ export default function CreateStoryPage() {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/stories/editStory', {
         method: 'PUT',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
 
@@ -466,12 +465,9 @@ export default function CreateStoryPage() {
     submitData.append('tags', JSON.stringify(formData.tags));
 
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch('/api/stories/story', {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
       if (res.ok) {
@@ -521,13 +517,9 @@ export default function CreateStoryPage() {
     });
 
     try {
-      const token = localStorage.getItem('token');
-      
       const res = await fetch('/api/stories/picture-comic', {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
       
@@ -579,13 +571,9 @@ export default function CreateStoryPage() {
     submitData.append('audio', formData.audio);
 
     try {
-      const token = localStorage.getItem('token');
-      
       const res = await fetch('/api/stories/audio', {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
       
@@ -639,13 +627,9 @@ export default function CreateStoryPage() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      
       const res = await fetch('/api/stories/poll', {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
       
@@ -696,13 +680,9 @@ export default function CreateStoryPage() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      
       const res = await fetch('/api/stories/trivia', {
         method: 'POST',
-        headers: {
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        credentials: 'include',
         body: submitData,
       });
       
@@ -796,392 +776,387 @@ export default function CreateStoryPage() {
   };
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-white flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-start py-8 px-4 bg-white">
-          <h1 className="text-4xl font-bold text-brown mb-8 tracking-widest text-center">CREATE</h1>
-          
-          {/* Show loading state during SSR */}
-          {!isClient && (
-            <div className="w-full max-w-6xl text-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
-              <p className="text-brown font-medium">Loading...</p>
-            </div>
-          )}
-          
-          {/* Main content - only show when client is ready */}
-          {isClient && (
-            <>
-              {/* Feedback Section */}
-              {feedbackStories.length > 0 && (
-                <div className="w-full max-w-6xl mb-8">
-                  <div className="bg-gradient-to-r from-gold/10 to-brown/10 rounded-2xl p-6 border border-gold/20">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <FaComments className="text-2xl text-brown" />
-                        <h2 className="text-2xl font-bold text-brown flex items-center gap-2">
-                          Feedback & Reviews
-                          <span className="ml-2 px-3 py-1 rounded-full bg-brown text-white text-sm font-semibold">{feedbackStories.length}</span>
-                        </h2>
-                      </div>
-                      <button
-                        onClick={() => setShowFeedback(!showFeedback)}
-                        className="text-brown hover:text-gold transition-colors"
-                      >
-                        {showFeedback ? 'Hide' : 'Show'} Feedback
-                      </button>
+    <div className="min-h-screen bg-white flex flex-col">
+      <Navbar />
+      <main className="flex-1 flex flex-col items-center justify-start py-8 px-4 bg-white">
+        <h1 className="text-4xl font-bold text-brown mb-8 tracking-widest text-center">CREATE</h1>
+        
+        {/* Show loading state during SSR */}
+        {!isClient && (
+          <div className="w-full max-w-6xl text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold mx-auto mb-4"></div>
+            <p className="text-brown font-medium">Loading...</p>
+          </div>
+        )}
+        
+        {/* Main content - only show when client is ready */}
+        {isClient && (
+          <>
+            {/* Feedback Section */}
+            {feedbackStories.length > 0 && (
+              <div className="w-full max-w-6xl mb-8">
+                <div className="bg-gradient-to-r from-gold/10 to-brown/10 rounded-2xl p-6 border border-gold/20">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <FaComments className="text-2xl text-brown" />
+                      <h2 className="text-2xl font-bold text-brown flex items-center gap-2">
+                        Feedback & Reviews
+                        <span className="ml-2 px-3 py-1 rounded-full bg-brown text-white text-sm font-semibold">{feedbackStories.length}</span>
+                      </h2>
                     </div>
-                    
-                    {showFeedback && (
-                      <div className="space-y-4">
-                        {feedbackStories.map((story: any) => (
-                          <div key={story.story_id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                {getStoryTypeIcon(story.type)}
-                                <div>
-                                  <h3 className="font-semibold text-gray-900">{story.title}</h3>
-                                  <p className="text-sm text-gray-500">{getStoryTypeLabel(story.type)}</p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(story.status)}`}>
-                                  {getStatusIcon(story.status)}
-                                  <span className="capitalize">{story.status}</span>
-                                </div>
-                                <button
-                                  onClick={() => handleEditStory(story)}
-                                  className="px-3 py-1 bg-gold text-brown rounded-lg hover:bg-brown hover:text-white transition-colors text-sm font-medium"
-                                >
-                                  Edit
-                                </button>
+                    <button
+                      onClick={() => setShowFeedback(!showFeedback)}
+                      className="text-brown hover:text-gold transition-colors"
+                    >
+                      {showFeedback ? 'Hide' : 'Show'} Feedback
+                    </button>
+                  </div>
+                  
+                  {showFeedback && (
+                    <div className="space-y-4">
+                      {feedbackStories.map((story: any) => (
+                        <div key={story.story_id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              {getStoryTypeIcon(story.type)}
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{story.title}</h3>
+                                <p className="text-sm text-gray-500">{getStoryTypeLabel(story.type)}</p>
                               </div>
                             </div>
-                            
-                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <FaComments className="text-brown" />
-                                <span className="font-medium text-gray-700">Admin Feedback:</span>
+                            <div className="flex items-center gap-2">
+                              <div className={`flex items-center gap-2 px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(story.status)}`}>
+                                {getStatusIcon(story.status)}
+                                <span className="capitalize">{story.status}</span>
                               </div>
-                              <p className="text-gray-700 text-sm leading-relaxed">{story.admin_feedback}</p>
-                            </div>
-                            
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                              <span>Submitted: {new Date(story.created_at).toLocaleDateString()}</span>
-                              <span>Updated: {new Date(story.updated_at).toLocaleDateString()}</span>
+                              <button
+                                onClick={() => handleEditStory(story)}
+                                className="px-3 py-1 bg-gold text-brown rounded-lg hover:bg-brown hover:text-white transition-colors text-sm font-medium"
+                              >
+                                Edit
+                              </button>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Divider */}
-              <div className="w-full max-w-6xl mb-8">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gold/30"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-brown font-medium">Create New Content</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Story Options Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
-                {storyOptions.map((option, index) => (
-                  <div key={option.key}>
-                    <div
-                      className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-gold/10 hover:border-gold transition-all duration-200 min-h-[200px] group"
-                      onClick={() => handleOpenModal(option.key)}
-                    >
-                      <div className="group-hover:scale-110 transition-transform duration-200">
-                        {option.icon}
-                      </div>
-                      <h2 className="text-lg font-bold text-black mb-2 text-center">{option.title}</h2>
-                      <p className="text-gray-600 text-center text-sm leading-relaxed">{option.description}</p>
+                          
+                          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <FaComments className="text-brown" />
+                              <span className="font-medium text-gray-700">Admin Feedback:</span>
+                            </div>
+                            <p className="text-gray-700 text-sm leading-relaxed">{story.admin_feedback}</p>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span>Submitted: {new Date(story.created_at).toLocaleDateString()}</span>
+                            <span>Updated: {new Date(story.updated_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    
-                    {/* Add divider after every 3rd item (except the last one) */}
-                    {index % 3 === 2 && index < storyOptions.length - 1 && (
-                      <div className="hidden lg:block mt-6">
-                        <div className="w-full border-t border-gold/20"></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {/* Stats Tile */}
-                <StatsTile />
+                  )}
+                </div>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Modal */}
-          {openModal && isClient && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-              <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full relative animate-slide-up max-h-[90vh] flex flex-col">
-                <div className="flex-shrink-0 p-6 pb-4">
-                  <button
-                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
-                    onClick={handleCloseModal}
+            {/* Divider */}
+            <div className="w-full max-w-6xl mb-8">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gold/30"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-brown font-medium">Create New Content</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Story Options Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-6xl">
+              {storyOptions.map((option, index) => (
+                <div key={option.key}>
+                  <div
+                    className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 cursor-pointer hover:bg-gold/10 hover:border-gold transition-all duration-200 min-h-[200px] group"
+                    onClick={() => handleOpenModal(option.key)}
                   >
-                    <FaTimes />
-                  </button>
-                  <h3 className="text-2xl font-bold text-brown mb-4 text-center">
-                    {isEditMode ? `Edit ${storyOptions.find(opt => opt.key === openModal)?.title}` : storyOptions.find(opt => opt.key === openModal)?.title}
-                  </h3>
-                </div>
-                
-                {submitted ? (
-                  <div className="flex-1 flex items-center justify-center p-6">
-                    <div className="text-center text-green-600 font-bold">
-                      {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                    <div className="group-hover:scale-110 transition-transform duration-200">
+                      {option.icon}
                     </div>
+                    <h2 className="text-lg font-bold text-black mb-2 text-center">{option.title}</h2>
+                    <p className="text-gray-600 text-center text-sm leading-relaxed">{option.description}</p>
                   </div>
-                ) : (
-                  <>
-                    <div className="flex-1 overflow-y-auto px-6 pb-4">
-                      <form onSubmit={isEditMode ? handleSaveEdit : (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))} className="space-y-4">
-                        {/* Story Option: Title, Tags, Description (Tiptap) */}
-                        {openModal === 'story' && editor && (
-                          <>
-                            <div>
-                              <label className="block text-gray-700 mb-1 font-medium">Title<span className="text-red-500">*</span></label>
+                  
+                  {/* Add divider after every 3rd item (except the last one) */}
+                  {index % 3 === 2 && index < storyOptions.length - 1 && (
+                    <div className="hidden lg:block mt-6">
+                      <div className="w-full border-t border-gold/20"></div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Stats Tile */}
+              <StatsTile />
+            </div>
+          </>
+        )}
+
+        {/* Modal */}
+        {openModal && isClient && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full relative animate-slide-up max-h-[90vh] flex flex-col">
+              <div className="flex-shrink-0 p-6 pb-4">
+                <button
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl"
+                  onClick={handleCloseModal}
+                >
+                  <FaTimes />
+                </button>
+                <h3 className="text-2xl font-bold text-brown mb-4 text-center">
+                  {isEditMode ? `Edit ${storyOptions.find(opt => opt.key === openModal)?.title}` : storyOptions.find(opt => opt.key === openModal)?.title}
+                </h3>
+              </div>
+              
+              {submitted ? (
+                <div className="flex-1 flex items-center justify-center p-6">
+                  <div className="text-center text-green-600 font-bold">
+                    {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto px-6 pb-4">
+                    <form onSubmit={isEditMode ? handleSaveEdit : (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))} className="space-y-4">
+                      {/* Story Option: Title, Tags, Description (Tiptap) */}
+                      {openModal === 'story' && editor && (
+                        <>
+                          <div>
+                            <label className="block text-gray-700 mb-1 font-medium">Title<span className="text-red-500">*</span></label>
+                            <input
+                              type="text"
+                              name="title"
+                              value={formData.title || ''}
+                              onChange={handleChange}
+                              required
+                              className="w-full border rounded px-3 py-2 text-black"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 mb-1 font-medium">Tags</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {formData.tags.map((tag: string) => (
+                                <span key={tag} className="bg-gold text-brown px-2 py-1 rounded-full flex items-center gap-1 text-sm">
+                                  {tag}
+                                  <button type="button" className="ml-1 text-xs" onClick={() => handleRemoveTag(tag)}>&times;</button>
+                                </span>
+                              ))}
+                            </div>
+                            <input
+                              type="text"
+                              value={tagInput}
+                              onChange={handleTagInput}
+                              onKeyDown={handleTagKeyDown}
+                              placeholder="Type and press Enter to add tag"
+                              className="w-full border rounded px-3 py-2 text-black mb-2"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              {availableTags.filter(tag => tag.toLowerCase().includes(tagInput.toLowerCase()) && !formData.tags.includes(tag)).map(tag => (
+                                <button
+                                  key={tag}
+                                  type="button"
+                                  className="bg-gray-100 hover:bg-gold text-brown px-2 py-1 rounded-full text-xs"
+                                  onClick={() => handleTagSelect(tag)}
+                                >
+                                  {tag}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-gray-700 mb-1 font-medium">Description<span className="text-red-500">*</span></label>
+                            <div className="border border-gray-300 rounded-lg">
+                              {/* Toolbar */}
+                              <div className="border-b border-gray-200 p-2 flex flex-wrap gap-2 bg-gray-50">
+                                <button
+                                  type="button"
+                                  onClick={() => editor?.chain().focus().toggleBold().run()}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('bold') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Bold"
+                                >
+                                  <FaBold size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => editor?.chain().focus().toggleItalic().run()}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('italic') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Italic"
+                                >
+                                  <FaItalic size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('heading', { level: 2 }) ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Heading"
+                                >
+                                  <FaHeading size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('bulletList') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Bullet List"
+                                >
+                                  <FaListUl size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('orderedList') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Numbered List"
+                                >
+                                  <FaListOl size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (typeof window !== 'undefined') {
+                                      const url = window.prompt('Enter the URL');
+                                      if (url) {
+                                        editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+                                      }
+                                    }
+                                  }}
+                                  className={`p-2 rounded transition-colors ${editor?.isActive('link') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
+                                  title="Add Link"
+                                >
+                                  <FaLink size={14} />
+                                </button>
+                              </div>
+                              <EditorContent editor={editor} className="prose prose-sm max-w-none [&_.ProseMirror]:text-black [&_.ProseMirror]:outline-none" />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {/* Picture/Comic Story Option */}
+                      {openModal === 'picture' && (
+                        <>
+                          <div className="text-sm text-brown mb-2 font-semibold">
+                            You can upload up to 4 images. Each image must be 100KB or less.
+                          </div>
+                          {imageError && <div className="text-red-600 text-sm mb-2">{imageError}</div>}
+                          {storyOptions.find(opt => opt.key === 'picture')?.fields.map(field => (
+                            <div key={field.name}>
+                              <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
+                              {field.name === 'image' ? (
+                                <input
+                                  type="file"
+                                  name="image"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black"
+                                />
+                              ) : field.type === 'textarea' ? (
+                                <textarea
+                                  name={field.name}
+                                  value={formData[field.name] || ''}
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black min-h-[80px] resize-y"
+                                />
+                              ) : (
+                                <input
+                                  type={field.type}
+                                  name={field.name}
+                                  value={formData[field.name] || ''}
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black"
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      {/* Audio Story Option */}
+                      {openModal === 'audio' && (
+                        <>
+                          <div className="text-sm text-brown mb-2 font-semibold">
+                            You can upload one audio file. The audio file must be 2MB or less.
+                          </div>
+                          {audioError && <div className="text-red-600 text-sm mb-2">{audioError}</div>}
+                          {storyOptions.find(opt => opt.key === 'audio')?.fields.map(field => (
+                            <div key={field.name}>
+                              <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
+                              {field.name === 'audio' ? (
+                                <input
+                                  type="file"
+                                  name="audio"
+                                  accept="audio/*"
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black"
+                                />
+                              ) : field.type === 'textarea' ? (
+                                <textarea
+                                  name={field.name}
+                                  value={formData[field.name] || ''}
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black min-h-[80px] resize-y"
+                                />
+                              ) : (
+                                <input
+                                  type={field.type}
+                                  name={field.name}
+                                  value={formData[field.name] || ''}
+                                  onChange={handleChange}
+                                  required={field.required}
+                                  className="w-full border rounded px-3 py-2 text-black"
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      {/* Poll Option */}
+                      {openModal === 'poll' && (
+                        <>
+                          {storyOptions.find(opt => opt.key === 'poll')?.fields.map(field => (
+                            <div key={field.name}>
+                              <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
                               <input
                                 type="text"
-                                name="title"
-                                value={formData.title || ''}
+                                name={field.name}
+                                value={formData[field.name] || ''}
                                 onChange={handleChange}
-                                required
+                                required={field.required}
                                 className="w-full border rounded px-3 py-2 text-black"
                               />
                             </div>
-                            <div>
-                              <label className="block text-gray-700 mb-1 font-medium">Tags</label>
-                              <div className="flex flex-wrap gap-2 mb-2">
-                                {formData.tags.map((tag: string) => (
-                                  <span key={tag} className="bg-gold text-brown px-2 py-1 rounded-full flex items-center gap-1 text-sm">
-                                    {tag}
-                                    <button type="button" className="ml-1 text-xs" onClick={() => handleRemoveTag(tag)}>&times;</button>
-                                  </span>
-                                ))}
-                              </div>
+                          ))}
+                        </>
+                      )}
+                      {/* Trivia Quiz Option */}
+                      {openModal === 'quiz' && (
+                        <>
+                          {storyOptions.find(opt => opt.key === 'quiz')?.fields.map(field => (
+                            <div key={field.name}>
+                              <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
                               <input
                                 type="text"
-                                value={tagInput}
-                                onChange={handleTagInput}
-                                onKeyDown={handleTagKeyDown}
-                                placeholder="Type and press Enter to add tag"
-                                className="w-full border rounded px-3 py-2 text-black mb-2"
+                                name={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={handleChange}
+                                required={field.required}
+                                className="w-full border rounded px-3 py-2 text-black"
                               />
-                              <div className="flex flex-wrap gap-2">
-                                {availableTags.filter(tag => tag.toLowerCase().includes(tagInput.toLowerCase()) && !formData.tags.includes(tag)).map(tag => (
-                                  <button
-                                    key={tag}
-                                    type="button"
-                                    className="bg-gray-100 hover:bg-gold text-brown px-2 py-1 rounded-full text-xs"
-                                    onClick={() => handleTagSelect(tag)}
-                                  >
-                                    {tag}
-                                  </button>
-                                ))}
-                              </div>
                             </div>
-                            <div>
-                              <label className="block text-gray-700 mb-1 font-medium">Description<span className="text-red-500">*</span></label>
-                              <div className="border border-gray-300 rounded-lg">
-                                {/* Toolbar */}
-                                <div className="border-b border-gray-200 p-2 flex flex-wrap gap-2 bg-gray-50">
-                                  <button
-                                    type="button"
-                                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('bold') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Bold"
-                                  >
-                                    <FaBold size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => editor?.chain().focus().toggleItalic().run()}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('italic') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Italic"
-                                  >
-                                    <FaItalic size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('heading', { level: 2 }) ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Heading"
-                                  >
-                                    <FaHeading size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('bulletList') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Bullet List"
-                                  >
-                                    <FaListUl size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('orderedList') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Numbered List"
-                                  >
-                                    <FaListOl size={14} />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (typeof window !== 'undefined') {
-                                        const url = window.prompt('Enter the URL');
-                                        if (url) {
-                                          editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-                                        }
-                                      }
-                                    }}
-                                    className={`p-2 rounded transition-colors ${editor?.isActive('link') ? 'bg-gold text-white' : 'hover:bg-gold hover:bg-opacity-20 text-brown'}`}
-                                    title="Add Link"
-                                  >
-                                    <FaLink size={14} />
-                                  </button>
-                                </div>
-                                <EditorContent editor={editor} className="prose prose-sm max-w-none [&_.ProseMirror]:text-black [&_.ProseMirror]:outline-none [&_.ProseMirror_p]:text-black [&_.ProseMirror_h1]:text-black [&_.ProseMirror_h2]:text-black [&_.ProseMirror_h3]:text-black [&_.ProseMirror_li]:text-black [&_.ProseMirror_a]:text-blue-600 [&_.ProseMirror]:min-h-[150px] p-2" />
-                              </div>
-                            </div>
-                          </>
-                        )}
-                        {/* Picture/Comic Story Option */}
-                        {openModal === 'picture' && (
-                          <>
-                            <div className="text-sm text-brown mb-2 font-semibold">
-                              You can upload up to 4 images. Each image must be 100KB or less.
-                            </div>
-                            {imageError && <div className="text-red-600 text-sm mb-2">{imageError}</div>}
-                            {storyOptions.find(opt => opt.key === 'picture')?.fields.map(field => (
-                              <div key={field.name}>
-                                <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
-                                {field.name === 'image' ? (
-                                  <input
-                                    type="file"
-                                    name="image"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black"
-                                  />
-                                ) : field.type === 'textarea' ? (
-                                  <textarea
-                                    name={field.name}
-                                    value={formData[field.name] || ''}
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black min-h-[80px] resize-y"
-                                  />
-                                ) : (
-                                  <input
-                                    type={field.type}
-                                    name={field.name}
-                                    value={formData[field.name] || ''}
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black"
-                                  />
-                                )}
-                              </div>
-                            ))}
-                          </>
-                        )}
-                        {/* Audio Story Option */}
-                        {openModal === 'audio' && (
-                          <>
-                            <div className="text-sm text-brown mb-2 font-semibold">
-                              You can upload one audio file. The audio file must be 2MB or less.
-                            </div>
-                            {audioError && <div className="text-red-600 text-sm mb-2">{audioError}</div>}
-                            {storyOptions.find(opt => opt.key === 'audio')?.fields.map(field => (
-                              <div key={field.name}>
-                                <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
-                                {field.name === 'audio' ? (
-                                  <input
-                                    type="file"
-                                    name="audio"
-                                    accept="audio/*"
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black"
-                                  />
-                                ) : field.type === 'textarea' ? (
-                                  <textarea
-                                    name={field.name}
-                                    value={formData[field.name] || ''}
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black min-h-[80px] resize-y"
-                                  />
-                                ) : (
-                                  <input
-                                    type={field.type}
-                                    name={field.name}
-                                    value={formData[field.name] || ''}
-                                    onChange={handleChange}
-                                    required={field.required}
-                                    className="w-full border rounded px-3 py-2 text-black"
-                                  />
-                                )}
-                              </div>
-                            ))}
-                          </>
-                        )}
-                        {/* Poll Option */}
-                        {openModal === 'poll' && (
-                          <>
-                            {storyOptions.find(opt => opt.key === 'poll')?.fields.map(field => (
-                              <div key={field.name}>
-                                <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
-                                <input
-                                  type="text"
-                                  name={field.name}
-                                  value={formData[field.name] || ''}
-                                  onChange={handleChange}
-                                  required={field.required}
-                                  className="w-full border rounded px-3 py-2 text-black"
-                                />
-                              </div>
-                            ))}
-                          </>
-                        )}
-                        {/* Trivia Quiz Option */}
-                        {openModal === 'quiz' && (
-                          <>
-                            {storyOptions.find(opt => opt.key === 'quiz')?.fields.map(field => (
-                              <div key={field.name}>
-                                <label className="block text-gray-700 mb-1 font-medium">{field.label}{field.required && <span className="text-red-500">*</span>}</label>
-                                <input
-                                  type="text"
-                                  name={field.name}
-                                  value={formData[field.name] || ''}
-                                  onChange={handleChange}
-                                  required={field.required}
-                                  className="w-full border rounded px-3 py-2 text-black"
-                                />
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </form>
-                    </div>
-                    
-                    {/* Fixed Button Section */}
-                    <div className="flex-shrink-0 p-6 pt-0">
-                      <div className="flex gap-3">
+                          ))}
+                        </>
+                      )}
+                      {/* Fixed Button Section */}
+                      <div className="flex gap-3 mt-6">
                         {isEditMode && (
                           <button
                             type="button"
@@ -1193,8 +1168,6 @@ export default function CreateStoryPage() {
                         )}
                         <button
                           type="submit"
-                          form={openModal === 'story' ? undefined : undefined}
-                          onClick={isEditMode ? undefined : (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))}
                           className={`flex-1 px-6 py-2 rounded-lg transition-colors font-bold flex items-center justify-center gap-2 ${
                             submitted || isSubmitting
                               ? 'bg-gray-400 text-gray-600 cursor-not-allowed' 
@@ -1210,56 +1183,59 @@ export default function CreateStoryPage() {
                           ) : isSubmitting ? (
                             <>
                               <FaSpinner className="animate-spin" />
-                              {isEditMode ? 'Updating...' : 'Submitting...'}
+                              {isEditMode ? 'Saving...' : 'Submitting...'}
                             </>
                           ) : (
                             isEditMode ? 'Save Changes' : 'Submit for Review'
                           )}
                         </button>
                       </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Success Modal */}
-          {showSuccessModal && isClient && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                    </form>
                   </div>
-                  <h3 className="text-2xl font-bold text-green-600 mb-2">Story Submitted Successfully!</h3>
-                  <p className="text-gray-600 mb-4">Your story has been submitted and is now under review.</p>
-                  <p className="text-gray-600 mb-6">Check your notifications to find feedback on your stories.</p>
-                </div>
-                <button
-                  onClick={() => setShowSuccessModal(false)}
-                  className="block w-full bg-brown text-white py-3 px-6 rounded-lg font-medium hover:bg-brown/90 transition-colors"
-                >
-                  Got it!
-                </button>
-              </div>
+                </>
+              )}
             </div>
-          )}
-        </main>
-        <Footer />
-      </div>
-    </ProtectedRoute>
+          </div>
+        )}
+
+        {/* Success Modal */}
+        {showSuccessModal && isClient && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-green-600 mb-2">Story Submitted Successfully!</h3>
+                <p className="text-gray-600 mb-4">Your story has been submitted and is now under review.</p>
+                <p className="text-gray-600 mb-6">Check your notifications to find feedback on your stories.</p>
+              </div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="block w-full bg-brown text-white py-3 px-6 rounded-lg font-medium hover:bg-brown/90 transition-colors"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+      <Footer />
+    </div>
   );
 }
 
 function StatsTile() {
   const { data, error, isLoading } = useSWR(
-    typeof window !== 'undefined' && localStorage.getItem('token') ? '/api/stories/getReport' : null,
+    typeof window !== 'undefined' && sessionStorage.getItem('userToken') ? '/api/stories/getReport' : null,
     (url) => {
       if (typeof window === 'undefined') return Promise.resolve(null);
-      return fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(res => res.json());
+      const token = sessionStorage.getItem('userToken');
+      return fetch(url, { 
+        credentials: 'include'
+      }).then(res => res.json());
     },
     { refreshInterval: 10000 }
   );
@@ -1283,6 +1259,16 @@ function StatsTile() {
       <span className="text-red-600 font-bold text-lg">Failed to load stats</span>
     </div>
   );
+  
+  // Add null check for approvedByType
+  const approvedByType = data.approvedByType || {
+    story: 0,
+    picture_comic: 0,
+    audio: 0,
+    poll: 0,
+    trivia_quiz: 0
+  };
+  
   return (
     <div className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 min-h-[200px]">
       <h3 className="text-lg font-bold text-brown mb-2">Your Story Stats</h3>
@@ -1292,11 +1278,11 @@ function StatsTile() {
         <div className="font-semibold text-brown text-sm mb-1">Approved:</div>
         <div className="flex flex-wrap gap-2 justify-center">
           <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Total: {data.totalApproved}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Text: {data.approvedByType.story}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Picture: {data.approvedByType.picture_comic}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Audio: {data.approvedByType.audio}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Poll: {data.approvedByType.poll}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Trivia: {data.approvedByType.trivia_quiz}</span>
+          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Text: {approvedByType.story}</span>
+          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Picture: {approvedByType.picture_comic}</span>
+          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Audio: {approvedByType.audio}</span>
+          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Poll: {approvedByType.poll}</span>
+          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Trivia: {approvedByType.trivia_quiz}</span>
         </div>
       </div>
       <div className="w-full mb-2">

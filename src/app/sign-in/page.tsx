@@ -1,6 +1,6 @@
 //this is a sign in page for influencers/brands
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaUser, FaLock } from 'react-icons/fa';
 import { FiLogIn } from 'react-icons/fi';
@@ -15,7 +15,8 @@ interface SignInForm {
     password: string;
 }
 
-export default function SignInPage() {
+// Separate component that uses useSearchParams
+function SignInForm() {
     const [formData, setFormData] = useState<SignInForm>({
         email: '',
         password: '',
@@ -47,10 +48,9 @@ export default function SignInPage() {
 
         if (response.ok){
             const data = await response.json();
-            // Store token in sessionStorage for better persistence
+            // Only store in sessionStorage for client-side access (no localStorage)
             if (typeof window !== 'undefined') {
               sessionStorage.setItem('userToken', data.token);
-              localStorage.setItem('token', data.token);
             }
             //store user data in state
             setUser(data.user);
@@ -60,7 +60,12 @@ export default function SignInPage() {
             setMessageType('success');
             setShowMessage(true);
             setTimeout(() => setShowMessage(false), 4000);
-            setTimeout(() => router.push(redirectUrl), 1200); // redirect to original page
+            
+            // Wait longer for cookies to be processed, then redirect
+            setTimeout(() => {
+                // Force a page reload to ensure cookies are available to middleware
+                window.location.href = redirectUrl;
+            }, 3000); // Increased from 1500ms to 3000ms
         } else {
             const errorData = await response.json();
             setMessage(errorData.error || 'Sign in failed');
@@ -88,84 +93,80 @@ export default function SignInPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50">
-            <Navbar />
-            <div className="flex-1 flex items-center justify-center">
-                <div className="bg-white p-8 mt-5 mb-5 rounded-lg shadow-md w-96 min-h-[420px] flex flex-col justify-center">
-                    <h2 className="text-2xl text-black font-bold text-center mb-6">Sign In</h2>
-                    {showMessage && (
-                        <p className={`text-center mb-4 transition-opacity duration-500 ${messageType === 'success' ? 'text-green-500' : 'text-red-500'} ${showMessage ? 'opacity-100' : 'opacity-0'}`}>{message}</p>
-                    )}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                            <div className="relative mt-1">
-                                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold text-black"
-                                    placeholder="Enter your email"
-                                    required
-                                />
-                            </div>
+        <div className="flex-1 flex items-center justify-center">
+            <div className="bg-white p-8 mt-5 mb-5 rounded-lg shadow-md w-96 min-h-[420px] flex flex-col justify-center">
+                <h2 className="text-2xl text-black font-bold text-center mb-6">Sign In</h2>
+                {showMessage && (
+                    <p className={`text-center mb-4 transition-opacity duration-500 ${messageType === 'success' ? 'text-green-500' : 'text-red-500'} ${showMessage ? 'opacity-100' : 'opacity-0'}`}>{message}</p>
+                )}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                        <div className="relative mt-1">
+                            <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold text-black"
+                                placeholder="Enter your email"
+                                required
+                            />
                         </div>
-                        <div className="mt-4">
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                            <div className="relative mt-1">
-                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold text-black"
-                                    placeholder="Enter your password"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gold focus:outline-none"
-                                    onClick={() => setShowPassword((prev) => !prev)}
-                                    tabIndex={-1}
-                                >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="mb-3 text-right">
+                    </div>
+                    <div className="mt-4">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <div className="relative mt-1">
+                            <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gold text-black"
+                                placeholder="Enter your password"
+                                required
+                            />
                             <button
                                 type="button"
-                                className="text-sm text-brown underline hover:text-gold"
-                                onClick={() => setShowReset(true)}
+                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gold focus:outline-none"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                tabIndex={-1}
                             >
-                                Forgot password?
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
                             </button>
                         </div>
-                        <button
-                            type="submit"
-                            className="w-full flex items-center justify-center gap-2 bg-gold text-brown font-bold py-2 px-4 rounded-lg hover:bg-yellow-300 transition-colors"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brown"></div>
-                            ) : (
-                                <FiLogIn />
-                            )}
-                            {isLoading ? 'Signing In...' : 'Sign In'}
-                        </button>
-                    </form>
-                    <div className="mt-4 text-center">
-                        <span className="text-gray-600"> Don't have an account? </span>
-                        <a href="/create-profile" className="text-gold font-semibold hover:underline">Create Profile</a>
                     </div>
+                    <div className="mb-3 text-right">
+                        <button
+                            type="button"
+                            className="text-sm text-brown underline hover:text-gold"
+                            onClick={() => setShowReset(true)}
+                        >
+                            Forgot password?
+                        </button>
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full flex items-center justify-center gap-2 bg-gold text-brown font-bold py-2 px-4 rounded-lg hover:bg-yellow-300 transition-colors"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brown"></div>
+                        ) : (
+                            <FiLogIn />
+                        )}
+                        {isLoading ? 'Signing In...' : 'Sign In'}
+                    </button>
+                </form>
+                <div className="mt-4 text-center">
+                    <span className="text-gray-600"> Don't have an account? </span>
+                    <a href="/create-profile" className="text-gold font-semibold hover:underline">Create Profile</a>
                 </div>
             </div>
-            <Footer />
             {showReset && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 relative">
@@ -179,6 +180,42 @@ export default function SignInPage() {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// Loading component for Suspense fallback
+function SignInFormLoading() {
+    return (
+        <div className="flex-1 flex items-center justify-center">
+            <div className="bg-white p-8 mt-5 mb-5 rounded-lg shadow-md w-96 min-h-[420px] flex flex-col justify-center">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded mb-6"></div>
+                    <div className="space-y-4">
+                        <div>
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                        </div>
+                        <div>
+                            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                        </div>
+                        <div className="h-10 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default function SignInPage() {
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <Navbar />
+            <Suspense fallback={<SignInFormLoading />}>
+                <SignInForm />
+            </Suspense>
+            <Footer />
         </div>
     );
 }

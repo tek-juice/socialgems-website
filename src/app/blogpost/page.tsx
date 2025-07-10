@@ -5,6 +5,7 @@ import Navbar from "../components/navbar";
 import Footer from "../components/footer";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { FaTimes, FaChevronLeft, FaChevronRight, FaVideo, FaPen, FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaPlay, FaEye, FaHeart, FaShare, FaBookmark, FaSpinner } from "react-icons/fa";
+import useSWR from 'swr';
 
 interface Story {
   story_id: number;
@@ -41,17 +42,14 @@ interface StoriesByType {
   trivia: Story[];
 }
 
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export default function BlogPost() {
-  const [stories, setStories] = useState<Story[]>([]);
-  const [storiesByType, setStoriesByType] = useState<StoriesByType>({
-    text: [],
-    picture: [],
-    audio: [],
-    poll: [],
-    trivia: []
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // SWR for accepted stories
+  const { data, error, isLoading, mutate } = useSWR('/api/stories/acceptedStory', fetcher, { refreshInterval: 500 });
+  const stories: Story[] = data?.stories || [];
+  const storiesByType: StoriesByType = data?.storiesByType || { text: [], picture: [], audio: [], poll: [], trivia: [] };
+
   const [activeTab, setActiveTab] = useState<'text' | 'picture' | 'audio' | 'poll' | 'trivia'>('text');
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -93,10 +91,6 @@ export default function BlogPost() {
   const currentStory = currentStories[currentStoryIndex];
 
   useEffect(() => {
-    fetchApprovedStories();
-  }, []);
-
-  useEffect(() => {
     // Reset to first story when tab changes
     setCurrentStoryIndex(0);
   }, [activeTab]);
@@ -133,7 +127,7 @@ export default function BlogPost() {
   const fetchStoryMetrics = async () => {
     if (typeof window === 'undefined') return;
     
-    const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+    const token = sessionStorage.getItem('userToken');
     
     for (const story of stories) {
       try {
@@ -181,7 +175,7 @@ export default function BlogPost() {
     if (typeof window === 'undefined') return;
     
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       const response = await fetch('/api/stories/views', {
         method: 'POST',
         headers: {
@@ -212,7 +206,7 @@ export default function BlogPost() {
 
     setLoadingMetrics(prev => ({ ...prev, [storyId]: true }));
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       const response = await fetch('/api/stories/likes', {
         method: 'POST',
         headers: {
@@ -249,7 +243,7 @@ export default function BlogPost() {
 
     setLoadingMetrics(prev => ({ ...prev, [storyId]: true }));
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       const response = await fetch('/api/stories/saves', {
         method: 'POST',
         headers: {
@@ -277,7 +271,7 @@ export default function BlogPost() {
   // Function to handle share
   const handleShare = async (storyId: number, platform: string) => {
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       const response = await fetch('/api/stories/shares', {
         method: 'POST',
         headers: {
@@ -360,7 +354,7 @@ export default function BlogPost() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+        const token = sessionStorage.getItem('userToken');
         if (token) {
           const response = await fetch('/api/verify-token', {
             method: 'POST',
@@ -372,14 +366,11 @@ export default function BlogPost() {
           if (data.success) {
             setIsUserLoggedIn(true);
             setUserEmail(data.email);
-            // Ensure token is in sessionStorage for consistency
-            sessionStorage.setItem('userToken', token);
           } else {
             setIsUserLoggedIn(false);
             setUserEmail(null);
             // Clear invalid tokens
             sessionStorage.removeItem('userToken');
-            localStorage.removeItem('token');
           }
         } else {
           setIsUserLoggedIn(false);
@@ -390,7 +381,6 @@ export default function BlogPost() {
         setUserEmail(null);
         // Clear tokens on error
         sessionStorage.removeItem('userToken');
-        localStorage.removeItem('token');
       }
     };
     
@@ -398,27 +388,6 @@ export default function BlogPost() {
       checkAuth();
     }
   }, []);
-
-  const fetchApprovedStories = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/stories/acceptedStory');
-      const data = await response.json();
-      
-      if (data.success) {
-        setStories(data.stories);
-        setStoriesByType(data.storiesByType);
-        setError(null);
-      } else {
-        setError(data.error || 'Failed to fetch stories');
-      }
-    } catch (err) {
-      setError('Error fetching stories');
-    } finally {
-      setLoading(false);
-      setIsInitialLoad(false);
-    }
-  };
 
   const getWeeklyStories = (stories: Story[]) => {
     const currentDate = new Date();
@@ -489,7 +458,7 @@ export default function BlogPost() {
 
     setVotingPollId(pollId);
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       if (!token) {
         alert('Please log in to vote');
         if (typeof window !== 'undefined') {
@@ -514,28 +483,6 @@ export default function BlogPost() {
       
       if (response.ok) {
         setPollVotes(prev => ({ ...prev, [pollId]: voteOption }));
-        // Update the story with new vote counts
-        setStories(prev => prev.map(story => {
-          if (story.story_id === pollId && story.poll_options) {
-            return {
-              ...story,
-              poll_options: data.updatedOptions
-            };
-          }
-          return story;
-        }));
-        setStoriesByType(prev => ({
-          ...prev,
-          poll: prev.poll.map(story => {
-            if (story.story_id === pollId && story.poll_options) {
-              return {
-                ...story,
-                poll_options: data.updatedOptions
-              };
-            }
-            return story;
-          })
-        }));
       } else {
         alert(data.error || 'Failed to vote');
       }
@@ -563,7 +510,7 @@ export default function BlogPost() {
 
     setSubmittingTriviaId(triviaId);
     try {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       if (!token) {
         alert('Please log in to answer trivia');
         if (typeof window !== 'undefined') {
@@ -718,7 +665,7 @@ export default function BlogPost() {
 
           {/* Main Content Area */}
           <div className="flex-1">
-            {loading && isInitialLoad ? (
+            {isLoading && !data ? (
               <div className="space-y-8">
                 <StorySkeleton />
                 <StorySkeleton />
@@ -726,9 +673,12 @@ export default function BlogPost() {
               </div>
             ) : error ? (
               <div className="text-center py-16">
-                <div className="text-red-500 text-xl mb-4">{error}</div>
+                <div className="text-red-500 text-xl mb-4">{error.message || 'Failed to fetch stories'}</div>
                 <button
-                  onClick={fetchApprovedStories}
+                  onClick={() => {
+                    // Re-fetch the data to retry
+                    mutate('/api/stories/acceptedStory');
+                  }}
                   className="px-6 py-3 bg-gold text-white rounded-lg hover:bg-gold/90 transition-colors"
                 >
                   Try Again
@@ -750,10 +700,11 @@ export default function BlogPost() {
                 {/* Story Card Visual (user image or gradient) */}
                 <div className="relative w-full max-h-[400px] h-[400px] flex items-center justify-center bg-white rounded-t-2xl overflow-hidden">
                   {currentStory.user_image ? (
-                    <img
+                    <Image
                       src={currentStory.user_image}
                       alt={currentStory.fname + ' ' + currentStory.lname}
-                      className="max-w-full max-h-full object-contain mx-auto my-auto"
+                      fill
+                      className="object-contain mx-auto my-auto"
                       style={{ display: 'block' }}
                     />
                   ) : (

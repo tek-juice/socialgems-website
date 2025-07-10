@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -12,16 +12,38 @@ export async function getSession(request?: NextRequest) {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.replace('Bearer ', '');
     }
-  }
 
-  // Optionally, fallback to cookies if you want to support that as well
-  // (not used in your current flow, but can be added if needed)
+    // If no token in Authorization header, check cookies
+    if (!token) {
+      const tokenCookie = request.cookies.get('token');
+      if (tokenCookie) {
+        token = tokenCookie.value;
+      }
+    }
+
+    // Check for userToken cookie as fallback
+    if (!token) {
+      const userTokenCookie = request.cookies.get('userToken');
+      if (userTokenCookie) {
+        token = userTokenCookie.value;
+      }
+    }
+  }
 
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
-    return { user: decoded };
+    // Use jose library for JWT verification (Edge Runtime compatible)
+    const secret = new TextEncoder().encode(JWT_SECRET);
+    const { payload } = await jwtVerify(token, secret);
+    
+    // Check if token is expired
+    const currentTime = Date.now() / 1000;
+    if (payload.exp && payload.exp < currentTime) {
+      return null;
+    }
+
+    return { user: payload };
   } catch (err) {
     return null;
   }

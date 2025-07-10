@@ -1,7 +1,7 @@
 //route to handle story creation
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
-import { getSession } from '../../../lib/auth'; //get session from auth.ts
+import { getSession } from '@/app/lib/auth'; //get session from auth.ts
 
 export async function POST(request: NextRequest) {
   const session = await getSession(request);
@@ -16,7 +16,12 @@ export async function POST(request: NextRequest) {
     // You may need to fetch user_id from the profile table using email if not present in token
     // For now, let's assume you only have email in the token
     // Fetch user_id from profile
-    const userRes = await client.sql`SELECT id FROM profile WHERE email = ${session.user.email}`;
+    const userEmail = session.user.email;
+    if (typeof userEmail !== 'string') {
+      return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
+    }
+    
+    const userRes = await client.sql`SELECT id FROM profile WHERE email = ${userEmail}`;
     if (userRes.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }

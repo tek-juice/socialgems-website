@@ -32,7 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env
-
+.env.local
 src/app/lib/placeholder-data.ts
 src/app/lib/schema.sql
 src/app/api/check_user/route.ts
+src/app/api/stories/checkProfile/route.ts
+

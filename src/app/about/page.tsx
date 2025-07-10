@@ -31,8 +31,8 @@ export default function About() {
             <Image
               src="/connect-image.jpg" 
               alt="Hero Image" 
-              layout="fill" 
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               className="z-0 rounded-md"
               priority
             />
@@ -40,8 +40,8 @@ export default function About() {
             <Image 
               src="/SG-web-banner-about.jpg"
               alt="Hero Image"
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               className="z-0 rounded-md"
               priority
             />
@@ -137,7 +137,7 @@ export default function About() {
                         <h3 className="text-xl font-bold text-white mb-2">Evelyn Luganda</h3>
                         <p className="text-white/90 text-sm mb-3">Project Manager, Uganda</p>
                         <p className="text-white/80 text-xs leading-relaxed">
-                          Evelyn is the driving force behind Social Gems. As Project Manager and one of the original minds behind the platform's vision, she has overseen the company's growth from concept to reality. Known for her bold leadership and clear vision, Evelyn brings creativity and unstoppable energy to the team.
+                          Evelyn is the driving force behind Social Gems. As Project Manager and one of the original minds behind the platform&apos;s vision, she has overseen the company&apos;s growth from concept to reality. Known for her bold leadership and clear vision, Evelyn brings creativity and unstoppable energy to the team.
                         </p>
                       </div>
                     </div>

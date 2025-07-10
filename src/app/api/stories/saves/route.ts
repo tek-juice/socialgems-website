@@ -28,7 +28,12 @@ export async function POST(request: NextRequest) {
     try {
         // Get user ID from session
        // console.log('Querying user profile for email:', session.user.email);
-        const userRes = await client.sql`SELECT id FROM profile WHERE email = ${session.user.email}`;
+        const userEmail = session.user.email;
+        if (typeof userEmail !== 'string') {
+            return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
+        }
+
+        const userRes = await client.sql`SELECT id FROM profile WHERE email = ${userEmail}`;
        // console.log('User query result rows:', userRes.rows.length);
         
         if (userRes.rows.length === 0) {
@@ -130,7 +135,12 @@ export async function GET(request: NextRequest) {
         let isSaved = false;
         
         if (session) {
-            const userRes = await client.sql`SELECT id FROM profile WHERE email = ${session.user.email}`;
+            const userEmail = session.user.email;
+            if (typeof userEmail !== 'string') {
+                return NextResponse.json({ error: 'Invalid user data' }, { status: 400 });
+            }
+
+            const userRes = await client.sql`SELECT id FROM profile WHERE email = ${userEmail}`;
             if (userRes.rows.length > 0) {
                 const userId = userRes.rows[0].id;
                 isSaved = await isUserSaved(client, parseInt(storyId), userId);

@@ -31,10 +31,10 @@ const Navbar = () => {
   const [showResults, setShowResults] = useState(false);
   const [showReset, setShowReset] = useState(false);
 
-  // Check for JWT in sessionStorage/localStorage and decode
+  // Check for JWT in sessionStorage and decode
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const token = sessionStorage.getItem('userToken') || localStorage.getItem('token');
+      const token = sessionStorage.getItem('userToken');
       if (token) {
         try {
           const decoded: any = jwtDecode(token);
@@ -44,15 +44,12 @@ const Navbar = () => {
             email: decoded.email,
             image: decoded.image || null
           });
-          // Ensure token is in sessionStorage for consistency
-          sessionStorage.setItem('userToken', token);
         } catch (e) {
           console.error('Token decode error;', e);
           setUser(null);
           setProfile(null);
           // Clear invalid tokens
           sessionStorage.removeItem('userToken');
-          localStorage.removeItem('token');
         }
       } else {
         setUser(null);
@@ -79,13 +76,32 @@ const Navbar = () => {
   }, [user]);
 
   // Handle sign out
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     if (typeof window !== 'undefined') {
+      try {
+        // Call the logout API to clear cookies server-side
+        await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      } catch (error) {
+        console.error('Error during logout:', error);
+      }
+      
+      // Clear sessionStorage
       sessionStorage.removeItem('userToken');
-      localStorage.removeItem('token');
+      
+      // Also clear cookies client-side as backup
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'userToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
       setUser(null);
       setProfile(null);
       setIsProfileOpen(false);
+      
+      // Force a page reload to ensure middleware picks up the cleared cookies
       window.location.href = '/';
     }
   };
@@ -263,11 +279,11 @@ const Navbar = () => {
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
               )}
-              <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
+              {/*<button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
                 if (typeof window !== 'undefined') {
                   window.location.href = '/login';
                 }
-              }}>Go to Admin Dashboard</button>
+              }}>Go to Admin Dashboard</button>*/}
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
               )}

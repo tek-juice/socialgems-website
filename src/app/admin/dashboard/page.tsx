@@ -6,7 +6,14 @@ import { saveAs } from 'file-saver';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import SkeletonLoader from '@/app/components/skeletonLoader';
-import { FaUsers, FaNewspaper, FaChartLine, FaBars, FaTimes } from 'react-icons/fa';
+import { FaUsers, FaNewspaper, FaChartLine, FaBars, FaTimes, FaSpinner } from 'react-icons/fa';
+import useSWR from 'swr';
+
+// Place fetcher at the top
+const fetcher = (url: string) => {
+  if(typeof window === 'undefined') return Promise.resolve(null);
+  return fetch(url).then(res => res.json());
+};
 
 const Dashboard = () => {
   const router = useRouter();
@@ -31,7 +38,7 @@ const Dashboard = () => {
   const [ success, setSuccess ] = useState('');//till here on new states for change passord.
   const [showDownloadModal, setShowDownloadModal] = useState(false); //added state for download
   const [dateRange, setDateRange] = useState({startDate: '', endDate: ''}); //added state for date range
-  const [ isMobileMenuOpen, setIsMobileMenuOpen ] = useState(false); //this is for mobile view
+  //const [ isMobileMenuOpen, setIsMobileMenuOpen ] = useState(false); //this is for mobile view
 
   // Modal State
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -62,7 +69,6 @@ const Dashboard = () => {
   const [previewContent, setPreviewContent] = useState({ title: '', description: '' });
 
   // User Story States
-  const [stories, setStories] = useState<any[]>([]);
   const [storyLoading, setStoryLoading] = useState(false);
   const [storySuccessMessage, setStorySuccessMessage] = useState<string | null>(null);
   const [storyErrorMessage, setStoryErrorMessage] = useState<string | null>(null);
@@ -72,6 +78,18 @@ const Dashboard = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [isViewStoryModalOpen, setIsViewStoryModalOpen] = useState(false);
   const [viewingStory, setViewingStory] = useState<any>(null);
+
+  // Use SWR for user stories
+  const {
+    data: userStoriesData,
+    error: userStoriesError,
+    isLoading: userStoriesLoading,
+  } = useSWR(
+    activeMenu === 'user-story' ? '/api/stories/checkStory' : null,
+    fetcher,
+    { refreshInterval: 1000 }
+  );
+  const stories = userStoriesData?.stories || [];
 
   useEffect(() => {
     const token = sessionStorage.getItem('adminToken');
@@ -540,7 +558,8 @@ const Dashboard = () => {
             default: return false;
           }
         });
-        setStories(filteredStories);
+        //setStories(filteredStories);
+        //console.log(filteredStories);
         setStoryErrorMessage(null); // Clear error after successful fetch
       } else {
         setStoryErrorMessage('Failed to fetch stories');
@@ -554,7 +573,7 @@ const Dashboard = () => {
 
   const handleStoryAction = async (storyId: number, action: 'approve' | 'feedback' | 'reject') => {
     if (action === 'feedback') {
-      setSelectedStory(stories.find(s => s.story_id === storyId));
+      setSelectedStory(stories.find((s: any) => s.story_id === storyId));
       setIsFeedbackModalOpen(true);
       return;
     }
@@ -635,6 +654,64 @@ const Dashboard = () => {
     setIsViewStoryModalOpen(true);
   };
 
+  // Use SWR for overview report with 1s refresh
+  const { data: overviewData, error: overviewError, isLoading: overviewLoading } = useSWR(
+    activeMenu === 'overview' ? '/api/stories/overviewReport' : null,
+    fetcher,
+    { refreshInterval: 1000 }
+  );
+
+  // Use SWR for accepted stories with 1s refresh
+  const { data: acceptedData } = useSWR(
+    activeMenu === 'overview' ? '/api/stories/acceptedStory' : null,
+    fetcher,
+    { refreshInterval: 1000 }
+  );
+
+  // Filter out edited stories that are already approved
+  const approvedIds = acceptedData?.stories?.map((s: any) => s.story_id) || [];
+  const unapprovedEditedStories = overviewData?.detailedEditedStories?.filter((story: any) => !approvedIds.includes(story.story_id)) || [];
+
+  // Helper to calculate weekly increment percentage
+  function getWeeklyIncrement(stories: any[]) {
+    if (!stories || stories.length === 0) return 0;
+    const now = new Date();
+    const startOfThisWeek = new Date(now);
+    startOfThisWeek.setDate(now.getDate() - now.getDay());
+    startOfThisWeek.setHours(0,0,0,0);
+    const startOfLastWeek = new Date(startOfThisWeek);
+    startOfLastWeek.setDate(startOfThisWeek.getDate() - 7);
+    const endOfLastWeek = new Date(startOfThisWeek);
+    endOfLastWeek.setMilliseconds(-1);
+    const thisWeekCount = stories.filter((s: any) => new Date(s.created_at) >= startOfThisWeek).length;
+    const lastWeekCount = stories.filter((s: any) => new Date(s.created_at) >= startOfLastWeek && new Date(s.created_at) < startOfThisWeek).length;
+    if (lastWeekCount === 0) return thisWeekCount > 0 ? 100 : 0;
+    return Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100);
+  }
+
+  // Handle approve edited story
+  const handleApproveStory = async (storyId: number) => {
+    try {
+      const response = await fetch('/api/stories/approveStory', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Refresh the overview data to show updated status
+        // SWR will automatically refetch due to the refreshInterval
+        alert('Story approved successfully!');
+      } else {
+        alert(data.error || 'Failed to approve story');
+      }
+    } catch (error) {
+      alert('Failed to approve story');
+    }
+  };
+
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
@@ -666,7 +743,7 @@ const Dashboard = () => {
               ${activeMenu === 'overview' ? 'bg-gold text-black' : 'bg-transparent text-brown hover:bg-brown/10'}`}
           >
             <FaChartLine className="text-xl" />
-            {isSidebarOpen && <span className="ml-4">Overview</span>}
+            {isSidebarOpen && <span className="text-black ml-4">Overview</span>}
           </button>
 
           <button
@@ -888,8 +965,246 @@ const Dashboard = () => {
           {/* Overview Section */}
           {activeMenu === 'overview' && (
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold mb-4">Overview</h2>
-              {/* Add overview content here */}
+              <h2 className="text-xl text-yellow-500 font-semibold mb-4">Overview</h2>
+              {overviewLoading ? (
+                <div className="text-center py-8"><FaSpinner className="animate-spin text-gold text-3xl mx-auto" /></div>
+              ) : overviewError ? (
+                <div className="text-red-500">{overviewError?.message || 'Failed to fetch overview report'}</div>
+              ) : overviewData ? (
+                <div className="flex flex-wrap gap-6 mb-8">
+                  {/* Total Stories */}
+                  <div className="flex-1 min-w-[200px] bg-white rounded-xl p-6 shadow text-center border-2 border-yellow-500">
+                    <div className="text-3xl font-bold text-black">{overviewData?.totalStories?? 0}</div>
+                    <div className="text-black text-lg font-semibold mt-2">Total Stories</div>
+                    <div className={`mt-2 font-bold text-sm flex items-center justify-center gap-1 ${getWeeklyIncrement(overviewData.stories) >= 0 ? 'text-green-600' : 'text-red-600'}`}> 
+                      {getWeeklyIncrement(overviewData.stories) >= 0 ? '+' : ''}{getWeeklyIncrement(overviewData.stories)}% this week
+                      {getWeeklyIncrement(overviewData.stories) > 0 && <span className="ml-1">▲</span>}
+                      {getWeeklyIncrement(overviewData.stories) < 0 && <span className="ml-1">▼</span>}
+                    </div>
+                  </div>
+                  {/* Approved */}
+                  <div className="flex-1 min-w-[200px] bg-white rounded-xl p-6 shadow text-center border-2 border-yellow-500">
+                    <div className="text-3xl font-bold text-black">{overviewData?.totalApproved?? 0}</div>
+                    <div className="text-black text-lg font-semibold mt-2">Approved</div>
+                  </div>
+                  {/* Draft */}
+                  <div className="flex-1 min-w-[200px] bg-white rounded-xl p-6 shadow text-center border-2 border-yellow-500">
+                    <div className="text-3xl font-bold text-black">{overviewData?.totalDraft?? 0}</div>
+                    <div className="text-black text-lg font-semibold mt-2">In Draft</div>
+                  </div>
+                  {/* With Feedback */}
+                  {/*<div className="flex-1 min-w-[200px] bg-white rounded-xl p-6 shadow text-center border-2 border-yellow-500">
+                    <div className="text-3xl font-bold text-black">{overviewData?.totalWithFeedback?? 0}</div>
+                    <div className="text-black text-lg font-semibold mt-2">With Feedback</div>
+                  </div>*/}
+                  {/* By Type */}
+                  <div className="flex-1 min-w-[200px] bg-white rounded-xl p-6 shadow text-center border-2 border-yellow-500">
+                    <div className="text-lg font-bold text-black mb-2">By Type</div>
+                    <div className="flex flex-col gap-1 text-black text-sm">
+                      <div>Text: <span className="text-black font-bold">{overviewData?.typeCounts?.story?? 0}</span></div>
+                      <div>Picture: <span className="font-bold">{overviewData?.typeCounts?.picture_comic?? 0}</span></div>
+                      <div>Audio: <span className="font-bold">{overviewData?.typeCounts?.audio?? 0}</span></div>
+                      <div>Poll: <span className="font-bold">{overviewData?.typeCounts?.poll?? 0}</span></div>
+                      <div>Trivia: <span className="font-bold">{overviewData?.typeCounts?.trivia_quiz?? 0}</span></div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+              
+              {/* Edited Stories and Feedback Stories Section */}
+              {overviewData && (
+                <div className="mt-8 flex flex-col gap-8">
+                  {/* Edited Stories */}
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-gold to-yellow-500 text-black p-4 rounded-t-xl">
+                      <h3 className="text-lg font-bold tracking-wide">Edited Stories</h3>
+                      <p className="text-sm opacity-90 font-medium">Stories that have been modified</p>
+                    </div>
+                    <div className="p-4">
+                      {unapprovedEditedStories.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Title</th>
+                                <th className="px-4 py-3 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Type</th>
+                                <th className="px-4 py-3 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Author</th>
+                                <th className="px-4 py-3 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Edited</th>
+                                <th className="px-4 py-3 text-left text-xs font-extrabold text-gray-700 uppercase tracking-wider">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {unapprovedEditedStories.map((story: any) => (
+                                <tr key={story.story_id} className="hover:bg-yellow-50 transition-colors">
+                                  <td className="px-4 py-3 text-sm font-medium text-gray-900 max-w-[180px] truncate">
+                                    {story.title}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm">
+                                    <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full shadow-sm border bg-brown/10 text-brown border-brown/20`}>
+                                      {story.type.replace('_', ' ')}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-700">
+                                    <div className="text-xs font-semibold">{story.fname} {story.lname}</div>
+                                    <div className="text-gray-500 truncate max-w-[120px]">{story.email}</div>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-600 font-semibold">
+                                    {new Date(story.updated_at).toLocaleDateString()}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm">
+                                    <button
+                                      onClick={() => handleApproveStory(story.story_id)}
+                                      className="bg-gray-100 hover:bg-yellow-400 hover:text-black text-brown font-extrabold px-4 py-2 rounded-lg shadow border border-brown/30 transition-colors focus:outline-none focus:ring-2 focus:ring-brown"
+                                    >
+                                      Approve
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 text-center py-8">
+                          <div className="text-4xl mb-2">📝</div>
+                          <div>No edited stories found</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Stories with Feedback */}
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div className="bg-gradient-to-r from-gold to-yellow-500 text-black p-4 rounded-t-xl">
+                      <h3 className="text-lg font-semibold">Stories with Feedback</h3>
+                      <p className="text-sm opacity-90">Stories that have received admin feedback</p>
+                    </div>
+                    <div className="p-4">
+                      {overviewData?.feedbackStories && overviewData.feedbackStories.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feedback</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {overviewData.feedbackStories.map((story: any) => (
+                                <tr key={story.story_id} className="hover:bg-gray-50">
+                                  <td className="px-3 py-3 text-sm font-medium text-gray-900 max-w-[120px] truncate">
+                                    {story.title}
+                                  </td>
+                                  <td className="px-3 py-3 text-sm">
+                                    <span className={`px-2 py-1 text-xs rounded-full ${
+                                      story.type === 'story' ? 'bg-blue-100 text-blue-800' :
+                                      story.type === 'picture_comic' ? 'bg-green-100 text-green-800' :
+                                      story.type === 'audio' ? 'bg-purple-100 text-purple-800' :
+                                      story.type === 'poll' ? 'bg-orange-100 text-orange-800' :
+                                      'bg-pink-100 text-pink-800'
+                                    }`}>
+                                      {story.type.replace('_', ' ')}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-3 text-sm text-gray-600">
+                                    <div className="text-xs">
+                                      <div className="font-medium">{story.fname} {story.lname}</div>
+                                      <div className="text-gray-500 truncate max-w-[100px]">{story.email}</div>
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-3 text-sm text-gray-600">
+                                    {new Date(story.created_at).toLocaleDateString()}
+                                  </td>
+                                  <td className="px-3 py-3 text-sm">
+                                    <div className="max-w-[350px] whitespace-pre-line">
+                                      <div className={`text-xs p-2 rounded ${
+                                        story.admin_feedback ? 'bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800' : 'bg-gray-50 text-gray-500'
+                                      }`}>
+                                        {story.admin_feedback ? (
+                                          <div title={story.admin_feedback} className="whitespace-pre-line break-words">
+                                            {story.admin_feedback}
+                                          </div>
+                                        ) : (
+                                          <span className="italic">NIL</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 text-center py-8">
+                          <div className="text-4xl mb-2">💬</div>
+                          <div>No stories with feedback found</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Active Users Section */}
+              {overviewData?.activeUsers && overviewData.activeUsers.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Active Users</h3>
+                  <div className="bg-white rounded-xl shadow overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Stories</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved Stories</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {overviewData.activeUsers.map((user: any) => (
+                            <tr key={user.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                {user.image ? (
+                                  <Image
+                                    src={user.image}
+                                    alt={`${user.fname} ${user.lname}`}
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <span className="text-gray-500 font-semibold text-sm">
+                                      {user.fname?.charAt(0)}{user.lname?.charAt(0)}
+                                    </span>
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {user.fname} {user.lname}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {user.email}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="font-semibold text-blue-600">{user.total_stories}</span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="font-semibold text-green-600">{user.approved_stories}</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1168,11 +1483,11 @@ const Dashboard = () => {
               {/* Story Type Tabs */}
               <div className="flex flex-wrap gap-2 mb-6">
                 {[
-                  { key: 'text', label: 'Text Stories', count: stories.filter(s => s.type === 'story').length },
-                  { key: 'picture', label: 'Picture/Comic', count: stories.filter(s => s.type === 'picture_comic').length },
-                  { key: 'audio', label: 'Audio Stories', count: stories.filter(s => s.type === 'audio').length },
-                  { key: 'poll', label: 'Polls', count: stories.filter(s => s.type === 'poll').length },
-                  { key: 'trivia', label: 'Trivia Quizzes', count: stories.filter(s => s.type === 'trivia_quiz').length }
+                  { key: 'text', label: 'Text Stories', count: stories.filter((s: any) => s.type === 'story').length },
+                  { key: 'picture', label: 'Picture/Comic', count: stories.filter((s: any) => s.type === 'picture_comic').length },
+                  { key: 'audio', label: 'Audio Stories', count: stories.filter((s: any) => s.type === 'audio').length },
+                  { key: 'poll', label: 'Polls', count: stories.filter((s: any) => s.type === 'poll').length },
+                  { key: 'trivia', label: 'Trivia Quizzes', count: stories.filter((s: any) => s.type === 'trivia_quiz').length }
                 ].map((tab) => (
                   <button
                     key={tab.key}
@@ -1215,16 +1530,15 @@ const Dashboard = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {stories.filter(s => s.type === 'story').map((story) => (
+                        {stories.filter((s: any) => s.type === 'story').map((story: any) => (
                           <tr key={story.story_id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate">{story.title}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {story.fname} {story.lname}<br/>
                               <span className="text-gray-500">{story.email}</span>
@@ -1246,11 +1560,6 @@ const Dashboard = () => {
                                 </div>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900">
-                              <div className="max-w-xs">
-                                <p className="truncate">{story.text_content}</p>
-                              </div>
-                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 story.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -1263,30 +1572,30 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {new Date(story.created_at).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-2 py-2 whitespace-nowrap text-sm font-medium min-w-[180px]">
                               <button
                                 onClick={() => handleViewStory(story)}
-                                className="text-purple-600 hover:text-purple-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-brown/10 mr-1 transition-colors"
                               >
                                 View
                               </button>
                               {story.status === 'draft' && (
                                 <button
                                   onClick={() => handleStoryAction(story.story_id, 'approve')}
-                                  className="text-green-600 hover:text-green-900 mr-3"
+                                  className="px-2 py-1 rounded bg-yellow-400 text-black font-bold border border-yellow-500 hover:bg-brown/90 hover:text-white mr-1 transition-colors"
                                 >
                                   Approve
                                 </button>
                               )}
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'feedback')}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-yellow-400 hover:text-black mr-1 transition-colors"
                               >
                                 Feedback
                               </button>
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'reject')}
-                                className="text-red-600 hover:text-red-900"
+                                className="px-2 py-1 rounded bg-gray-100 text-red-600 font-semibold border border-red-200 hover:bg-red-200 hover:text-black transition-colors"
                               >
                                 Reject
                               </button>
@@ -1306,16 +1615,15 @@ const Dashboard = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profile Picture</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {stories.filter(s => s.type === 'picture_comic').map((story) => (
+                        {stories.filter((s: any) => s.type === 'picture_comic').map((story: any) => (
                           <tr key={story.story_id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate">{story.title}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {story.fname} {story.lname}<br/>
                               <span className="text-gray-500">{story.email}</span>
@@ -1340,11 +1648,6 @@ const Dashboard = () => {
                             <td className="px-6 py-4 text-sm text-gray-900">
                               {story.image_urls ? story.image_urls.length : 0} images
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900">
-                              <div className="max-w-xs">
-                                <p className="truncate">{story.picture_description || 'No description'}</p>
-                              </div>
-                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                 story.status === 'approved' ? 'bg-green-100 text-green-800' :
@@ -1357,30 +1660,30 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {new Date(story.created_at).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-2 py-2 whitespace-nowrap text-sm font-medium min-w-[180px]">
                               <button
                                 onClick={() => handleViewStory(story)}
-                                className="text-purple-600 hover:text-purple-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-brown/10 mr-1 transition-colors"
                               >
                                 View
                               </button>
                               {story.status === 'draft' && (
                                 <button
                                   onClick={() => handleStoryAction(story.story_id, 'approve')}
-                                  className="text-green-600 hover:text-green-900 mr-3"
+                                  className="px-2 py-1 rounded bg-yellow-400 text-black font-bold border border-yellow-500 hover:bg-brown/90 hover:text-white mr-1 transition-colors"
                                 >
                                   Approve
                                 </button>
                               )}
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'feedback')}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-yellow-400 hover:text-black mr-1 transition-colors"
                               >
                                 Feedback
                               </button>
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'reject')}
-                                className="text-red-600 hover:text-red-900"
+                                className="px-2 py-1 rounded bg-gray-100 text-red-600 font-semibold border border-red-200 hover:bg-red-200 hover:text-black transition-colors"
                               >
                                 Reject
                               </button>
@@ -1406,9 +1709,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {stories.filter(s => s.type === 'audio').map((story) => (
+                        {stories.filter((s: any) => s.type === 'audio').map((story: any) => (
                           <tr key={story.story_id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate">{story.title}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {story.fname} {story.lname}<br/>
                               <span className="text-gray-500">{story.email}</span>
@@ -1447,30 +1750,30 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {new Date(story.created_at).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-2 py-2 whitespace-nowrap text-sm font-medium min-w-[180px]">
                               <button
                                 onClick={() => handleViewStory(story)}
-                                className="text-purple-600 hover:text-purple-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-brown/10 mr-1 transition-colors"
                               >
                                 View
                               </button>
                               {story.status === 'draft' && (
                                 <button
                                   onClick={() => handleStoryAction(story.story_id, 'approve')}
-                                  className="text-green-600 hover:text-green-900 mr-3"
+                                  className="px-2 py-1 rounded bg-yellow-400 text-black font-bold border border-yellow-500 hover:bg-brown/90 hover:text-white mr-1 transition-colors"
                                 >
                                   Approve
                                 </button>
                               )}
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'feedback')}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-yellow-400 hover:text-black mr-1 transition-colors"
                               >
                                 Feedback
                               </button>
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'reject')}
-                                className="text-red-600 hover:text-red-900"
+                                className="px-2 py-1 rounded bg-gray-100 text-red-600 font-semibold border border-red-200 hover:bg-red-200 hover:text-black transition-colors"
                               >
                                 Reject
                               </button>
@@ -1496,9 +1799,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {stories.filter(s => s.type === 'poll').map((story) => (
+                        {stories.filter((s: any) => s.type === 'poll').map((story: any) => (
                           <tr key={story.story_id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.poll_question}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate">{story.poll_question}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {story.fname} {story.lname}<br/>
                               <span className="text-gray-500">{story.email}</span>
@@ -1535,30 +1838,30 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {new Date(story.created_at).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-2 py-2 whitespace-nowrap text-sm font-medium min-w-[180px]">
                               <button
                                 onClick={() => handleViewStory(story)}
-                                className="text-purple-600 hover:text-purple-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-brown/10 mr-1 transition-colors"
                               >
                                 View
                               </button>
                               {story.status === 'draft' && (
                                 <button
                                   onClick={() => handleStoryAction(story.story_id, 'approve')}
-                                  className="text-green-600 hover:text-green-900 mr-3"
+                                  className="px-2 py-1 rounded bg-yellow-400 text-black font-bold border border-yellow-500 hover:bg-brown/90 hover:text-white mr-1 transition-colors"
                                 >
                                   Approve
                                 </button>
                               )}
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'feedback')}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-yellow-400 hover:text-black mr-1 transition-colors"
                               >
                                 Feedback
                               </button>
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'reject')}
-                                className="text-red-600 hover:text-red-900"
+                                className="px-2 py-1 rounded bg-gray-100 text-red-600 font-semibold border border-red-200 hover:bg-red-200 hover:text-black transition-colors"
                               >
                                 Reject
                               </button>
@@ -1585,9 +1888,9 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {stories.filter(s => s.type === 'trivia_quiz').map((story) => (
+                        {stories.filter((s: any) => s.type === 'trivia_quiz').map((story: any) => (
                           <tr key={story.story_id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{story.trivia_question}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 max-w-[200px] truncate">{story.trivia_question}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {story.fname} {story.lname}<br/>
                               <span className="text-gray-500">{story.email}</span>
@@ -1609,7 +1912,7 @@ const Dashboard = () => {
                                 </div>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-900">{story.correct_answer}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900 max-w-[150px] truncate">{story.correct_answer}</td>
                             <td className="px-6 py-4 text-sm text-gray-900">
                               {story.trivia_options ? story.trivia_options.length : 0} options
                             </td>
@@ -1625,30 +1928,30 @@ const Dashboard = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {new Date(story.created_at).toLocaleDateString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td className="px-2 py-2 whitespace-nowrap text-sm font-medium min-w-[180px]">
                               <button
                                 onClick={() => handleViewStory(story)}
-                                className="text-purple-600 hover:text-purple-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-brown/10 mr-1 transition-colors"
                               >
                                 View
                               </button>
                               {story.status === 'draft' && (
                                 <button
                                   onClick={() => handleStoryAction(story.story_id, 'approve')}
-                                  className="text-green-600 hover:text-green-900 mr-3"
+                                  className="px-2 py-1 rounded bg-yellow-400 text-black font-bold border border-yellow-500 hover:bg-brown/90 hover:text-white mr-1 transition-colors"
                                 >
                                   Approve
                                 </button>
                               )}
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'feedback')}
-                                className="text-blue-600 hover:text-blue-900 mr-3"
+                                className="px-2 py-1 rounded bg-gray-100 text-brown font-semibold border border-brown/20 hover:bg-yellow-400 hover:text-black mr-1 transition-colors"
                               >
                                 Feedback
                               </button>
                               <button
                                 onClick={() => handleStoryAction(story.story_id, 'reject')}
-                                className="text-red-600 hover:text-red-900"
+                                className="px-2 py-1 rounded bg-gray-100 text-red-600 font-semibold border border-red-200 hover:bg-red-200 hover:text-black transition-colors"
                               >
                                 Reject
                               </button>
@@ -1660,7 +1963,7 @@ const Dashboard = () => {
                   )}
 
                   {/* No Stories Message */}
-                  {stories.filter(s => {
+                  {stories.filter((s: any) => {
                     switch (activeStoryTab) {
                       case 'text': return s.type === 'story';
                       case 'picture': return s.type === 'picture_comic';
@@ -2062,12 +2365,12 @@ const Dashboard = () => {
                     <div>
                       <h5 className="font-semibold text-gray-700 mb-4">Options:</h5>
                       <div className="space-y-3">
-                        {viewingStory.poll_options.map((option: string, index: number) => (
+                        {viewingStory.poll_options.map((option: any, index: number) => (
                           <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
                             <span className="w-8 h-8 bg-gold text-brown rounded-full flex items-center justify-center font-semibold mr-3">
                               {index + 1}
                             </span>
-                            <span className="text-gray-700">{option}</span>
+                            <span className="text-gray-700">{option.text}</span>
                           </div>
                         ))}
                       </div>
