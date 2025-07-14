@@ -1,4 +1,4 @@
-//route tht handles retrieving data from influencers table and posts it on the admin dashboard.
+//route that handles retrieving data from influencers table and posts it on the admin dashboard.
 import { NextResponse } from "next/server";
 import { db } from "../../../lib/db";
 import { parse } from "path";

@@ -72,7 +72,7 @@ export async function POST(req: Request) {
                 body.company_name,
                 body.email,
                 body.contact,
-                JSON.stringify(body.social_media), // Convert JSON to string
+                null, //JSON.stringify(body.social_media), // Convert JSON to string
                 body.expertise,
                 body.message,
             ]

@@ -485,10 +485,12 @@ export default function About() {
                           <h3 className="text-xl font-bold text-white mb-2">Kim Thiru</h3>
                           <p className="text-white/90 text-sm mb-3">Sales Associate, Kenya</p>
                           <p className="text-white/80 text-xs leading-relaxed">
-                            Kim brings his expertise in sales and relationship building to the 
-                            Kenya market. As a Sales Associate, he connects with local businesses 
-                            and influencers, helping them understand the value of Social Gems and 
-                            building strong partnerships across the region.
+                            Kim handles all things sales for Social Gems in Kenya. 
+                            From researching businesses to building partnerships, 
+                            he's always studying the market and making sure we 
+                            connect with the right brands. He's all about growth, 
+                            strategy, and keeping Social Gems visible in the right 
+                            spaces.
                           </p>
                         </div>
                       </div>
@@ -526,10 +528,9 @@ export default function About() {
                           <h3 className="text-xl font-bold text-white mb-2">Monica Cyrus</h3>
                           <p className="text-white/90 text-sm mb-3">Head of Marketing & Country Manager, Kenya</p>
                           <p className="text-white/80 text-xs leading-relaxed">
-                            Monica leads the marketing strategy and overall operations for Social Gems in Kenya. 
-                            With her extensive experience in marketing and business development, she drives the 
-                            company's growth in the Kenyan market while building strong relationships with local 
-                            brands and influencers.
+                            As the Head of Marketing for Social Gems, Monica leads creative strategy across Kenya 
+                            and supports the magic happening in Uganda too. She's all about building meaningful 
+                            connections and making sure the Social Gems brand shines everywhere it goes.
                           </p>
                         </div>
                       </div>

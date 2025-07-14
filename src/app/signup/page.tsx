@@ -155,10 +155,10 @@ export default function SignUpPage() {
         e.preventDefault();
 
         //validate social media selection
-        if(formData.social_media.length === 0) {
+        /*if(formData.social_media.length === 0) {
             setError("Please select at least one social media platform")
             return;
-        }
+        }*/
         //validate message
         if (!formData.message.trim()) {
             setError("Message cannot be left blank.");
@@ -295,7 +295,7 @@ export default function SignUpPage() {
                                     </div>
 
                                     {/* Social Media Checkboxes */}
-                                    <div>
+                                    {/*<div>
                                         <label className="block text-sm font-medium text-[#4A5568] mb-4">Preferred Social Media Platforms</label>
                                         <div className="flex flex-wrap gap-4">
                                             {[
@@ -319,7 +319,7 @@ export default function SignUpPage() {
                                                 </label>
                                             ))}
                                         </div>
-                                    </div>
+                                    </div>*/}
 
                                     <div>
                                         <label className="block text-sm font-medium text-[#4A5568]">Field of Expertise</label>

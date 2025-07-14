@@ -60,7 +60,7 @@ export async function POST(req: Request) {
             `);
         }
 
-        //Insert the user into the database
+        //Insert the user into the database but null the social_media
         const insertUser = await db.query(
             `INSERT INTO influencers (first_name, last_name, email, contact, social_media, influence, message)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
                 body.last_name,
                 body.email,
                 body.contact,
-                JSON.stringify(body.social_media), // Convert JSON to string
+                null, //JSON.stringify(body.social_media), // Convert JSON to string
                 body.influence,
                 body.message,
             ]
