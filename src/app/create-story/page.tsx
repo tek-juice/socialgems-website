@@ -154,6 +154,7 @@ export default function CreateStoryPage() {
       setFormData((prev: any) => ({ ...prev, description: editor.getHTML() }));
     },
     editable: true,
+    immediatelyRender: false, //fixes the ssr hydration error
   });
 
   // Reset editor content when opening the story modal for a new story
