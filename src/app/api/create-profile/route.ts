@@ -2,12 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../lib/db';
 import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getPublicSupabase } from '@/app/lib/supabase';
 
 export const config = {
   api: {
@@ -17,6 +12,7 @@ export const config = {
 
 export async function POST(request: NextRequest) {
     const client = await db.connect();
+    const supabase = getPublicSupabase();
     try {
         const formData = await request.formData();
         const fname = formData.get('fname') as string;
@@ -97,6 +93,7 @@ export async function POST(request: NextRequest) {
 //UPDATE THE PROFILE IMAGE ALONE
 export async function PUT(request: NextRequest) {
     const client = await db.connect();
+    const supabase = getPublicSupabase();
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

@@ -2,16 +2,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
 import { getSession } from '@/app/lib/auth';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getPublicSupabase } from '@/app/lib/supabase';
 
 export async function POST(request: NextRequest) {
     //console.log('=== AUDIO ROUTE STARTED ===');
-    
+    const supabase = getPublicSupabase();
     const session = await getSession(request);
     if (!session) {
         //console.log('❌ Unauthorized - No session found');

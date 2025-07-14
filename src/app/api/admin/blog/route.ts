@@ -1,15 +1,11 @@
 //file to handle db creation for blogpost.
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db';
-import  { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { getPublicSupabase } from '@/app/lib/supabase';
 
 export async function POST(request: NextRequest) {
     const client = await db.connect();
+    const supabase = getPublicSupabase();
     try {
         // Drop existing table if it exists
         //await client.sql`DROP TABLE IF EXISTS blog_post`;
@@ -77,6 +73,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     const client = await db.connect();
+    const supabase = getPublicSupabase();
     try {
         const { id, title, tagline, description, attachment } = await request.json();
         
