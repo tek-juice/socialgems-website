@@ -149,6 +149,21 @@ const Navbar = () => {
     }
   }, [showResults]);
 
+  // Close share dropdown when clicking outside
+  useEffect(() => {
+    if (!isShareOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (!target.closest('.share-dropdown')) {
+        setIsShareOpen(false);
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [isShareOpen]);
+
   return (
     <nav className="w-full py-4 px-4 bg-white shadow-[0_0_20px_rgba(0,0,0,0.3)] flex md:flex-row justify-between items-center rounded-md">
       <div className="flex-shrink-0">
@@ -227,7 +242,7 @@ const Navbar = () => {
           )}
         </div>
         {/* Share Your Story */}
-        <div className="relative ml-4">
+        <div className="relative ml-4 share-dropdown">
           <button
             onClick={handleShareClick}
             className="flex items-center gap-2 px-4 py-2 bg-gold text-brown font-bold rounded-full shadow hover:bg-yellow-300 transition-colors"
@@ -246,8 +261,8 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        {/* Profile Dropdown */}
-        <div className="relative ml-4">
+        {/* Profile Dropdown - COMMENTED OUT FOR UX */}
+        {/* <div className="relative ml-4">
           <button
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center focus:outline-none"
@@ -266,7 +281,6 @@ const Navbar = () => {
                 <FaUserCircle className="text-5xl text-brown mb-2" />
               )}
               <div className="text-black font-bold mb-1">{profile?.email || user?.email || 'Not signed in'}</div>
-              {/* Hide Sign In if signed in */}
               {!user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
                   setIsProfileOpen(false); 
@@ -275,21 +289,15 @@ const Navbar = () => {
                   }
                 }}>Sign In</button>
               )}
-              {/* Change Password option if logged in */}
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
               )}
-              {/*<button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
-                if (typeof window !== 'undefined') {
-                  window.location.href = '/login';
-                }
-              }}>Go to Admin Dashboard</button>*/}
               {user && (
                 <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
               )}
             </div>
           )}
-        </div>
+        </div> */}
         {/* Show ResetPasswordForm as modal */}
         {showReset && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -370,7 +378,7 @@ const Navbar = () => {
             )}
           </div>
           {/* Mobile Share Your Story */}
-          <div className="relative my-2 px-4">
+          <div className="relative my-2 px-4 share-dropdown">
             <button
               onClick={handleShareClick}
               className="w-full flex items-center gap-2 px-4 py-2 bg-gold text-brown font-bold rounded-full shadow hover:bg-yellow-300 transition-colors"
@@ -389,8 +397,8 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          {/* Mobile Profile Dropdown */}
-          <div className="relative my-2 px-4">
+          {/* Mobile Profile Dropdown - COMMENTED OUT FOR UX */}
+          {/* <div className="relative my-2 px-4">
             <button
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               className="w-full flex items-center justify-center focus:outline-none"
@@ -430,7 +438,7 @@ const Navbar = () => {
                 )}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       )}
     </nav>
