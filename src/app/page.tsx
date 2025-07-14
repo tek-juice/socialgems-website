@@ -21,7 +21,7 @@ export default function Home() {
     });
 
     // Refresh AOS on route changes
-    const handleRouteChange = () => {
+    const handleRouteChange = (): void => {
       AOS.refresh();
     };
 
