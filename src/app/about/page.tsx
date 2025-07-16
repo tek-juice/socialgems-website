@@ -535,11 +535,97 @@ export default function About() {
                         </div>
                       </div>
                     </div>
+
+
+                    {/* Team Member - Natalie */}
+                    <div className="group relative h-80 w-full perspective-1000">
+                      <div className="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+                        {/* Front Side */}
+                        <div className="absolute inset-0 w-full h-full backface-hidden">
+                          <div className="relative w-full h-full">
+                            <Image
+                              src="/Natalie.jpg"
+                              alt="Natalie"
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg">
+                              <div className="absolute bottom-4 left-4 right-4 text-white">
+                                <h3 className="text-xl font-bold mb-1">Natalie Abiya</h3>
+                                <p className="text-gold font-medium">Social Media Specialist, Kenya</p>
+                                <div className="flex items-center mt-2 text-white/80">
+                                  <span className="text-sm">View Profile</span>
+                                  <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Back Side */}
+                        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-black font-bold rounded-lg p-6 flex flex-col justify-center">
+                          <h3 className="text-xl font-bold text-white mb-2">Natalie Abiya</h3>
+                          <p className="text-white/90 text-sm mb-3">Social Media Specialist, Kenya</p>
+                          <p className="text-white/80 text-xs leading-relaxed">
+                            Natalie leads the social media strategy for Social Gems in Kenya, 
+                            helping grow our online presence and community. She creates engaging 
+                            content,  manage digital campaigns,  and focus on building brand visibility.
+                            Natalie is passionate about digital marketing and storytelling and ensures
+                            that social gems platform stays fresh, relevant and impactful.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Team Member - Cynthia */}
+                    <div className="group relative h-80 w-full perspective-1000">
+                      <div className="relative w-full h-full transition-transform duration-700 transform-style-preserve-3d group-hover:rotate-y-180">
+                        {/* Front Side */}
+                        <div className="absolute inset-0 w-full h-full backface-hidden">
+                          <div className="relative w-full h-full">
+                            <Image
+                              src="/Cynthia.jpg"
+                              alt="Cynthia"
+                              fill
+                              className="object-cover rounded-lg"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg">
+                              <div className="absolute bottom-4 left-4 right-4 text-white">
+                                <h3 className="text-xl font-bold mb-1">Cynthia Wangari</h3>
+                                <p className="text-gold font-medium">Lifestyle, Gaming & Travel Creator, Kenya</p>
+                                <div className="flex items-center mt-2 text-white/80">
+                                  <span className="text-sm">View Profile</span>
+                                  <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Back Side */}
+                        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-black font-bold rounded-lg p-6 flex flex-col justify-center">
+                          <h3 className="text-xl font-bold text-white mb-2">Cynthia Wangari</h3>
+                          <p className="text-white/90 text-sm mb-3">Lifestyle, Gaming & Travel Creator, Kenya</p>
+                          <p className="text-white/80 text-xs leading-relaxed">
+                            Cynthia is a digital storyteller known for her authentic voice across lifestyle, 
+                            gaming, and travel content. Whether she’s sharing honest moments, immersive gameplay, 
+                            or dreamy getaways, her content is rooted in realness, connection, and a deep love for 
+                            storytelling that makes every post feel personal.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          
 
           {/* Values Section */}
           <div className="bg-white p-8 rounded-2xl shadow-lg">
