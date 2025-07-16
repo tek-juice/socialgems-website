@@ -46,7 +46,7 @@ interface StoriesByType {
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BlogPost() {
-  const searchParams = useSearchParams();
+  const urlParams = useSearchParams();
   const router = useRouter();
   
   // SWR for accepted stories
@@ -97,8 +97,10 @@ export default function BlogPost() {
   // Handle URL parameters on initial load
   useEffect(() => {
     if (typeof window !== 'undefined' && stories.length > 0) {
-      const urlStoryId = searchParams.get('story');
-      const urlTab = searchParams.get('tab');
+
+      const urlParams = new URLSearchParams(window.location.search);  
+      const urlStoryId = urlParams.get('story');
+      const urlTab = urlParams.get('tab');
       
       if (urlTab && ['text', 'picture', 'audio', 'poll', 'trivia'].includes(urlTab)) {
         setActiveTab(urlTab as typeof activeTab);
@@ -127,14 +129,14 @@ export default function BlogPost() {
         }
       }
     }
-  }, [searchParams, stories, storiesByType]);
+  }, [urlParams, stories, storiesByType]);
 
   useEffect(() => {
     // Reset to first story when tab changes (only if no URL parameters)
-    if (!searchParams.get('story')) {
+    if (!urlParams.get('story')) {
       setCurrentStoryIndex(0);
     }
-  }, [activeTab, searchParams]);
+  }, [activeTab, urlParams]);
 
   // Fetch metrics for stories when they change
   useEffect(() => {
