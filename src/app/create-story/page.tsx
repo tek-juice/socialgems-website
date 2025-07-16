@@ -158,9 +158,9 @@ export default function CreateStoryPage() {
   const [ isClient, setIsClient ] = useState(false);
   
   // New state for draft stories
-  // const [showDraftStories, setShowDraftStories] = useState(false);
-  // const [editingDraftStory, setEditingDraftStory] = useState<DraftStory | null>(null);
-  // const [isDraftEditMode, setIsDraftEditMode] = useState(false);
+   const [showDraftStories, setShowDraftStories] = useState(false);
+   const [editingDraftStory, setEditingDraftStory] = useState<DraftStory | null>(null);
+   const [isDraftEditMode, setIsDraftEditMode] = useState(false);
 
   // Set isClient to true after hydration
   useEffect(() => {
@@ -177,13 +177,13 @@ export default function CreateStoryPage() {
   const loadingFeedback = !feedbackData && !feedbackError;
 
   // SWR for draft stories
-  /*const { data: draftData, error: draftError, mutate: mutateDraft } = useSWR(
+const { data: draftData, error: draftError, mutate: mutateDraft } = useSWR(
     isClient && typeof window !== 'undefined' ? '/api/stories/editDraftStory' : null,
     fetcher,
     { refreshInterval: 5000 } // Pull draft stories every 5s for live updates
   );  
   const draftStories = draftData?.stories || [];
-  const loadingDraft = !draftData && !draftError;*/
+  const loadingDraft = !draftData && !draftError;
 
   // At the top level of the component:
   const editor = useEditor({
@@ -415,175 +415,175 @@ export default function CreateStoryPage() {
     setOpenModal(null);
   };
 
-  // const handleEditDraftStory = async (story: DraftStory) => {
-  //   if (!isClient) return;
+   const handleEditDraftStory = async (story: DraftStory) => {
+     if (!isClient) return;
     
-  //   setEditingDraftStory(story);
-  //   setIsDraftEditMode(true);
+     setEditingDraftStory(story);
+     setIsDraftEditMode(true);
     
-  //   // Set form data based on story type
-  //   let formDataToSet: any = {
-  //     title: story.title,
-  //     tags: story.tags || []
-  //   };
+     // Set form data based on story type
+     let formDataToSet: any = {
+       title: story.title,
+       tags: story.tags || []
+     };
 
-  //   switch (story.type) {
-  //     case 'story':
-  //       formDataToSet.description = story.content;
-  //       break;
-  //     case 'picture_comic':
-  //       formDataToSet.description = story.description;
-  //       break;
-  //     case 'audio':
-  //       formDataToSet.description = story.description;
-  //       break;
-  //     case 'poll':
-  //       formDataToSet.question = story.question;
-  //       if (story.options && Array.isArray(story.options)) {
-  //         story.options.forEach((option: any, index: number) => {
-  //           if (option.text) {
-  //             formDataToSet[`option${index + 1}`] = option.text;
-  //           }
-  //         });
-  //       }
-  //       break;
-  //     case 'trivia_quiz':
-  //       formDataToSet.question = story.question;
-  //       formDataToSet.correct = story.correct_answer;
-  //       if (story.options && Array.isArray(story.options)) {
-  //         story.options.forEach((option: string, index: number) => {
-  //           formDataToSet[`option${index + 1}`] = option;
-  //         });
-  //       }
-  //       break;
-  //   }
+     switch (story.type) {
+       case 'story':
+         formDataToSet.description = story.content;
+         break;
+       case 'picture_comic':
+         formDataToSet.description = story.description;
+         break;
+       case 'audio':
+         formDataToSet.description = story.description;
+         break;
+       case 'poll':
+         formDataToSet.question = story.question;
+         if (story.options && Array.isArray(story.options)) {
+           story.options.forEach((option: any, index: number) => {
+             if (option.text) {
+               formDataToSet[`option${index + 1}`] = option.text;
+             }
+           });
+         }
+         break;
+       case 'trivia_quiz':
+         formDataToSet.question = story.question;
+         formDataToSet.correct = story.correct_answer;
+         if (story.options && Array.isArray(story.options)) {
+           story.options.forEach((option: string, index: number) => {
+             formDataToSet[`option${index + 1}`] = option;
+           });
+         }
+         break;
+     }
 
-  //   setFormData(formDataToSet);
-  //   setTagInput('');
-  //   if (editor && story.type === 'story') {
-  //     editor.commands.setContent(story.content || '');
-  //   }
+     setFormData(formDataToSet);
+     setTagInput('');
+     if (editor && story.type === 'story') {
+       editor.commands.setContent(story.content || '');
+     }
     
-  //   // Map database story types to modal keys
-  //   const getModalKey = (storyType: string) => {
-  //     switch (storyType) {
-  //       case 'story': return 'story';
-  //       case 'picture_comic': return 'picture';
-  //       case 'audio': return 'audio';
-  //       case 'poll': return 'poll';
-  //       case 'trivia_quiz': return 'quiz';
-  //       default: return 'story';
-  //     }
-  //   };
+     // Map database story types to modal keys
+     const getModalKey = (storyType: string) => {
+       switch (storyType) {
+         case 'story': return 'story';
+         case 'picture_comic': return 'picture';
+         case 'audio': return 'audio';
+         case 'poll': return 'poll';
+         case 'trivia_quiz': return 'quiz';
+         default: return 'story';
+       }
+     };
     
-  //   // Open the appropriate modal
-  //   setOpenModal(getModalKey(story.type));
-  // };
+     // Open the appropriate modal
+     setOpenModal(getModalKey(story.type));
+   };
 
-  // const handleSaveDraftEdit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!editingDraftStory || !isClient) return;
+   const handleSaveDraftEdit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!editingDraftStory || !isClient) return;
 
-  //   setIsSubmitting(true);
-  //   const submitData = new FormData();
-  //   submitData.append('storyId', editingDraftStory.story_id.toString());
-  //   submitData.append('storyType', editingDraftStory.type);
-  //   submitData.append('title', formData.title);
+     setIsSubmitting(true);
+     const submitData = new FormData();
+     submitData.append('storyId', editingDraftStory.story_id.toString());
+     submitData.append('storyType', editingDraftStory.type);
+     submitData.append('title', formData.title);
 
-  //   // Add type-specific data
-  //   switch (editingDraftStory.type) {
-  //     case 'story':
-  //       if (formData.description) {
-  //         submitData.append('description', formData.description);
-  //       }
-  //       break;
-  //     case 'picture_comic':
-  //       if (formData.description) {
-  //         submitData.append('description', formData.description);
-  //       }
-  //       // Handle image files if new ones are selected
-  //       if (formData.images && formData.images.length > 0) {
-  //         formData.images.forEach((image: File) => {
-  //           submitData.append('image', image);
-  //         });
-  //       }
-  //       break;
-  //     case 'audio':
-  //       if (formData.description) {
-  //         submitData.append('description', formData.description);
-  //       }
-  //       // Handle audio file if new one is selected
-  //       if (formData.audio) {
-  //         submitData.append('audio', formData.audio);
-  //       }
-  //       break;
-  //     case 'poll':
-  //       submitData.append('question', formData.question);
-  //       submitData.append('option1', formData.option1);
-  //       submitData.append('option2', formData.option2);
-  //       if (formData.option3) {
-  //         submitData.append('option3', formData.option3);
-  //       }
-  //       if (formData.option4) {
-  //         submitData.append('option4', formData.option4);
-  //       }
-  //       break;
-  //     case 'trivia_quiz':
-  //       submitData.append('question', formData.question);
-  //       submitData.append('correct', formData.correct);
-  //       submitData.append('option1', formData.option1);
-  //       submitData.append('option2', formData.option2);
-  //       if (formData.option3) {
-  //         submitData.append('option3', formData.option3);
-  //       }
-  //       break;
-  //   }
+     // Add type-specific data
+     switch (editingDraftStory.type) {
+       case 'story':
+         if (formData.description) {
+           submitData.append('description', formData.description);
+         }
+         break;
+       case 'picture_comic':
+         if (formData.description) {
+           submitData.append('description', formData.description);
+         }
+         // Handle image files if new ones are selected
+         if (formData.images && formData.images.length > 0) {
+           formData.images.forEach((image: File) => {
+             submitData.append('image', image);
+           });
+         }
+         break;
+       case 'audio':
+         if (formData.description) {
+           submitData.append('description', formData.description);
+         }
+         // Handle audio file if new one is selected
+         if (formData.audio) {
+           submitData.append('audio', formData.audio);
+         }
+         break;
+       case 'poll':
+         submitData.append('question', formData.question);
+         submitData.append('option1', formData.option1);
+         submitData.append('option2', formData.option2);
+         if (formData.option3) {
+             submitData.append('option3', formData.option3);
+         }
+         if (formData.option4) {
+           submitData.append('option4', formData.option4);
+         }
+         break;
+       case 'trivia_quiz':
+         submitData.append('question', formData.question);
+         submitData.append('correct', formData.correct);
+         submitData.append('option1', formData.option1);
+         submitData.append('option2', formData.option2);
+         if (formData.option3) {
+           submitData.append('option3', formData.option3);
+         }
+         break;
+   }
 
-  //   // Add tags
-  //   if (formData.tags && formData.tags.length > 0) {
-  //     submitData.append('tags', JSON.stringify(formData.tags));
-  //   }
+     // Add tags
+     if (formData.tags && formData.tags.length > 0) {
+       submitData.append('tags', JSON.stringify(formData.tags));
+     }
 
-  //   try {
-  //     /*const res = await fetch('/api/stories/editDraftStory', {
-  //       method: 'PUT',
-  //       credentials: 'include',
-  //       body: submitData,
-  //     });
+     try {
+       const res = await fetch('/api/stories/editDraftStory', {
+         method: 'PUT',
+         credentials: 'include',
+         body: submitData,
+       });
 
-  //     if (res.ok) {
-  //       setSubmitted(true);
-  //       setTimeout(() => {
-  //         setOpenModal(null);
-  //         setEditingDraftStory(null);
-  //         setIsDraftEditMode(false);
-  //         setFormData({ tags: [], images: [], audio: null });
-  //         setTagInput('');
-  //         setSubmitted(false);
-  //         setIsSubmitting(false);
-  //         if (editor) editor.commands.setContent('');
-  //         // Refresh draft stories
-  //         mutateDraft();
-  //       }, 1200);
-  //     } else {
-  //       const errorData = await res.json();
-  //       setIsSubmitting(false);
-  //       alert('Failed to update draft story: ' + (errorData.error || 'Unknown error'));
-  //     }
-  //   } catch (err) {
-  //     setIsSubmitting(false);
-  //     alert('Failed to update draft story');
-  //   }
-  // };
+       if (res.ok) {
+         setSubmitted(true);
+         setTimeout(() => {
+           setOpenModal(null);
+           setEditingDraftStory(null);
+           setIsDraftEditMode(false);
+           setFormData({ tags: [], images: [], audio: null });
+           setTagInput('');
+           setSubmitted(false);
+           setIsSubmitting(false);
+           if (editor) editor.commands.setContent('');
+           // Refresh draft stories
+           mutateDraft();
+         }, 1200);
+       } else {
+         const errorData = await res.json();
+         setIsSubmitting(false);
+         alert('Failed to update draft story: ' + (errorData.error || 'Unknown error'));
+       }
+     } catch (err) {
+       setIsSubmitting(false);
+       alert('Failed to update draft story');
+     }
+   };
 
-  // const handleCancelDraftEdit = () => {
-  //   setEditingDraftStory(null);
-  //   setIsDraftEditMode(false);
-  //   setFormData({ tags: [], images: [], audio: null });
-  //   setTagInput('');
-  //   if (editor) editor.commands.setContent('');
-  //   setOpenModal(null);
-  // };
+   const handleCancelDraftEdit = () => {
+     setEditingDraftStory(null);
+     setIsDraftEditMode(false);
+     setFormData({ tags: [], images: [], audio: null });
+     setTagInput('');
+     if (editor) editor.commands.setContent('');
+     setOpenModal(null);
+   };
 
   const handleOpenModal = (key: string) => {
     setOpenModal(key);
@@ -599,10 +599,10 @@ export default function CreateStoryPage() {
       setEditingStory(null);
       setIsEditMode(false);
     }
-    // if (isDraftEditMode) {
-    //   setEditingDraftStory(null);
-    //   setIsDraftEditMode(false);
-    // }
+    if (isDraftEditMode) {
+      setEditingDraftStory(null);
+      setIsDraftEditMode(false);
+    }
     setFormData({ tags: [], images: [], audio: null });
     setTagInput('');
     setSubmitted(false);
@@ -1007,7 +1007,7 @@ export default function CreateStoryPage() {
         {isClient && (
           <>
             {/* Draft Stories Section */}
-           {/*} {draftStories.length > 0 && (
+            {draftStories.length > 0 && (
               <div className="w-full max-w-6xl mb-8">
                 <div className="bg-gradient-to-r from-blue/10 to-purple/10 rounded-2xl p-6 border border-blue/20">
                   <div className="flex items-center justify-between mb-4">
@@ -1091,7 +1091,7 @@ export default function CreateStoryPage() {
                   )}
                 </div>
               </div>
-            )}*/}
+            )}
 
             {/* Feedback Section */}
             {feedbackStories.length > 0 && (
@@ -1213,7 +1213,7 @@ export default function CreateStoryPage() {
                 </button>
                 <h3 className="text-2xl font-bold text-brown mb-4 text-center">
                   {isEditMode ? `Edit ${storyOptions.find(opt => opt.key === openModal)?.title}` : 
-                   // isDraftEditMode ? `Edit Draft ${getStoryTypeLabel(editingDraftStory?.type || '')}` :
+                   isDraftEditMode ? `Edit Draft ${getStoryTypeLabel(editingDraftStory?.type || '')}` :
                    storyOptions.find(opt => opt.key === openModal)?.title}
                 </h3>
               </div>
@@ -1221,7 +1221,7 @@ export default function CreateStoryPage() {
               {submitted ? (
                 <div className="flex-1 flex items-center justify-center p-6">
                   <div className="text-center text-green-600 font-bold">
-                    {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                    {isEditMode || isDraftEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
                   </div>
                 </div>
               ) : (
@@ -1229,7 +1229,7 @@ export default function CreateStoryPage() {
                   <div className="flex-1 overflow-y-auto px-6 pb-4">
                     <form onSubmit={
                       isEditMode ? handleSaveEdit : 
-                      // isDraftEditMode ? handleSaveDraftEdit :
+                      isDraftEditMode ? handleSaveDraftEdit :
                       (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))
                     } className="space-y-4">
                       {/* Story Option: Title, Tags, Description (Tiptap) */}
@@ -1464,10 +1464,10 @@ export default function CreateStoryPage() {
                       )}
                       {/* Fixed Button Section */}
                       <div className="flex gap-3 mt-6">
-                        {(isEditMode) && (
+                        {(isEditMode || isDraftEditMode) && (
                           <button
                             type="button"
-                            onClick={handleCancelEdit}
+                            onClick={isEditMode ? handleCancelEdit : handleCancelDraftEdit}
                             className="flex-1 px-6 py-2 rounded-lg transition-colors font-bold bg-gray-300 text-gray-700 hover:bg-gray-400"
                           >
                             Cancel
@@ -1485,15 +1485,15 @@ export default function CreateStoryPage() {
                           {submitted ? (
                             <>
                               <FaSpinner className="animate-spin" />
-                              {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                              {(isEditMode || isDraftEditMode) ? 'Updated! 🎉' : 'Submitted! 🎉'}
                             </>
                           ) : isSubmitting ? (
                             <>
                               <FaSpinner className="animate-spin" />
-                              {isEditMode ? 'Saving...' : 'Submitting...'}
+                              {(isEditMode || isDraftEditMode) ? 'Saving...' : 'Submitting...'}
                             </>
                           ) : (
-                            isEditMode ? 'Save Changes' : 'Submit for Review'
+                            (isEditMode || isDraftEditMode) ? 'Save Changes' : 'Submit for Review'
                           )}
                         </button>
                       </div>
