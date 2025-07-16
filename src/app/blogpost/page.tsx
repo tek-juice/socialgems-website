@@ -6,6 +6,7 @@ import Footer from "../components/footer";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { FaTimes, FaChevronLeft, FaChevronRight, FaVideo, FaPen, FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaPlay, FaEye, FaHeart, FaShare, FaBookmark, FaSpinner } from "react-icons/fa";
 import useSWR from 'swr';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 interface Story {
   story_id: number;
@@ -45,6 +46,9 @@ interface StoriesByType {
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BlogPost() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
   // SWR for accepted stories
   const { data, error, isLoading, mutate } = useSWR('/api/stories/acceptedStory', fetcher, { refreshInterval: 500 });
   const stories: Story[] = data?.stories || [];
@@ -90,10 +94,47 @@ export default function BlogPost() {
 
   const currentStory = currentStories[currentStoryIndex];
 
+  // Handle URL parameters on initial load
   useEffect(() => {
-    // Reset to first story when tab changes
-    setCurrentStoryIndex(0);
-  }, [activeTab]);
+    if (typeof window !== 'undefined' && stories.length > 0) {
+      const urlStoryId = searchParams.get('story');
+      const urlTab = searchParams.get('tab');
+      
+      if (urlTab && ['text', 'picture', 'audio', 'poll', 'trivia'].includes(urlTab)) {
+        setActiveTab(urlTab as typeof activeTab);
+      }
+      
+      if (urlStoryId) {
+        const storyId = parseInt(urlStoryId);
+        // Find the story in the appropriate tab
+        let foundTab = activeTab;
+        let foundIndex = -1;
+        
+        // Check all tabs for the story
+        const allTabs: (keyof StoriesByType)[] = ['text', 'picture', 'audio', 'poll', 'trivia'];
+        for (const tab of allTabs) {
+          const index = storiesByType[tab].findIndex(story => story.story_id === storyId);
+          if (index !== -1) {
+            foundTab = tab;
+            foundIndex = index;
+            break;
+          }
+        }
+        
+        if (foundIndex !== -1) {
+          setActiveTab(foundTab);
+          setCurrentStoryIndex(foundIndex);
+        }
+      }
+    }
+  }, [searchParams, stories, storiesByType]);
+
+  useEffect(() => {
+    // Reset to first story when tab changes (only if no URL parameters)
+    if (!searchParams.get('story')) {
+      setCurrentStoryIndex(0);
+    }
+  }, [activeTab, searchParams]);
 
   // Fetch metrics for stories when they change
   useEffect(() => {
@@ -268,6 +309,12 @@ export default function BlogPost() {
     }
   };
 
+  // Function to generate story-specific URL
+  const generateStoryUrl = (storyId: number, tab: string) => {
+    if (typeof window === 'undefined') return '';
+    return `${window.location.origin}/blogpost?story=${storyId}&tab=${tab}`;
+  };
+
   // Function to handle share
   const handleShare = async (storyId: number, platform: string) => {
     try {
@@ -287,7 +334,17 @@ export default function BlogPost() {
         
         // Handle actual sharing based on platform
         if (typeof window !== 'undefined') {
-          const storyUrl = `${window.location.origin}/blogpost`;
+          // Find which tab this story belongs to
+          let storyTab = 'text';
+          const allTabs: (keyof StoriesByType)[] = ['text', 'picture', 'audio', 'poll', 'trivia'];
+          for (const tab of allTabs) {
+            if (storiesByType[tab].find(story => story.story_id === storyId)) {
+              storyTab = tab;
+              break;
+            }
+          }
+          
+          const storyUrl = generateStoryUrl(storyId, storyTab);
           const storyTitle = currentStory?.title || 'Check out this story';
           
           let shareUrl = '';
@@ -444,6 +501,12 @@ export default function BlogPost() {
   const handleTabChange = (tab: typeof activeTab) => {
     setActiveTab(tab);
     setCurrentStoryIndex(0);
+    
+    // Update URL parameters
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    url.searchParams.delete('story'); // Remove story parameter when changing tabs
+    router.replace(url.pathname + url.search);
   };
 
   // Poll voting function

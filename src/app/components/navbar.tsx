@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from 'react';
 import { usePathname } from "next/navigation";
-import { FaSearch, FaUserCircle } from 'react-icons/fa';
+import { FaSearch, FaUserCircle, FaSignOutAlt, FaKey } from 'react-icons/fa';
 import { jwtDecode } from 'jwt-decode';
 import ResetPasswordForm from './ResetPasswordForm/page';
 
@@ -261,43 +261,43 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        {/* Profile Dropdown - COMMENTED OUT FOR UX */}
-        {/* <div className="relative ml-4">
-          <button
-            onClick={() => setIsProfileOpen(!isProfileOpen)}
-            className="flex items-center focus:outline-none"
-          >
-            {profile?.image ? (
-              <Image src={profile.image} width={40} height={40} alt="Profile" className="rounded-full object-cover border-2 border-brown" />
-            ) : (
-              <FaUserCircle className="text-3xl text-brown hover:text-gold transition-colors" />
-            )}
-          </button>
-          {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 flex flex-col items-center">
-              {profile?.image ? (
-                <Image src={profile.image} width={60} height={60} alt="Profile" className="rounded-full object-cover mb-2 border-2 border-brown" />
-              ) : (
-                <FaUserCircle className="text-5xl text-brown mb-2" />
-              )}
-              <div className="text-black font-bold mb-1">{profile?.email || user?.email || 'Not signed in'}</div>
-              {!user && (
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
-                  setIsProfileOpen(false); 
-                  if (typeof window !== 'undefined') {
-                    window.location.href = '/sign-in'; 
-                  }
-                }}>Sign In</button>
-              )}
-              {user && (
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
-              )}
-              {user && (
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
-              )}
+        {/* User Actions - Only show for signed-in users */}
+        {user && (
+          <div className="flex items-center gap-3 ml-4">
+            {/* Change Password Icon */}
+            <div className="relative group">
+              <button
+                onClick={() => setShowReset(true)}
+                className="p-2 rounded-full hover:bg-gold/20 transition-colors text-brown hover:text-gold"
+                title="Change Password"
+              >
+                <FaKey className="text-xl" />
+              </button>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                Change Password
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+              </div>
             </div>
-          )}
-        </div> */}
+            
+            {/* Logout Icon */}
+            <div className="relative group">
+              <button
+                onClick={handleSignOut}
+                className="p-2 rounded-full hover:bg-red-100 transition-colors text-brown hover:text-red-600"
+                title="Logout"
+              >
+                <FaSignOutAlt className="text-xl" />
+              </button>
+              {/* Tooltip */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                Logout
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Show ResetPasswordForm as modal */}
         {showReset && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -312,16 +312,6 @@ const Navbar = () => {
             </div>
           </div>
         )}
-        {/* Right section: Signup and Login */}
-        {/* <Link 
-          href="/login" 
-          className="w-32 h-10 flex justify-center items-center 
-          bg-gold text-black px-6 py-2 rounded-lg hover:text-black 
-          hover:bg-white hover:border-2 hover:border-[#FFD700] 
-          hover:bg-opacity-90 transition duration-300"
-          >
-            Login
-        </ Link>*/}
       </div>
 
       {/* Mobile Menu Dropdown */}
@@ -397,48 +387,31 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          {/* Mobile Profile Dropdown - COMMENTED OUT FOR UX */}
-          {/* <div className="relative my-2 px-4">
-            <button
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="w-full flex items-center justify-center focus:outline-none"
-            >
-              {profile?.image ? (
-                <Image src={profile.image} width={40} height={40} alt="Profile" className="rounded-full object-cover border-2 border-brown" />
-              ) : (
-                <FaUserCircle className="text-3xl text-brown hover:text-gold transition-colors" />
-              )}
-            </button>
-            {isProfileOpen && (
-              <div className="mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 flex flex-col items-center">
-                {profile?.image ? (
-                  <Image src={profile.image} width={60} height={60} alt="Profile" className="rounded-full object-cover mb-2 border-2 border-brown" />
-                ) : (
-                  <FaUserCircle className="text-5xl text-brown mb-2" />
-                )}
-                <div className="text-black font-bold mb-1">{profile?.email || user?.email || 'Not signed in'}</div>
-                {!user && (
-                  <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
-                    setIsProfileOpen(false); 
-                    if (typeof window !== 'undefined') {
-                      window.location.href = '/sign-in'; 
-                    }
-                  }}>Sign In</button>
-                )}
-                {user && (
-                  <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { setShowReset(true); setIsProfileOpen(false); }}>Change Password</button>
-                )}
-                <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gold hover:text-brown" onClick={() => { 
-                  if (typeof window !== 'undefined') {
-                    window.location.href = '/login';
-                  }
-                }}>Go to Admin Dashboard</button>
-                {user && (
-                  <button className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-red-100 hover:text-red-700 font-bold" onClick={handleSignOut}>Logout</button>
-                )}
+          
+          {/* Mobile User Actions - Only show for signed-in users */}
+          {user && (
+            <div className="border-t border-gray-200 pt-2 mt-2">
+              <div className="flex items-center justify-center gap-4 px-4">
+                {/* Change Password Button */}
+                <button
+                  onClick={() => { setShowReset(true); setIsMobileMenuOpen(false); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                >
+                  <FaKey className="text-lg" />
+                  <span>Change Password</span>
+                </button>
+                
+                {/* Logout Button */}
+                <button
+                  onClick={() => { handleSignOut(); setIsMobileMenuOpen(false); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                >
+                  <FaSignOutAlt className="text-lg" />
+                  <span>Logout</span>
+                </button>
               </div>
-            )}
-          </div> */}
+            </div>
+          )}
         </div>
       )}
     </nav>

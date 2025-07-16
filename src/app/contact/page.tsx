@@ -67,13 +67,14 @@ export default function Contact() {
               
               {/* Contact Information */}
               <div className="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-200">
+                {/*}
                 <div className="flex items-center space-x-4 mb-4">
                   <FaPhone className="text-gold text-xl" />
                   <div>
                     <p className="text-gray-600 text-sm">Landline</p>
                     <p className="text-brown font-semibold text-lg">+256 (767)458425</p>
                   </div>
-                </div>
+                </div> */}
                 <div className="flex items-center space-x-4">
                   <FaEnvelope className="text-gold text-xl" />
                   <div>

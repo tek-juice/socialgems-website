@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/navbar';
 import Footer from '../components/footer';
-import { FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaTimes, FaBold, FaItalic, FaHeading, FaListUl, FaListOl, FaLink, FaSpinner, FaComments, FaEye, FaClock, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaTimes, FaBold, FaItalic, FaHeading, FaListUl, FaListOl, FaLink, FaSpinner, FaComments, FaEye, FaClock, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaEdit, FaEye as FaView } from 'react-icons/fa';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextStyle from '@tiptap/extension-text-style';
@@ -110,6 +110,30 @@ interface FeedbackStory {
   time_limit?: number;
 }
 
+interface DraftStory {
+  story_id: number;
+  title: string;
+  type: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  admin_feedback: string;
+  tags: string[];
+  user_id: number;
+  fname: string;
+  lname: string;
+  email: string;
+  content?: string;
+  image_urls?: string[];
+  description?: string;
+  audio_url?: string;
+  question?: string;
+  options?: any;
+  multiple_answers?: boolean;
+  correct_answer?: string;
+  time_limit?: number;
+}
+
 const fetcher = (url: string) => {
   if (typeof window === 'undefined') return Promise.resolve(null);
   return fetch(url, {
@@ -131,6 +155,11 @@ export default function CreateStoryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [ isClient, setIsClient ] = useState(false);
+  
+  // New state for draft stories
+  const [showDraftStories, setShowDraftStories] = useState(false);
+  const [editingDraftStory, setEditingDraftStory] = useState<DraftStory | null>(null);
+  const [isDraftEditMode, setIsDraftEditMode] = useState(false);
 
   // Set isClient to true after hydration
   useEffect(() => {
@@ -145,6 +174,15 @@ export default function CreateStoryPage() {
   );
   const feedbackStories = feedbackData?.stories || [];
   const loadingFeedback = !feedbackData && !feedbackError;
+
+  // SWR for draft stories
+  const { data: draftData, error: draftError, mutate: mutateDraft } = useSWR(
+    isClient && typeof window !== 'undefined' ? '/api/stories/editDraftStory' : null,
+    fetcher,
+    { refreshInterval: 5000 } // Pull draft stories every 5s for live updates
+  );
+  const draftStories = draftData?.stories || [];
+  const loadingDraft = !draftData && !draftError;
 
   // At the top level of the component:
   const editor = useEditor({
@@ -376,6 +414,176 @@ export default function CreateStoryPage() {
     setOpenModal(null);
   };
 
+  const handleEditDraftStory = async (story: DraftStory) => {
+    if (!isClient) return;
+    
+    setEditingDraftStory(story);
+    setIsDraftEditMode(true);
+    
+    // Set form data based on story type
+    let formDataToSet: any = {
+      title: story.title,
+      tags: story.tags || []
+    };
+
+    switch (story.type) {
+      case 'story':
+        formDataToSet.description = story.content;
+        break;
+      case 'picture_comic':
+        formDataToSet.description = story.description;
+        break;
+      case 'audio':
+        formDataToSet.description = story.description;
+        break;
+      case 'poll':
+        formDataToSet.question = story.question;
+        if (story.options && Array.isArray(story.options)) {
+          story.options.forEach((option: any, index: number) => {
+            if (option.text) {
+              formDataToSet[`option${index + 1}`] = option.text;
+            }
+          });
+        }
+        break;
+      case 'trivia_quiz':
+        formDataToSet.question = story.question;
+        formDataToSet.correct = story.correct_answer;
+        if (story.options && Array.isArray(story.options)) {
+          story.options.forEach((option: string, index: number) => {
+            formDataToSet[`option${index + 1}`] = option;
+          });
+        }
+        break;
+    }
+
+    setFormData(formDataToSet);
+    setTagInput('');
+    if (editor && story.type === 'story') {
+      editor.commands.setContent(story.content || '');
+    }
+    
+    // Map database story types to modal keys
+    const getModalKey = (storyType: string) => {
+      switch (storyType) {
+        case 'story': return 'story';
+        case 'picture_comic': return 'picture';
+        case 'audio': return 'audio';
+        case 'poll': return 'poll';
+        case 'trivia_quiz': return 'quiz';
+        default: return 'story';
+      }
+    };
+    
+    // Open the appropriate modal
+    setOpenModal(getModalKey(story.type));
+  };
+
+  const handleSaveDraftEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDraftStory || !isClient) return;
+
+    setIsSubmitting(true);
+    const submitData = new FormData();
+    submitData.append('storyId', editingDraftStory.story_id.toString());
+    submitData.append('storyType', editingDraftStory.type);
+    submitData.append('title', formData.title);
+
+    // Add type-specific data
+    switch (editingDraftStory.type) {
+      case 'story':
+        if (formData.description) {
+          submitData.append('description', formData.description);
+        }
+        break;
+      case 'picture_comic':
+        if (formData.description) {
+          submitData.append('description', formData.description);
+        }
+        // Handle image files if new ones are selected
+        if (formData.images && formData.images.length > 0) {
+          formData.images.forEach((image: File) => {
+            submitData.append('image', image);
+          });
+        }
+        break;
+      case 'audio':
+        if (formData.description) {
+          submitData.append('description', formData.description);
+        }
+        // Handle audio file if new one is selected
+        if (formData.audio) {
+          submitData.append('audio', formData.audio);
+        }
+        break;
+      case 'poll':
+        submitData.append('question', formData.question);
+        submitData.append('option1', formData.option1);
+        submitData.append('option2', formData.option2);
+        if (formData.option3) {
+          submitData.append('option3', formData.option3);
+        }
+        if (formData.option4) {
+          submitData.append('option4', formData.option4);
+        }
+        break;
+      case 'trivia_quiz':
+        submitData.append('question', formData.question);
+        submitData.append('correct', formData.correct);
+        submitData.append('option1', formData.option1);
+        submitData.append('option2', formData.option2);
+        if (formData.option3) {
+          submitData.append('option3', formData.option3);
+        }
+        break;
+    }
+
+    // Add tags
+    if (formData.tags && formData.tags.length > 0) {
+      submitData.append('tags', JSON.stringify(formData.tags));
+    }
+
+    try {
+      const res = await fetch('/api/stories/editDraftStory', {
+        method: 'PUT',
+        credentials: 'include',
+        body: submitData,
+      });
+
+      if (res.ok) {
+        setSubmitted(true);
+        setTimeout(() => {
+          setOpenModal(null);
+          setEditingDraftStory(null);
+          setIsDraftEditMode(false);
+          setFormData({ tags: [], images: [], audio: null });
+          setTagInput('');
+          setSubmitted(false);
+          setIsSubmitting(false);
+          if (editor) editor.commands.setContent('');
+          // Refresh draft stories
+          mutateDraft();
+        }, 1200);
+      } else {
+        const errorData = await res.json();
+        setIsSubmitting(false);
+        alert('Failed to update draft story: ' + (errorData.error || 'Unknown error'));
+      }
+    } catch (err) {
+      setIsSubmitting(false);
+      alert('Failed to update draft story');
+    }
+  };
+
+  const handleCancelDraftEdit = () => {
+    setEditingDraftStory(null);
+    setIsDraftEditMode(false);
+    setFormData({ tags: [], images: [], audio: null });
+    setTagInput('');
+    if (editor) editor.commands.setContent('');
+    setOpenModal(null);
+  };
+
   const handleOpenModal = (key: string) => {
     setOpenModal(key);
     setFormData({ tags: [], images: [], audio: null });
@@ -389,6 +597,10 @@ export default function CreateStoryPage() {
     if (isEditMode) {
       setEditingStory(null);
       setIsEditMode(false);
+    }
+    if (isDraftEditMode) {
+      setEditingDraftStory(null);
+      setIsDraftEditMode(false);
     }
     setFormData({ tags: [], images: [], audio: null });
     setTagInput('');
@@ -793,6 +1005,93 @@ export default function CreateStoryPage() {
         {/* Main content - only show when client is ready */}
         {isClient && (
           <>
+            {/* Draft Stories Section */}
+            {draftStories.length > 0 && (
+              <div className="w-full max-w-6xl mb-8">
+                <div className="bg-gradient-to-r from-blue/10 to-purple/10 rounded-2xl p-6 border border-blue/20">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <FaClock className="text-2xl text-blue-600" />
+                      <h2 className="text-2xl font-bold text-blue-600 flex items-center gap-2">
+                        Draft Stories
+                        <span className="ml-2 px-3 py-1 rounded-full bg-blue-600 text-white text-sm font-semibold">{draftStories.length}</span>
+                      </h2>
+                    </div>
+                    <button
+                      onClick={() => setShowDraftStories(!showDraftStories)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors"
+                    >
+                      {showDraftStories ? 'Hide' : 'Show'} Drafts
+                    </button>
+                  </div>
+                  
+                  {showDraftStories && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full bg-white rounded-xl border border-gray-200 shadow-sm">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Title</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Created</th>
+                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Updated</th>
+                            <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                          {draftStories.map((story: DraftStory) => (
+                            <tr key={story.story_id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  {getStoryTypeIcon(story.type)}
+                                  <span className="text-sm text-gray-600">{getStoryTypeLabel(story.type)}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="max-w-xs">
+                                  <div className="font-medium text-gray-900 truncate">{story.title}</div>
+                                  {story.tags && story.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {story.tags.slice(0, 2).map((tag, index) => (
+                                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                          {tag}
+                                        </span>
+                                      ))}
+                                      {story.tags.length > 2 && (
+                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                          +{story.tags.length - 2}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {new Date(story.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {new Date(story.updated_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={() => handleEditDraftStory(story)}
+                                    className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-1"
+                                  >
+                                    <FaEdit size={12} />
+                                    Edit
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Feedback Section */}
             {feedbackStories.length > 0 && (
               <div className="w-full max-w-6xl mb-8">
@@ -912,20 +1211,26 @@ export default function CreateStoryPage() {
                   <FaTimes />
                 </button>
                 <h3 className="text-2xl font-bold text-brown mb-4 text-center">
-                  {isEditMode ? `Edit ${storyOptions.find(opt => opt.key === openModal)?.title}` : storyOptions.find(opt => opt.key === openModal)?.title}
+                  {isEditMode ? `Edit ${storyOptions.find(opt => opt.key === openModal)?.title}` : 
+                   isDraftEditMode ? `Edit Draft ${getStoryTypeLabel(editingDraftStory?.type || '')}` :
+                   storyOptions.find(opt => opt.key === openModal)?.title}
                 </h3>
               </div>
               
               {submitted ? (
                 <div className="flex-1 flex items-center justify-center p-6">
                   <div className="text-center text-green-600 font-bold">
-                    {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                    {isEditMode || isDraftEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="flex-1 overflow-y-auto px-6 pb-4">
-                    <form onSubmit={isEditMode ? handleSaveEdit : (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))} className="space-y-4">
+                    <form onSubmit={
+                      isEditMode ? handleSaveEdit : 
+                      isDraftEditMode ? handleSaveDraftEdit :
+                      (openModal === 'story' ? handleSubmitStory : e => handleSubmit(e, openModal))
+                    } className="space-y-4">
                       {/* Story Option: Title, Tags, Description (Tiptap) */}
                       {openModal === 'story' && editor && (
                         <>
@@ -1158,10 +1463,10 @@ export default function CreateStoryPage() {
                       )}
                       {/* Fixed Button Section */}
                       <div className="flex gap-3 mt-6">
-                        {isEditMode && (
+                        {(isEditMode || isDraftEditMode) && (
                           <button
                             type="button"
-                            onClick={handleCancelEdit}
+                            onClick={isEditMode ? handleCancelEdit : handleCancelDraftEdit}
                             className="flex-1 px-6 py-2 rounded-lg transition-colors font-bold bg-gray-300 text-gray-700 hover:bg-gray-400"
                           >
                             Cancel
@@ -1179,15 +1484,15 @@ export default function CreateStoryPage() {
                           {submitted ? (
                             <>
                               <FaSpinner className="animate-spin" />
-                              {isEditMode ? 'Updated! 🎉' : 'Submitted! 🎉'}
+                              {(isEditMode || isDraftEditMode) ? 'Updated! 🎉' : 'Submitted! 🎉'}
                             </>
                           ) : isSubmitting ? (
                             <>
                               <FaSpinner className="animate-spin" />
-                              {isEditMode ? 'Saving...' : 'Submitting...'}
+                              {(isEditMode || isDraftEditMode) ? 'Saving...' : 'Submitting...'}
                             </>
                           ) : (
-                            isEditMode ? 'Save Changes' : 'Submit for Review'
+                            (isEditMode || isDraftEditMode) ? 'Save Changes' : 'Submit for Review'
                           )}
                         </button>
                       </div>
@@ -1271,24 +1576,56 @@ function StatsTile() {
   };
   
   return (
-    <div className="bg-white border-2 border-gold/30 rounded-xl shadow-sm flex flex-col items-center justify-center p-6 min-h-[200px]">
-      <h3 className="text-lg font-bold text-brown mb-2">Your Story Stats</h3>
-      <div className="text-black text-sm mb-2">Total Stories: <span className="font-bold">{data.totalStories}</span></div>
-      <div className="text-black text-sm mb-2">Under Review: <span className="font-bold text-yellow-600">{data.totalDraft}</span></div>
-      <div className="w-full mb-2">
-        <div className="font-semibold text-brown text-sm mb-1">Approved:</div>
-        <div className="flex flex-wrap gap-2 justify-center">
-          <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">Total: {data.totalApproved}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Text: {approvedByType.story}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Picture: {approvedByType.picture_comic}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Audio: {approvedByType.audio}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Poll: {approvedByType.poll}</span>
-          <span className="bg-gold/10 text-brown px-2 py-1 rounded-full text-xs">Trivia: {approvedByType.trivia_quiz}</span>
-        </div>
+    <div className="bg-white border-2 border-gold/30 rounded-xl shadow-sm p-6 min-h-[200px]">
+      <h3 className="text-lg font-bold text-brown mb-4 text-center">Your Story Stats</h3>
+      
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <tbody className="divide-y divide-gray-200">
+            <tr>
+              <td className="py-2 text-gray-600">Total Stories:</td>
+              <td className="py-2 text-right font-bold text-brown">{data.totalStories}</td>
+            </tr>
+            <tr>
+              <td className="py-2 text-gray-600">Under Review:</td>
+              <td className="py-2 text-right font-bold text-yellow-600">{data.totalDraft}</td>
+            </tr>
+            <tr>
+              <td className="py-2 text-gray-600">Approved:</td>
+              <td className="py-2 text-right font-bold text-green-600">{data.totalApproved}</td>
+            </tr>
+            <tr>
+              <td className="py-2 text-gray-600">With Feedback:</td>
+              <td className="py-2 text-right font-bold text-blue-600">{data.totalWithFeedback}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div className="w-full mb-2">
-        <div className="font-semibold text-brown text-sm mb-1">With Feedback:</div>
-        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">{data.totalWithFeedback}</span>
+      
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <h4 className="text-sm font-semibold text-brown mb-2">Approved by Type:</h4>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Text:</span>
+            <span className="font-bold text-brown">{approvedByType.story}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Picture:</span>
+            <span className="font-bold text-brown">{approvedByType.picture_comic}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Audio:</span>
+            <span className="font-bold text-brown">{approvedByType.audio}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Poll:</span>
+            <span className="font-bold text-brown">{approvedByType.poll}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Trivia:</span>
+            <span className="font-bold text-brown">{approvedByType.trivia_quiz}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
