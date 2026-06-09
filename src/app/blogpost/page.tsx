@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "../components/navbar";
 import Footer from "../components/footer";
-import { useState, useEffect, useMemo, useRef } from "react";
+import { Suspense, useState, useEffect, useMemo, useRef } from "react";
 import { FaTimes, FaChevronLeft, FaChevronRight, FaVideo, FaPen, FaAlignLeft, FaRegImage, FaMusic, FaUsers, FaCheckSquare, FaPlay, FaEye, FaHeart, FaShare, FaBookmark, FaSpinner } from "react-icons/fa";
 import useSWR from 'swr';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -45,7 +45,7 @@ interface StoriesByType {
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function BlogPost() {
+function BlogPostContent() {
   const urlParams = useSearchParams();
   const router = useRouter();
   
@@ -1224,5 +1224,13 @@ export default function BlogPost() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function BlogPost() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <BlogPostContent />
+    </Suspense>
   );
 }

@@ -9,8 +9,9 @@ const urbanist = Urbanist({
 
 
 export const metadata: Metadata = {
-  title: "Social Gems",
-  description: "A social Gems Webiste",
+  title: "SocialGems | Creator Opportunities Platform",
+  description:
+    "Find paid campaigns, creator jobs, affiliate programs, collaborations, and creator growth tools on SocialGems.",
 };
 
 export default function RootLayout({

@@ -3,8 +3,58 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #fff7ec;
   --foreground: #171717;
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+button,
+a.inline-flex,
+a.flex {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+button:hover,
+button:focus,
+button:active,
+a.inline-flex:hover,
+a.inline-flex:focus,
+a.inline-flex:active,
+a.flex:hover,
+a.flex:focus,
+a.flex:active {
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+button::before,
+button::after,
+a.inline-flex::before,
+a.inline-flex::after,
+a.flex::before,
+a.flex::after {
+  box-shadow: none !important;
+  filter: none !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -58,7 +108,11 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255, 214, 71, 0.18), transparent 28%),
+    radial-gradient(circle at 92% 12%, rgba(40, 125, 105, 0.12), transparent 24%),
+    radial-gradient(circle at 28% 90%, rgba(26, 188, 156, 0.14), transparent 24%),
+    var(--background);
   font-family: var(--font-urbanist);
   font-size:medium;
 }
@@ -75,4 +129,68 @@ body {
 
 .animate-slide-up {
   animation: slide-up 1s ease-out forwards;
+}
+
+@keyframes social-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes social-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1deg);
+  }
+}
+
+@keyframes social-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(40, 125, 105, 0.32);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(40, 125, 105, 0);
+  }
+}
+
+@keyframes social-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-social-pop {
+  animation: social-pop 0.7s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+
+.animate-social-float {
+  animation: social-float 5.5s ease-in-out infinite;
+}
+
+.animate-social-pulse {
+  animation: social-pulse 2.4s ease-in-out infinite;
+}
+
+.animate-social-marquee {
+  animation: social-marquee 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-social-pop,
+  .animate-social-float,
+  .animate-social-pulse,
+  .animate-social-marquee,
+  .animate-slide-up {
+    animation: none;
+  }
 }
