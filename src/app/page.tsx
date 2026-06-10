@@ -112,6 +112,16 @@ export default function Home() {
                 <HomePrimaryButton href="/creator">Join as a Creator</HomePrimaryButton>
                 <HomeSecondaryButton href="/business">Create a Business Account</HomeSecondaryButton>
               </div>
+              <p className="mt-4 text-sm font-semibold text-[#4f4f4f]">
+                Already have an account?{" "}
+                <Link href="/creator/login" className="font-extrabold text-[#287d69] underline underline-offset-4 hover:text-[#171717]">
+                  Creator login
+                </Link>
+                <span className="mx-2 text-[#9a8f7f]">or</span>
+                <Link href="/business/login" className="font-extrabold text-[#287d69] underline underline-offset-4 hover:text-[#171717]">
+                  Business login
+                </Link>
+              </p>
             </div>
 
             <div className="grid min-w-0 max-w-full gap-4 md:relative md:min-h-[620px]">

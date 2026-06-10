@@ -20,13 +20,16 @@ export default function CreatorLandingPage() {
               Discover paid campaigns, creator jobs, affiliate programs, collaborations, and growth tools built to help you get seen and earn.
             </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/creator/dashboard" className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#287d69] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#171717]">
-              Open Creator Portal
+            <Link href="/creator/login" className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#287d69] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#171717]">
+              Creator Login
             </Link>
             <Link href="/creator/signup" className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-[#171717] bg-[#fdda6d] px-6 py-3 text-sm font-extrabold text-[#171717] transition hover:bg-[#171717] hover:text-white">
               Join as Creator
             </Link>
           </div>
+            <p className="mt-4 text-sm font-semibold text-[#555]">
+              Returning creator? Log in to view campaigns, jobs, applications, and affiliate opportunities.
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {["Campaigns", "Jobs", "Affiliate Links", "Collabs"].map((item) => (
                 <span key={item} className="rounded-full border-2 border-[#171717] bg-white px-4 py-2 text-sm font-black text-[#171717] sm:shadow-[4px_4px_0_#4dd7b5]">

@@ -21,13 +21,16 @@ export default function BusinessLandingPage() {
               Register your business, launch campaigns, post creator jobs, build affiliate programs, and manage creator applications from one dashboard.
             </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/business/dashboard" className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#287d69] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#171717]">
-              Open Business Portal
+            <Link href="/business/login" className="inline-flex min-h-12 items-center justify-center rounded-md bg-[#287d69] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#171717]">
+              Business Login
             </Link>
             <Link href="/business/signup" className="inline-flex min-h-12 items-center justify-center rounded-md border-2 border-[#171717] bg-[#fdda6d] px-6 py-3 text-sm font-extrabold text-[#171717] transition hover:bg-[#171717] hover:text-white">
               Create Business Account
             </Link>
           </div>
+            <p className="mt-4 text-sm font-semibold text-[#555]">
+              Already registered? Log in to manage campaigns, creator jobs, applications, and affiliate programs.
+            </p>
             <div className="mt-8 flex flex-wrap gap-3">
               {["Campaigns", "Jobs", "Applicants", "Affiliate Programs"].map((item) => (
                 <span key={item} className="rounded-full border-2 border-[#171717] bg-white px-4 py-2 text-sm font-black text-[#171717] sm:shadow-[4px_4px_0_#8fb8ff]">

@@ -31,6 +31,19 @@ export default function SocialGemsLoginForm({
         return;
       }
 
+      sessionStorage.setItem("socialgemsSession", "true");
+      if (result.userType) {
+        sessionStorage.setItem("socialgemsUserType", result.userType);
+      }
+      if (result.profile?.first_name || result.profile?.username || result.profile?.email) {
+        sessionStorage.setItem(
+          "socialgemsDisplayName",
+          [result.profile?.first_name, result.profile?.last_name].filter(Boolean).join(" ") ||
+            result.profile?.username ||
+            result.profile?.email,
+        );
+      }
+      window.dispatchEvent(new Event("socialgems-auth-changed"));
       window.location.href = result.destination;
     } catch {
       setMessage("Unable to reach SocialGems backend. Please try again.");

@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { FiGrid, FiLogOut } from "react-icons/fi";
 
 const creatorLinks = [
   { name: "Creator Home", path: "/creator" },
@@ -31,7 +32,74 @@ const companyLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [authState, setAuthState] = useState<{
+    kind: "guest" | "admin" | "user";
+    dashboardHref?: string;
+    dashboardLabel?: string;
+  }>({ kind: "guest" });
+
+  useEffect(() => {
+    const readAuthState = () => {
+      if (typeof window === "undefined") return { kind: "guest" as const };
+
+      if (sessionStorage.getItem("adminToken")) {
+        return {
+          kind: "admin" as const,
+          dashboardHref: "/admin/dashboard",
+          dashboardLabel: "Admin Dashboard",
+        };
+      }
+
+      if (sessionStorage.getItem("userToken") || sessionStorage.getItem("socialgemsSession")) {
+        return {
+          kind: "user" as const,
+          dashboardHref: "/create-story",
+          dashboardLabel: "My Dashboard",
+        };
+      }
+
+      return { kind: "guest" as const };
+    };
+
+    const syncAuth = () => setAuthState(readAuthState());
+
+    syncAuth();
+    window.addEventListener("focus", syncAuth);
+    window.addEventListener("socialgems-auth-changed", syncAuth as EventListener);
+
+    return () => {
+      window.removeEventListener("focus", syncAuth);
+      window.removeEventListener("socialgems-auth-changed", syncAuth as EventListener);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const wasAdmin = authState.kind === "admin";
+
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("userToken");
+    sessionStorage.removeItem("socialgemsSession");
+    sessionStorage.removeItem("socialgemsUserType");
+    sessionStorage.removeItem("socialgemsDisplayName");
+
+    try {
+      await fetch("/api/logout", { method: "POST" });
+    } catch {
+      // Ignore logout cleanup errors; the client session has already been cleared.
+    }
+
+    try {
+      await fetch("/api/socialgems/logout", { method: "POST" });
+    } catch {
+      // Ignore logout cleanup errors; the client session has already been cleared.
+    }
+
+    setAuthState({ kind: "guest" });
+    setIsOpen(false);
+    router.push(wasAdmin ? "/login" : "/sign-in");
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b-2 border-[#171717] bg-white/95 backdrop-blur">
@@ -47,12 +115,32 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            href="/business"
-            className="inline-flex min-h-11 items-center justify-center rounded-md border-2 border-[#171717] bg-[#287d69] px-5 py-2 text-sm font-extrabold text-white transition hover:bg-[#171717]"
-          >
-            Get Started
-          </Link>
+          {authState.kind === "guest" ? (
+            <Link
+              href="/business"
+              className="inline-flex min-h-11 items-center justify-center rounded-md border-2 border-[#171717] bg-[#287d69] px-5 py-2 text-sm font-extrabold text-white transition hover:bg-[#171717]"
+            >
+              Get Started
+            </Link>
+          ) : (
+            <>
+              <Link
+                href={authState.dashboardHref || "/"}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-[#171717] bg-[#fdda6d] px-5 py-2 text-sm font-extrabold text-[#171717] transition hover:bg-[#fff0b8]"
+              >
+                <FiGrid className="h-4 w-4" aria-hidden="true" />
+                {authState.dashboardLabel}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-[#171717] bg-white px-5 py-2 text-sm font-extrabold text-[#171717] transition hover:bg-[#171717] hover:text-white"
+              >
+                <FiLogOut className="h-4 w-4" aria-hidden="true" />
+                Log out
+              </button>
+            </>
+          )}
         </div>
 
         <button
@@ -75,13 +163,34 @@ export default function Navbar() {
           <MobileGroup title="For Creators" links={creatorLinks} onNavigate={() => setIsOpen(false)} />
           <MobileGroup title="For Businesses" links={businessLinks} onNavigate={() => setIsOpen(false)} />
           <MobileGroup title="Company" links={companyLinks} onNavigate={() => setIsOpen(false)} />
-          <Link
-            href="/business"
-            onClick={() => setIsOpen(false)}
-            className="mt-4 flex min-h-12 items-center justify-center rounded-md border-2 border-[#171717] bg-[#287d69] px-5 py-3 text-sm font-extrabold text-white"
-          >
-            Get Started
-          </Link>
+          {authState.kind === "guest" ? (
+            <Link
+              href="/business"
+              onClick={() => setIsOpen(false)}
+              className="mt-4 flex min-h-12 items-center justify-center rounded-md border-2 border-[#171717] bg-[#287d69] px-5 py-3 text-sm font-extrabold text-white"
+            >
+              Get Started
+            </Link>
+          ) : (
+            <div className="mt-4 grid gap-3">
+              <Link
+                href={authState.dashboardHref || "/"}
+                onClick={() => setIsOpen(false)}
+                className="flex min-h-12 items-center justify-center gap-2 rounded-md border-2 border-[#171717] bg-[#fdda6d] px-5 py-3 text-sm font-extrabold text-[#171717]"
+              >
+                <FiGrid className="h-4 w-4" aria-hidden="true" />
+                {authState.dashboardLabel}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex min-h-12 items-center justify-center gap-2 rounded-md border-2 border-[#171717] bg-white px-5 py-3 text-sm font-extrabold text-[#171717]"
+              >
+                <FiLogOut className="h-4 w-4" aria-hidden="true" />
+                Log out
+              </button>
+            </div>
+          )}
         </div>
       ) : null}
     </header>

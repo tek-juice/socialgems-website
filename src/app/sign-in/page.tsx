@@ -51,6 +51,7 @@ function SignInForm() {
             // Only store in sessionStorage for client-side access (no localStorage)
             if (typeof window !== 'undefined') {
               sessionStorage.setItem('userToken', data.token);
+              window.dispatchEvent(new Event('socialgems-auth-changed'));
             }
             //store user data in state
             setUser(data.user);

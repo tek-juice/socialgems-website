@@ -43,6 +43,7 @@ export default function LoginPage() {
         // Save the token (you could also store it in a cookie)
         if (typeof window !== 'undefined') {
           sessionStorage.setItem('adminToken', data.token);
+          window.dispatchEvent(new Event('socialgems-auth-changed'));
         }
 
         // Redirect to the admin dashboard

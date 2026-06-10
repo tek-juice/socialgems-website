@@ -214,7 +214,7 @@ const Dashboard = () => {
 
   // Handle Logout
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminToken');
     router.push('/login'); // Redirects to login page after log out
   };
 

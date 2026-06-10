@@ -46,6 +46,29 @@ const socialLinks = [
   { label: "X", href: "https://x.com/socialgems_ug?s=21&t=e3hDCBTz5hi2lkSy-3BO9A" },
 ];
 
+const partnerLinks = [
+  {
+    name: "Everything Uganda",
+    href: "https://www.everythinguganda.com/",
+    logo: "https://www.everythinguganda.com/logo.svg",
+  },
+  {
+    name: "TekJuice",
+    href: "https://tekjuice.co.uk/",
+    logo: "/partnerlogos/tekjuice-logo.png",
+  },
+  {
+    name: "HustleIN",
+    href: "https://hustlein.net/",
+    logo: "/partnerlogos/hustlein-logo.png",
+  },
+  {
+    name: "Kampala Nights",
+    href: "https://kampalanights.com/",
+    logo: "/partnerlogos/kampala-nights-logo.png",
+  },
+];
+
 export default function Footer() {
   return (
     <footer className="border-t-2 border-[#171717] bg-[#171717] text-white">
@@ -86,6 +109,33 @@ export default function Footer() {
                   ))}
                 </ul>
               </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-white/10 pt-8">
+          <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-[#fdda6d]">Our Partners</h3>
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {partnerLinks.map((partner) => (
+              <Link
+                key={partner.name}
+                href={partner.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={partner.name}
+                className="flex min-h-24 items-center justify-center rounded-md border border-white/15 bg-white px-4 py-5 transition hover:-translate-y-0.5 hover:border-[#fdda6d] hover:shadow-[0_0_0_2px_rgba(253,218,109,0.25)]"
+              >
+                {partner.logo ? (
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="max-h-12 max-w-full object-contain"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="text-xl font-black tracking-normal text-[#171717]">{partner.name}</span>
+                )}
+              </Link>
             ))}
           </div>
         </div>
