@@ -102,8 +102,13 @@ export default function Home() {
               <p className="mb-4 inline-flex rounded-full bg-[#fdda6d] px-4 py-2 text-sm font-extrabold uppercase tracking-[0.16em] text-[#171717]">
                 Creator Opportunities Platform
               </p>
-              <h1 className="max-w-full break-words text-[2.35rem] font-black leading-[1.02] text-[#171717] [overflow-wrap:anywhere] sm:text-6xl sm:leading-[0.98] lg:text-7xl">
-                #WeAreSocialGems. Where influence meets opportunity.
+              <h1 className="max-w-full break-words font-black leading-[1.02] text-[#171717] [overflow-wrap:anywhere]">
+                <span className="block text-[2.1rem] text-[#d7a91f] sm:text-5xl sm:leading-[0.98] lg:text-6xl">
+                  #WeAreSocialGems.
+                </span>
+                <span className="mt-2 block text-[1.75rem] leading-tight sm:text-4xl lg:text-5xl">
+                  Where influence meets opportunity.
+                </span>
               </h1>
               <p className="mt-6 max-w-full break-words text-base leading-7 text-[#4f4f4f] [overflow-wrap:anywhere] sm:max-w-2xl sm:text-lg sm:leading-8">
                 Find paid campaigns, creator jobs, affiliate programs, free collaborations, and premium growth tools in one social-first platform.

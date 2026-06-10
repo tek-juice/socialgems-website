@@ -5,6 +5,7 @@ import {
   SOCIALGEMS_USER_TYPE_COOKIE,
   getSocialGemsApiBaseUrl,
 } from "../../../lib/socialgems-api";
+import { readBackendResponse } from "../backend-response";
 
 type VerifyEmailResponse = {
   status?: number;
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     cache: "no-store",
   });
 
-  const result = (await response.json()) as VerifyEmailResponse;
+  const result = await readBackendResponse<VerifyEmailResponse>(response);
   const token = result.data?.token;
 
   if (!response.ok || result.status !== 200 || !token) {

@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true, //Disable Eslint during builds
   },
   images: {
-    domains: ['gpvhonuvumxdfvegiwrz.supabase.co', 'lh3.googleusercontent.com'],
+    remotePatterns: [
+      { protocol: "https", hostname: "gpvhonuvumxdfvegiwrz.supabase.co" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+    ],
   }
 };
 

@@ -7,6 +7,7 @@ import {
   SOCIALGEMS_USER_TYPE_COOKIE,
   getSocialGemsApiBaseUrl,
 } from "../../../lib/socialgems-api";
+import { readBackendResponse } from "../backend-response";
 
 type LoginResponse = {
   status?: number;
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     cache: "no-store",
   });
 
-  const result = (await response.json()) as LoginResponse;
+  const result = await readBackendResponse<LoginResponse>(response);
   const token = result.data?.jwt;
 
   if (!response.ok || result.status !== 200 || !token) {
@@ -42,8 +43,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const userType = result.data?.user_type || "";
-  const destination = userType === "brand" ? "/business/dashboard" : "/creator/dashboard";
+  const userType = (result.data?.user_type || "").toLowerCase();
+  const isBusiness = userType === "brand" || userType === "business";
+  const destination = isBusiness ? "/business/dashboard" : "/creator/dashboard";
   const displayName =
     [result.data?.first_name, result.data?.last_name].filter(Boolean).join(" ") ||
     result.data?.username ||

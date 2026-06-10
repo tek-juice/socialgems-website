@@ -7,7 +7,7 @@
     "build": "next build --debug",
     "build:render": "next build && mkdir -p .next/standalone/.next && cp -R .next/static .next/standalone/.next/static && cp -R public .next/standalone/public",
     "start": "next start",
-    "start:render": "HOSTNAME=0.0.0.0 node .next/standalone/server.js",
+    "start:render": "NODE_OPTIONS=--max-old-space-size=384 HOSTNAME=0.0.0.0 node .next/standalone/server.js",
     "lint": "next lint"
   },
   "engines": {

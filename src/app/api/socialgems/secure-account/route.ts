@@ -3,6 +3,7 @@ import {
   SOCIALGEMS_ACCESS_COOKIE,
   getSocialGemsApiBaseUrl,
 } from "../../../lib/socialgems-api";
+import { readBackendResponse } from "../backend-response";
 
 type BackendResponse = {
   status?: number;
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     cache: "no-store",
   });
 
-  const result = (await response.json()) as BackendResponse;
+  const result = await readBackendResponse<BackendResponse>(response);
 
   if (!response.ok || result.status !== 200) {
     return NextResponse.json(

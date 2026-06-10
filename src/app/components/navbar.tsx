@@ -52,7 +52,18 @@ export default function Navbar() {
         };
       }
 
-      if (sessionStorage.getItem("userToken") || sessionStorage.getItem("socialgemsSession")) {
+      if (sessionStorage.getItem("socialgemsSession")) {
+        const userType = sessionStorage.getItem("socialgemsUserType");
+        const isBusiness = userType === "brand" || userType === "business";
+
+        return {
+          kind: "user" as const,
+          dashboardHref: isBusiness ? "/business/dashboard" : "/creator/dashboard",
+          dashboardLabel: isBusiness ? "Business Dashboard" : "Creator Dashboard",
+        };
+      }
+
+      if (sessionStorage.getItem("userToken")) {
         return {
           kind: "user" as const,
           dashboardHref: "/create-story",
