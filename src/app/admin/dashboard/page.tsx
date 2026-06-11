@@ -302,7 +302,7 @@ const Dashboard = () => {
       return;
     }
     const blob = await response.blob();
-    saveAs(blob, `${activeTab}_List_${dateRange.startDate}_to_${dateRange.endDate}.xlsx`);
+    saveAs(blob, `${activeTab}_List_${dateRange.startDate}_to_${dateRange.endDate}.csv`);
     setShowDownloadModal(false);
   }
 

@@ -1,7 +1,21 @@
 //This file handles downloads of records from influencers and brands for admin and manager to use.
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "../../../lib/db";
-import ExcelJS from "exceljs";
+
+const formatCsvValue = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  const text =
+    value instanceof Date
+      ? value.toISOString()
+      : typeof value === "object"
+        ? JSON.stringify(value)
+        : String(value);
+
+  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
 
 export async function GET(request: NextRequest) {
     try {
@@ -77,28 +91,26 @@ export async function GET(request: NextRequest) {
         return newRow;
       });
   
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet(
-        `${type.charAt(0).toUpperCase() + type.slice(1)} List`
-      );
-  
       // Define columns dynamically based on database fields
       const columns = Object.keys(transformedData[0]).map((key) => ({
         header: key.replace(/_/g, " ").toUpperCase(),
         key,
       }));
+
+      const csvRows = [
+        columns.map((column) => formatCsvValue(column.header)).join(","),
+        ...transformedData.map((row) =>
+          columns.map((column) => formatCsvValue(row[column.key])).join(",")
+        ),
+      ];
+
+      const csv = `\uFEFF${csvRows.join("\r\n")}`;
   
-      worksheet.columns = columns;
-      worksheet.addRows(transformedData);
-  
-      const buffer = await workbook.xlsx.writeBuffer();
-  
-      return new NextResponse(buffer, {
+      return new NextResponse(csv, {
         status: 200,
         headers: new Headers({
-          "Content-Disposition": `attachment; filename=${type}_list_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`,
-          "Content-Type":
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": `attachment; filename=${type}_list_${startDate || 'all'}_to_${endDate || 'all'}.csv`,
+          "Content-Type": "text/csv; charset=utf-8",
         }),
       });
     } catch (error) {
