@@ -149,10 +149,6 @@ export default function SocialGemsSignupForm({ audience }: { audience: Audience 
       <h1 className="mt-3 text-3xl font-bold text-[#171717]">
         {isBusiness ? "Create a SocialGems business account" : "Create your SocialGems creator account"}
       </h1>
-      <p className="mt-3 text-sm leading-6 text-[#555]">
-        This account is created on the same SocialGems backend used by the mobile app.
-      </p>
-
       {message ? <p className="mt-5 rounded-md bg-[#fff5d5] px-3 py-2 text-sm font-semibold text-[#5c4218]">{message}</p> : null}
 
       {step === "details" ? (
