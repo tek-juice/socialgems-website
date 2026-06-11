@@ -1,16 +1,16 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: "standalone",
+  outputFileTracingRoot: __dirname,
   eslint: {
-    ignoreDuringBuilds: true, //Disable Eslint during builds
+    ignoreDuringBuilds: true,
   },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "gpvhonuvumxdfvegiwrz.supabase.co" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
-  }
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
