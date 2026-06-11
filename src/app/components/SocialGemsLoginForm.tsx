@@ -62,9 +62,7 @@ export default function SocialGemsLoginForm({
       <h1 className="mt-3 text-3xl font-bold text-[#171717]">
         Sign in with your SocialGems account
       </h1>
-      <p className="mt-3 text-sm leading-6 text-[#555]">
-        Uses the same backend login as the Flutter mobile app.
-      </p>
+     
 
       <label className="mt-6 block text-sm font-bold text-[#171717]" htmlFor="email">
         Email
