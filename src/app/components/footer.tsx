@@ -123,17 +123,17 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={partner.name}
-                className="flex min-h-24 items-center justify-center rounded-md border border-white/15 bg-white px-4 py-5 transition hover:-translate-y-0.5 hover:border-[#fdda6d] hover:shadow-[0_0_0_2px_rgba(253,218,109,0.25)]"
+                className="block overflow-hidden rounded-md border border-white/10 transition hover:-translate-y-0.5 hover:border-[#fdda6d] hover:shadow-[0_0_0_2px_rgba(253,218,109,0.25)]"
               >
                 {partner.logo ? (
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="max-h-12 max-w-full object-contain"
+                    className="h-24 w-full object-cover"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="text-xl font-black tracking-normal text-[#171717]">{partner.name}</span>
+                  <span className="flex h-24 items-center justify-center text-xl font-black tracking-normal text-white">{partner.name}</span>
                 )}
               </Link>
             ))}
