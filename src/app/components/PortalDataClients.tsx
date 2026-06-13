@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 type ApiResponse<T> = {
@@ -339,6 +340,7 @@ export function CreatorJobsClient() {
   const [jobs, setJobs] = useState<JobPost[]>([]);
   const [niche, setNiche] = useState("");
   const [message, setMessage] = useState("");
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -356,24 +358,65 @@ export function CreatorJobsClient() {
     setLoading(false);
   }
 
-  async function expressInterest(jobId?: string) {
+  async function expressInterest(jobId?: string, accessTier?: string) {
     if (!jobId) return;
+    setUpgradeRequired(false);
+
     if (jobId.startsWith("demo-")) {
-      setMessage("Create your creator account or sign in to apply for Everything Uganda opportunities.");
+      const isLoggedIn = typeof window !== "undefined" && !!sessionStorage.getItem("socialgemsSession");
+      if (accessTier === "creator_plus" || accessTier === "creator_pro") {
+        const planName = accessTier === "creator_pro" ? "Creator Pro" : "Creator Plus";
+        setMessage(`This opportunity requires ${planName}. Upgrade your plan to apply for opportunities like this.`);
+        setUpgradeRequired(true);
+      } else if (isLoggedIn) {
+        setMessage("Real opportunities will appear here as businesses post jobs. Check back regularly.");
+      } else {
+        setMessage("Sign in to your creator account to apply for this opportunity.");
+      }
       return;
     }
+
     const note = window.prompt("Add a short note for the business") || "";
     const result = await api("jobs/expressInterest", {
       method: "POST",
       body: JSON.stringify({ job_id: jobId, note }),
     });
-    setMessage(result.message || "Interest submitted.");
-    load();
+
+    const msg = (result.message || "").toLowerCase();
+    const isSubscriptionError =
+      msg.includes("subscription") ||
+      msg.includes("upgrade") ||
+      msg.includes("creator plus") ||
+      msg.includes("creator pro") ||
+      msg.includes("access tier") ||
+      msg.includes("premium") ||
+      msg.includes("membership") ||
+      (result.status === 403 && !!accessTier && accessTier !== "open" && accessTier !== "free");
+
+    if (isSubscriptionError) {
+      setUpgradeRequired(true);
+      setMessage(result.message || `This opportunity requires a Creator subscription. Upgrade your plan to apply.`);
+    } else {
+      setMessage(result.message || "Interest submitted.");
+      load();
+    }
   }
 
   return (
     <LiveSection title="Browse Creator Jobs" actionLabel="Search" onAction={load}>
-      {message ? <Notice>{message}</Notice> : null}
+      {message ? (
+        <Notice>
+          <p>{message}</p>
+          {upgradeRequired && (
+            <Link
+              href="/creator/memberships"
+              className="mt-2 inline-flex items-center gap-1 font-bold text-[#287d69] underline underline-offset-2 hover:text-[#171717]"
+            >
+              View Creator Memberships →
+            </Link>
+          )}
+        </Notice>
+      ) : null}
       <div className="mb-4">
         <Input label="Filter by niche" value={niche} onChange={setNiche} placeholder="beauty, food, ugc..." />
       </div>
@@ -382,7 +425,15 @@ export function CreatorJobsClient() {
           <Card key={job.job_id || job.title} title={job.title || "Untitled job"} badge={job.my_interest_status || job.access_tier || "open"}>
             <p>{job.description || "No description."}</p>
             <Meta items={[job.business_name || "Business", `${job.comp_currency || ""} ${job.comp_amount || "N/A"}`, job.niche || "Any niche", `Min followers: ${job.min_followers || 0}`]} />
-            <button onClick={() => expressInterest(job.job_id)} className="mt-4 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white">
+            <button
+              onClick={() => expressInterest(job.job_id, job.access_tier)}
+              className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white"
+            >
+              {(job.access_tier === "creator_plus" || job.access_tier === "creator_pro") && (
+                <span className="rounded bg-[#fdda6d] px-1.5 py-0.5 text-xs font-black text-[#171717]">
+                  {job.access_tier === "creator_pro" ? "Pro" : "Plus"}
+                </span>
+              )}
               Express Interest
             </button>
           </Card>
@@ -395,6 +446,7 @@ export function CreatorJobsClient() {
 export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false }: { affiliateOnly?: boolean; freeOnly?: boolean }) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [message, setMessage] = useState("");
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -416,15 +468,40 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
 
   async function trackAffiliate(campaign: Campaign) {
     if (!campaign.campaign_id) return;
+    setUpgradeRequired(false);
+
     if (campaign.campaign_id.startsWith("demo-")) {
+      const tier = campaign.access_tier;
+      if (tier === "creator_plus" || tier === "creator_pro") {
+        const planName = tier === "creator_pro" ? "Creator Pro" : "Creator Plus";
+        setMessage(`This affiliate program requires ${planName}. Upgrade your plan to access affiliate links like this.`);
+        setUpgradeRequired(true);
+        return;
+      }
       if (campaign.affiliate_link) window.open(campaign.affiliate_link, "_blank", "noopener,noreferrer");
       return;
     }
-    await api("campaigns/affiliate-click", {
+
+    const result = await api("campaigns/affiliate-click", {
       method: "POST",
       body: JSON.stringify({ campaign_id: campaign.campaign_id }),
     });
-    if (campaign.affiliate_link) window.open(campaign.affiliate_link, "_blank", "noopener,noreferrer");
+
+    const msg = (result.message || "").toLowerCase();
+    const isSubscriptionError =
+      msg.includes("subscription") ||
+      msg.includes("upgrade") ||
+      msg.includes("creator plus") ||
+      msg.includes("creator pro") ||
+      msg.includes("access tier") ||
+      msg.includes("membership");
+
+    if (isSubscriptionError) {
+      setUpgradeRequired(true);
+      setMessage(result.message || "This campaign requires a Creator subscription. Upgrade your plan to access it.");
+    } else {
+      if (campaign.affiliate_link) window.open(campaign.affiliate_link, "_blank", "noopener,noreferrer");
+    }
   }
 
   async function openInvite(campaign: Campaign, action: "accepted" | "declined") {
@@ -434,12 +511,25 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
       body: JSON.stringify({ campaign_id: campaign.campaign_id, action }),
     });
     setMessage(result.message || "Campaign updated.");
+    setUpgradeRequired(false);
     load();
   }
 
   return (
     <LiveSection title={affiliateOnly ? "Affiliate Programs" : freeOnly ? "Free Collaborations" : "Campaigns"} actionLabel="Refresh" onAction={load}>
-      {message ? <Notice>{message}</Notice> : null}
+      {message ? (
+        <Notice>
+          <p>{message}</p>
+          {upgradeRequired && (
+            <Link
+              href="/creator/memberships"
+              className="mt-2 inline-flex items-center gap-1 font-bold text-[#287d69] underline underline-offset-2 hover:text-[#171717]"
+            >
+              View Creator Memberships →
+            </Link>
+          )}
+        </Notice>
+      ) : null}
       <List loading={loading} empty="No campaigns found.">
         {campaigns.map((campaign) => (
           <Card key={campaign.campaign_id || campaign.title} title={campaign.title || "Untitled campaign"} badge={campaign.access_tier || campaign.earning_type || "free"}>
@@ -447,7 +537,15 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
             <Meta items={[campaign.brand_name || "Brand", `Type: ${campaign.earning_type || "paid"}`, `Status: ${campaign.status || "active"}`, campaign.objective || "No objective"]} />
             <div className="mt-4 flex flex-wrap gap-2">
               {campaign.affiliate_link ? (
-                <button onClick={() => trackAffiliate(campaign)} className="rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white">
+                <button
+                  onClick={() => trackAffiliate(campaign)}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white"
+                >
+                  {(campaign.access_tier === "creator_plus" || campaign.access_tier === "creator_pro") && (
+                    <span className="rounded bg-[#fdda6d] px-1.5 py-0.5 text-xs font-black text-[#171717]">
+                      {campaign.access_tier === "creator_pro" ? "Pro" : "Plus"}
+                    </span>
+                  )}
                   Open Affiliate Link
                 </button>
               ) : null}
@@ -667,7 +765,9 @@ export function CreatorProfileClient() {
 export function CreatorMembershipsClient() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [current, setCurrent] = useState<unknown>(null);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
   const [message, setMessage] = useState("");
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -676,62 +776,152 @@ export function CreatorMembershipsClient() {
 
   async function load() {
     setLoading(true);
-    const [plansResult, myResult] = await Promise.all([
+    const [plansResult, myResult, walletResult] = await Promise.all([
       api<Plan[]>("payments/getSubscriptions"),
       api("payments/mySubscription"),
+      api("payments/walletWithStates"),
     ]);
     setPlans(unwrapList<Plan>(plansResult));
     setCurrent(myResult.data || null);
+    const raw = walletResult.data as { data?: WalletData } | WalletData | undefined;
+    setWallet(raw && typeof raw === "object" && "data" in raw ? raw.data ?? null : (raw as WalletData | undefined) ?? null);
     setLoading(false);
   }
 
-  async function subscribe(plan: Plan) {
+  async function subscribeViaWallet(plan: Plan) {
+    if (!plan.id) {
+      setMessage("Plan pricing not available yet.");
+      setUpgradeRequired(false);
+      return;
+    }
+    setMessage("");
+    setUpgradeRequired(false);
+    const result = await api("payments/createSubscription", {
+      method: "POST",
+      body: JSON.stringify({ sub_tag: plan.sub_tag, subscription_id: plan.id, payment_method: "wallet" }),
+    });
+    setMessage(result.message || "Subscription activated.");
+    const msg = (result.message || "").toLowerCase();
+    if (msg.includes("insufficient") || msg.includes("balance") || msg.includes("fund")) {
+      setUpgradeRequired(true);
+    } else {
+      load();
+    }
+  }
+
+  async function subscribeViaMpesa(plan: Plan) {
+    if (!plan.id) {
+      setMessage("Live subscription checkout will be available when plan pricing is supplied.");
+      setUpgradeRequired(false);
+      return;
+    }
+    setMessage("");
+    setUpgradeRequired(false);
     const result = await api("payments/createSubscription", {
       method: "POST",
       body: JSON.stringify({ sub_tag: plan.sub_tag, subscription_id: plan.id }),
     });
     setMessage(result.message || "Subscription request created.");
-    const checkoutUrl = (result.data as { checkoutUrl?: string; url?: string } | undefined)?.checkoutUrl || (result.data as { checkoutUrl?: string; url?: string } | undefined)?.url;
+    const data = result.data as { checkoutUrl?: string; url?: string } | undefined;
+    const checkoutUrl = data?.checkoutUrl || data?.url;
     if (checkoutUrl) window.location.href = checkoutUrl;
   }
 
   async function cancel() {
     const result = await api("payments/cancelSubscription", { method: "POST", body: JSON.stringify({}) });
     setMessage(result.message || "Subscription cancelled.");
+    setUpgradeRequired(false);
     load();
   }
 
   const displayPlans = plans.length ? plans : fallbackCreatorPlans;
+  const walletBalance = parseFloat(wallet?.available_balance ?? wallet?.balance ?? "0");
+  const walletCurrency = wallet?.currency ?? wallet?.asset ?? "KES";
 
   return (
     <LiveSection title="Creator Memberships" actionLabel="Refresh" onAction={load}>
-      {message ? <Notice>{message}</Notice> : null}
-      {current ? <Notice>Current subscription data loaded from payments/mySubscription.</Notice> : null}
-      {!loading && !plans.length ? <Notice>Showing default Free, Creator Plus, and Creator Pro plan details until live subscription data is available.</Notice> : null}
+      {/* Wallet balance banner */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#e7e1d6] bg-[#fffdf8] px-4 py-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#555]">Wallet Balance</p>
+          <p className="mt-0.5 text-xl font-black text-[#171717]">
+            {wallet ? `KES ${walletBalance.toLocaleString()}` : "—"}
+          </p>
+        </div>
+        <Link
+          href="/creator/wallet"
+          className="rounded-md border-2 border-[#171717] bg-[#fdda6d] px-4 py-2 text-sm font-bold text-[#171717] transition hover:bg-[#171717] hover:text-white"
+        >
+          Fund Wallet via M-Pesa
+        </Link>
+      </div>
+
+      {message ? (
+        <Notice>
+          <p>{message}</p>
+          {upgradeRequired && (
+            <Link href="/creator/wallet" className="mt-2 inline-flex items-center gap-1 font-bold text-[#287d69] underline underline-offset-2 hover:text-[#171717]">
+              Fund Wallet via M-Pesa →
+            </Link>
+          )}
+        </Notice>
+      ) : null}
+      {current ? <Notice>Current subscription data loaded.</Notice> : null}
+      {!loading && !plans.length ? <Notice>Showing default plan details until live subscription data is available.</Notice> : null}
+
       <List loading={loading} empty="No subscription plans found.">
-        {displayPlans.map((plan) => (
-          <Card key={plan.id || plan.sub_tag} title={plan.name || plan.sub_tag || "Plan"} badge={plan.is_popular ? "Popular" : plan.sub_tag}>
-            <p>{plan.description || plan.features || "No description."}</p>
-            {plan.features ? (
-              <div className="mt-4 grid gap-2">
-                {plan.features.split(",").map((feature) => (
-                  <p key={feature.trim()} className="rounded-md bg-[#f7f3eb] px-3 py-2 text-xs font-semibold text-[#333]">
-                    {feature.trim()}
-                  </p>
-                ))}
-              </div>
-            ) : null}
-            <Meta items={[plan.price !== undefined ? `${plan.currency || "USD"} ${plan.price}` : "Pricing: To be supplied"]} />
-            <button
-              onClick={() => (plan.id ? subscribe(plan) : setMessage("Live subscription checkout will be available when plan pricing is supplied."))}
-              className="mt-4 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white"
-            >
-              Choose Plan
-            </button>
-          </Card>
-        ))}
+        {displayPlans.map((plan) => {
+          const planPrice = plan.price ?? 0;
+          const planCurrency = plan.currency ?? "KES";
+          const canPayFromWallet = plan.id !== undefined && planPrice > 0 && planCurrency === walletCurrency && walletBalance >= planPrice;
+          const isFree = planPrice === 0 || plan.sub_tag === "free";
+
+          return (
+            <Card key={plan.id || plan.sub_tag} title={plan.name || plan.sub_tag || "Plan"} badge={plan.is_popular ? "Popular" : plan.sub_tag}>
+              <p>{plan.description || plan.features || "No description."}</p>
+              {plan.features ? (
+                <div className="mt-4 grid gap-2">
+                  {plan.features.split(",").map((feature) => (
+                    <p key={feature.trim()} className="rounded-md bg-[#f7f3eb] px-3 py-2 text-xs font-semibold text-[#333]">
+                      {feature.trim()}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+              <Meta items={[planPrice > 0 ? `${planCurrency} ${planPrice.toLocaleString()} / month` : "Free"]} />
+              {isFree ? (
+                <p className="mt-4 text-sm font-semibold text-[#287d69]">Your current free access</p>
+              ) : (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {/* Pay from wallet — shown when balance is sufficient */}
+                  <button
+                    onClick={() => subscribeViaWallet(plan)}
+                    disabled={!canPayFromWallet && plan.id !== undefined}
+                    className={`rounded-md px-4 py-2 text-sm font-bold transition ${
+                      canPayFromWallet
+                        ? "bg-[#287d69] text-white hover:bg-[#1e6155]"
+                        : "cursor-not-allowed bg-[#e7e1d6] text-[#999]"
+                    }`}
+                    title={canPayFromWallet ? "Pay using your wallet balance" : "Insufficient wallet balance"}
+                  >
+                    Pay from Wallet
+                  </button>
+                  {/* Pay via M-Pesa — always available */}
+                  <button
+                    onClick={() => subscribeViaMpesa(plan)}
+                    className="rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#333]"
+                  >
+                    Pay via M-Pesa
+                  </button>
+                </div>
+              )}
+            </Card>
+          );
+        })}
       </List>
-      <button onClick={cancel} className="mt-4 rounded-md border border-[#171717] px-4 py-2 text-sm font-bold text-[#171717]">Cancel Current Subscription</button>
+      <button onClick={cancel} className="mt-4 rounded-md border border-[#171717] px-4 py-2 text-sm font-bold text-[#171717]">
+        Cancel Current Subscription
+      </button>
     </LiveSection>
   );
 }
@@ -874,7 +1064,8 @@ type WalletData = {
   currency?: string;
 };
 
-function WalletBalanceGrid({ wallet }: { wallet: WalletData | null }) {
+function WalletBalanceGrid({ wallet, currency }: { wallet: WalletData | null; currency?: string }) {
+  const displayCurrency = currency ?? wallet?.currency ?? wallet?.asset ?? "KES";
   const stats = [
     { label: "Available", value: wallet?.available_balance ?? wallet?.balance ?? "0" },
     { label: "Pending", value: wallet?.pending_balance ?? "0" },
@@ -887,7 +1078,7 @@ function WalletBalanceGrid({ wallet }: { wallet: WalletData | null }) {
         <div key={stat.label} className="rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4">
           <p className="text-xs font-bold uppercase tracking-wide text-[#555]">{stat.label}</p>
           <p className="mt-1 text-2xl font-black text-[#171717]">{wallet ? stat.value : "—"}</p>
-          {wallet?.asset ? <p className="mt-1 text-xs text-[#888]">{wallet.asset}</p> : null}
+          {wallet ? <p className="mt-1 text-xs text-[#888]">{displayCurrency}</p> : null}
         </div>
       ))}
     </div>
@@ -907,7 +1098,7 @@ function TransactionList({ transactions, loading }: { transactions: Transaction[
           >
             <Meta
               items={[
-                `${tx.currency ?? ""} ${tx.amount ?? "0"}`.trim(),
+                `${tx.currency === "USD" ? "KES" : (tx.currency ?? "KES")} ${tx.amount ?? "0"}`.trim(),
                 tx.type ?? tx.transaction_type ?? "",
                 tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "",
               ]}
@@ -963,7 +1154,7 @@ export function CreatorWalletClient() {
       onAction={() => { setIsWithdrawing((v) => !v); setMessage(""); }}
     >
       {message ? <Notice>{message}</Notice> : null}
-      <WalletBalanceGrid wallet={wallet} />
+      <WalletBalanceGrid wallet={wallet} currency="KES" />
       {isWithdrawing ? (
         <form onSubmit={withdraw} className="mb-6 grid gap-4 rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4 md:grid-cols-2">
           <Input label="Amount (KES)" type="number" value={form.amount} onChange={(v) => setForm({ ...form, amount: v })} required />
