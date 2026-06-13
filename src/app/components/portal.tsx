@@ -266,7 +266,7 @@ export function PortalLayout({
           <div className="mt-6">{children}</div>
         </section>
       </main>
-      <PortalMobileBar nav={nav} />
+      <PortalMobileBar nav={nav} kind={kind} />
     </div>
   );
 }

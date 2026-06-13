@@ -47,7 +47,7 @@ function usePortalUser(): UserState | null {
   return user;
 }
 
-function useLogout() {
+function useLogout(kind: PortalKind) {
   const router = useRouter();
 
   return async () => {
@@ -60,7 +60,7 @@ function useLogout() {
       // session already cleared client-side
     }
     window.dispatchEvent(new Event("socialgems-auth-changed"));
-    router.push("/sign-in");
+    router.push(kind === "business" ? "/business/login" : "/creator/login");
   };
 }
 
@@ -85,7 +85,7 @@ export function PortalHeader({
   kind: PortalKind;
 }) {
   const user = usePortalUser();
-  const logout = useLogout();
+  const logout = useLogout(kind);
   const accent = kind === "business" ? "text-[#245d9c]" : "text-[#287d69]";
   const loginHref = kind === "business" ? "/business/login" : "/creator/login";
 
@@ -157,7 +157,7 @@ export function PortalSidebar({
 }) {
   const pathname = usePathname();
   const user = usePortalUser();
-  const logout = useLogout();
+  const logout = useLogout(kind);
   const accent = kind === "business" ? "text-[#245d9c]" : "text-[#287d69]";
   const accentBg = kind === "business" ? "bg-[#edf3ff]" : "bg-[#e8fff7]";
 
@@ -227,9 +227,9 @@ export function PortalSidebar({
 
 // ─── Portal Mobile Bottom Bar ─────────────────────────────────────────────────
 
-export function PortalMobileBar({ nav }: { nav: NavItem[] }) {
+export function PortalMobileBar({ nav, kind }: { nav: NavItem[]; kind: PortalKind }) {
   const pathname = usePathname();
-  const logout = useLogout();
+  const logout = useLogout(kind);
 
   // Show first 4 nav items + logout as the 5th slot
   const visibleItems = nav.slice(0, 4);
