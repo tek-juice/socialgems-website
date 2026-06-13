@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 type ApiResponse<T> = {
   status?: number;
@@ -845,6 +845,418 @@ function AccountActions() {
     <div className="mt-4 rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4">
       <h3 className="text-lg font-bold text-[#171717]">Account</h3>
       <button onClick={logout} className="mt-4 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white">Sign Out</button>
+    </div>
+  );
+}
+
+// ─── Wallet ───────────────────────────────────────────────────────────────────
+
+type Transaction = {
+  transaction_id?: string;
+  reference_id?: string;
+  amount?: string | number;
+  currency?: string;
+  type?: string;
+  transaction_type?: string;
+  status?: string;
+  narration?: string;
+  description?: string;
+  created_at?: string;
+};
+
+type WalletData = {
+  asset?: string;
+  balance?: string;
+  available_balance?: string;
+  pending_balance?: string;
+  total_earned?: string;
+  total_withdrawn?: string;
+  currency?: string;
+};
+
+function WalletBalanceGrid({ wallet }: { wallet: WalletData | null }) {
+  const stats = [
+    { label: "Available", value: wallet?.available_balance ?? wallet?.balance ?? "0" },
+    { label: "Pending", value: wallet?.pending_balance ?? "0" },
+    { label: "Total Earned", value: wallet?.total_earned ?? "0" },
+    { label: "Total Withdrawn", value: wallet?.total_withdrawn ?? "0" },
+  ];
+  return (
+    <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {stats.map((stat) => (
+        <div key={stat.label} className="rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[#555]">{stat.label}</p>
+          <p className="mt-1 text-2xl font-black text-[#171717]">{wallet ? stat.value : "—"}</p>
+          {wallet?.asset ? <p className="mt-1 text-xs text-[#888]">{wallet.asset}</p> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TransactionList({ transactions, loading }: { transactions: Transaction[]; loading: boolean }) {
+  return (
+    <div className="mt-4">
+      <p className="mb-3 text-xs font-bold uppercase tracking-wide text-[#555]">Recent Transactions</p>
+      <List loading={loading} empty="No transactions yet.">
+        {transactions.map((tx, i) => (
+          <Card
+            key={tx.transaction_id ?? tx.reference_id ?? String(i)}
+            title={tx.narration ?? tx.description ?? "Transaction"}
+            badge={tx.status}
+          >
+            <Meta
+              items={[
+                `${tx.currency ?? ""} ${tx.amount ?? "0"}`.trim(),
+                tx.type ?? tx.transaction_type ?? "",
+                tx.created_at ? new Date(tx.created_at).toLocaleDateString() : "",
+              ]}
+            />
+          </Card>
+        ))}
+      </List>
+    </div>
+  );
+}
+
+export function CreatorWalletClient() {
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [form, setForm] = useState({ amount: "", msisdn: "", pin: "" });
+
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    setLoading(true);
+    const [walletResult, txResult] = await Promise.all([
+      api("payments/walletWithStates"),
+      api("wallet/accountStatement", { method: "POST", body: JSON.stringify({ limit: 20 }) }),
+    ]);
+    const raw = walletResult.data as { data?: WalletData } | WalletData | undefined;
+    setWallet(raw && typeof raw === "object" && "data" in raw ? raw.data ?? null : (raw as WalletData | undefined) ?? null);
+    setTransactions(unwrapList<Transaction>(txResult));
+    setLoading(false);
+  }
+
+  async function withdraw(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const result = await api("wallet/kesWithdraw", {
+      method: "POST",
+      body: JSON.stringify({ amount: Number(form.amount), msisdn: form.msisdn, pin: form.pin }),
+    });
+    setMessage(result.message ?? (result.status === 200 ? "Withdrawal initiated." : "Withdrawal failed."));
+    if (result.status === 200) {
+      setIsWithdrawing(false);
+      setForm({ amount: "", msisdn: "", pin: "" });
+      load();
+    }
+  }
+
+  return (
+    <LiveSection
+      title="My Wallet"
+      actionLabel={isWithdrawing ? "Cancel" : "Withdraw (KES)"}
+      onAction={() => { setIsWithdrawing((v) => !v); setMessage(""); }}
+    >
+      {message ? <Notice>{message}</Notice> : null}
+      <WalletBalanceGrid wallet={wallet} />
+      {isWithdrawing ? (
+        <form onSubmit={withdraw} className="mb-6 grid gap-4 rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4 md:grid-cols-2">
+          <Input label="Amount (KES)" type="number" value={form.amount} onChange={(v) => setForm({ ...form, amount: v })} required />
+          <Input label="M-Pesa Phone" value={form.msisdn} onChange={(v) => setForm({ ...form, msisdn: v })} placeholder="07XXXXXXXX" required />
+          <Input label="Transaction PIN" type="password" value={form.pin} onChange={(v) => setForm({ ...form, pin: v })} required />
+          <button type="submit" className="min-h-12 rounded-md bg-[#171717] px-5 py-3 text-sm font-bold text-white md:col-span-2">
+            Confirm Withdrawal
+          </button>
+        </form>
+      ) : null}
+      <TransactionList transactions={transactions} loading={loading} />
+    </LiveSection>
+  );
+}
+
+export function BusinessWalletClient() {
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [form, setForm] = useState({ amount: "", currency: "KES", payment_method: "mpesa", msisdn: "" });
+
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    setLoading(true);
+    const [walletResult, txResult] = await Promise.all([
+      api("payments/walletWithStates"),
+      api("wallet/accountStatement", { method: "POST", body: JSON.stringify({ limit: 20 }) }),
+    ]);
+    const raw = walletResult.data as { data?: WalletData } | WalletData | undefined;
+    setWallet(raw && typeof raw === "object" && "data" in raw ? raw.data ?? null : (raw as WalletData | undefined) ?? null);
+    setTransactions(unwrapList<Transaction>(txResult));
+    setLoading(false);
+  }
+
+  async function deposit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const result = await api("wallet/depositRequest", {
+      method: "POST",
+      body: JSON.stringify({
+        amount: Number(form.amount),
+        currency: form.currency,
+        paymentMethod: form.payment_method,
+        account_number: form.msisdn,
+        redirect_url: window.location.href,
+      }),
+    });
+    setMessage(result.message ?? (result.status === 200 ? "Deposit initiated." : "Deposit failed."));
+    const checkoutUrl = (result.data as { checkoutUrl?: string; url?: string } | undefined)?.checkoutUrl
+      ?? (result.data as { checkoutUrl?: string; url?: string } | undefined)?.url;
+    if (checkoutUrl) window.location.href = checkoutUrl;
+    if (result.status === 200) {
+      setIsDepositing(false);
+      setForm({ amount: "", currency: "KES", payment_method: "mpesa", msisdn: "" });
+      load();
+    }
+  }
+
+  return (
+    <LiveSection
+      title="Business Wallet"
+      actionLabel={isDepositing ? "Cancel" : "Fund Wallet"}
+      onAction={() => { setIsDepositing((v) => !v); setMessage(""); }}
+    >
+      {message ? <Notice>{message}</Notice> : null}
+      <WalletBalanceGrid wallet={wallet} />
+      {isDepositing ? (
+        <form onSubmit={deposit} className="mb-6 grid gap-4 rounded-lg border border-[#e7e1d6] bg-[#fffdf8] p-4 md:grid-cols-2">
+          <Input label="Amount" type="number" value={form.amount} onChange={(v) => setForm({ ...form, amount: v })} required />
+          <label className="block">
+            <span className="text-sm font-bold text-[#171717]">Currency</span>
+            <select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} className="mt-2 min-h-12 w-full rounded-md border border-[#d8d0c2] px-3 text-[#171717]">
+              <option value="KES">KES</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm font-bold text-[#171717]">Payment Method</span>
+            <select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })} className="mt-2 min-h-12 w-full rounded-md border border-[#d8d0c2] px-3 text-[#171717]">
+              <option value="mpesa">M-Pesa</option>
+              <option value="card">Card</option>
+              <option value="bank">Bank Transfer</option>
+            </select>
+          </label>
+          <Input label="Phone / Account Number" value={form.msisdn} onChange={(v) => setForm({ ...form, msisdn: v })} placeholder="07XXXXXXXX" required />
+          <button type="submit" className="min-h-12 rounded-md bg-[#171717] px-5 py-3 text-sm font-bold text-white md:col-span-2">
+            Confirm Deposit
+          </button>
+        </form>
+      ) : null}
+      <TransactionList transactions={transactions} loading={loading} />
+    </LiveSection>
+  );
+}
+
+// ─── Social Connect ────────────────────────────────────────────────────────────
+
+type SocialSite = {
+  site_id?: string;
+  sm_name?: string;
+  platform?: string;
+  username?: string;
+  followers?: string | number;
+};
+
+const SOCIAL_PLATFORMS = [
+  { id: "x", label: "X (Twitter)", color: "#000000", textColor: "#ffffff" },
+  { id: "tiktok", label: "TikTok", color: "#FF0050", textColor: "#ffffff" },
+  { id: "linkedin", label: "LinkedIn", color: "#0A66C2", textColor: "#ffffff" },
+  { id: "instagram", label: "Instagram", color: "#E4405F", textColor: "#ffffff" },
+];
+
+export function SocialConnectClient() {
+  const [sites, setSites] = useState<SocialSite[]>([]);
+  const [userId, setUserId] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+  const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
+  const [igUsername, setIgUsername] = useState("");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    load();
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, []);
+
+  async function load() {
+    setLoading(true);
+    const [sitesResult, profileResult] = await Promise.all([
+      api<SocialSite[]>("users/userSocialSites"),
+      api<Profile>("users/getUserProfile"),
+    ]);
+    setSites(unwrapList<SocialSite>(sitesResult));
+    const profile = profileResult.data as Profile | undefined;
+    if (profile?.user_id) setUserId(profile.user_id);
+    setLoading(false);
+  }
+
+  function getConnected(platformId: string) {
+    return sites.find((s) => (s.sm_name ?? s.platform ?? "").toLowerCase() === platformId.toLowerCase());
+  }
+
+  async function disconnect(platformId: string) {
+    setMessage("");
+    const result = await api(`oauth/disconnect/${platformId}`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+    setMessage(result.message ?? `${platformId} disconnected.`);
+    load();
+  }
+
+  async function connectOAuth(platformId: string) {
+    setMessage("");
+    setConnectingPlatform(platformId);
+    const initResult = await api<{ authUrl?: string; state?: string }>(`oauth/init/${platformId}`);
+    const data = initResult.data as { authUrl?: string; state?: string } | undefined;
+    if (!data?.authUrl || !data?.state) {
+      setMessage(initResult.message ?? "Could not start connection.");
+      setConnectingPlatform(null);
+      return;
+    }
+
+    const popup = window.open(data.authUrl, `sg_oauth_${platformId}`, "width=620,height=720,scrollbars=yes");
+    if (!popup) {
+      setMessage("Popup blocked — please allow popups for this site and try again.");
+      setConnectingPlatform(null);
+      return;
+    }
+
+    let attempts = 0;
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > 90 || popup.closed) {
+        clearInterval(pollRef.current!);
+        setConnectingPlatform(null);
+        if (attempts > 90) setMessage("Connection timed out.");
+        return;
+      }
+      try {
+        const statusResult = await api<{ status?: string; message?: string }>(`oauth/status/${data.state}`);
+        const status = (statusResult.data as { status?: string } | undefined)?.status;
+        if (status === "success") {
+          clearInterval(pollRef.current!);
+          popup.close();
+          setConnectingPlatform(null);
+          setMessage(`${platformId} connected successfully!`);
+          load();
+        } else if (status === "error") {
+          clearInterval(pollRef.current!);
+          popup.close();
+          setConnectingPlatform(null);
+          setMessage((statusResult.data as { message?: string } | undefined)?.message ?? "Connection failed.");
+        }
+      } catch {
+        // ignore individual poll failures
+      }
+    }, 2000);
+  }
+
+  async function connectInstagram(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const result = await api("oauth/connect-instagram", {
+      method: "POST",
+      body: JSON.stringify({ username: igUsername }),
+    });
+    setMessage(result.message ?? (result.status === 200 ? "Instagram connected." : "Connection failed."));
+    if (result.status === 200) {
+      setConnectingPlatform(null);
+      setIgUsername("");
+      load();
+    }
+  }
+
+  if (loading) return <div className="rounded-lg border border-[#e7e1d6] bg-white p-5 text-sm text-[#555]">Loading...</div>;
+
+  return (
+    <div className="grid gap-4">
+      {message ? <Notice>{message}</Notice> : null}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {SOCIAL_PLATFORMS.map((platform) => {
+          const connected = getConnected(platform.id);
+          const isConnecting = connectingPlatform === platform.id;
+          const showIgForm = connectingPlatform === "instagram" && platform.id === "instagram";
+
+          return (
+            <article key={platform.id} className="rounded-lg border border-[#e7e1d6] bg-white p-5">
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-xs font-black"
+                  style={{ backgroundColor: platform.color, color: platform.textColor }}
+                >
+                  {platform.label.slice(0, 1)}
+                </div>
+                <div>
+                  <p className="font-bold text-[#171717]">{platform.label}</p>
+                  {connected ? (
+                    <p className="text-xs text-[#287d69]">
+                      Connected{connected.username ? ` · @${connected.username}` : ""}
+                      {connected.followers ? ` · ${connected.followers} followers` : ""}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-[#888]">Not connected</p>
+                  )}
+                </div>
+              </div>
+
+              {showIgForm ? (
+                <form onSubmit={connectInstagram} className="mt-4 flex gap-2">
+                  <input
+                    type="text"
+                    value={igUsername}
+                    onChange={(e) => setIgUsername(e.target.value)}
+                    placeholder="Instagram username"
+                    required
+                    className="min-h-10 flex-1 rounded-md border border-[#d8d0c2] px-3 text-sm text-[#171717]"
+                  />
+                  <button type="submit" className="rounded-md bg-[#E4405F] px-4 py-2 text-sm font-bold text-white">
+                    Connect
+                  </button>
+                  <button type="button" onClick={() => setConnectingPlatform(null)} className="rounded-md border border-[#d8d0c2] px-3 py-2 text-sm font-bold text-[#555]">
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <div className="mt-4 flex gap-2">
+                  {connected ? (
+                    <button
+                      onClick={() => disconnect(platform.id)}
+                      className="rounded-md border border-[#d8d0c2] px-4 py-2 text-sm font-bold text-[#555] hover:border-red-300 hover:text-red-600"
+                    >
+                      Disconnect
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => platform.id === "instagram" ? setConnectingPlatform("instagram") : connectOAuth(platform.id)}
+                      disabled={isConnecting}
+                      className="rounded-md px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                      style={{ backgroundColor: platform.color }}
+                    >
+                      {isConnecting ? "Connecting…" : "Connect"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 }

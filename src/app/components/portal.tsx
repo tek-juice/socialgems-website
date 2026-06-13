@@ -10,6 +10,7 @@ import {
   FiGrid,
   FiSearch,
   FiSettings,
+  FiShare2,
   FiTarget,
   FiTrendingUp,
   FiUserCheck,
@@ -116,6 +117,7 @@ export const businessNav: NavItem[] = [
   { label: "Affiliate Programs", href: "/business/affiliate-programs", icon: FiTrendingUp },
   { label: "Opportunities", href: "/business/opportunities", icon: FiFileText },
   { label: "Applicants", href: "/business/applicants", icon: FiUsers },
+  { label: "Wallet", href: "/business/wallet", icon: FiDollarSign },
   { label: "Settings", href: "/business/settings", icon: FiSettings },
 ];
 
@@ -127,6 +129,8 @@ export const creatorNav: NavItem[] = [
   { label: "Opportunities", href: "/creator/opportunities", icon: FiFileText },
   { label: "Memberships", href: "/creator/memberships", icon: FiCreditCard },
   { label: "Applications", href: "/creator/applications", icon: FiCheckCircle },
+  { label: "Wallet", href: "/creator/wallet", icon: FiDollarSign },
+  { label: "Social Connect", href: "/creator/social-connect", icon: FiShare2 },
   { label: "Profile", href: "/creator/profile", icon: FiUserCheck },
   { label: "Settings", href: "/creator/settings", icon: FiSettings },
 ];
