@@ -51,21 +51,25 @@ const partnerLinks = [
     name: "Everything Uganda",
     href: "https://www.everythinguganda.com/",
     logo: "https://www.everythinguganda.com/logo.svg",
+    bgColor: "#1a3a2e",
   },
   {
     name: "TekJuice",
     href: "https://tekjuice.co.uk/",
     logo: "/partnerlogos/tekjuice-logo.png",
+    bgColor: "#F7941D",
   },
   {
     name: "HustleIN",
     href: "https://hustlein.net/",
     logo: "/partnerlogos/hustlein-logo.png",
+    bgColor: "#3C1A0E",
   },
   {
     name: "Kampala Nights",
     href: "https://kampalanights.com/",
     logo: "/partnerlogos/kampala-nights-logo.png",
+    bgColor: "#3B1459",
   },
 ];
 
@@ -123,17 +127,18 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={partner.name}
-                className="block overflow-hidden rounded-md border border-white/10 transition hover:-translate-y-0.5 hover:border-[#fdda6d] hover:shadow-[0_0_0_2px_rgba(253,218,109,0.25)]"
+                className="flex min-h-24 items-center justify-center rounded-md border border-white/15 px-4 py-5 transition hover:-translate-y-0.5 hover:border-[#fdda6d] hover:shadow-[0_0_0_2px_rgba(253,218,109,0.25)]"
+                style={{ backgroundColor: partner.bgColor }}
               >
                 {partner.logo ? (
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="h-24 w-full object-cover"
+                    className="max-h-12 max-w-full object-contain"
                     loading="lazy"
                   />
                 ) : (
-                  <span className="flex h-24 items-center justify-center text-xl font-black tracking-normal text-white">{partner.name}</span>
+                  <span className="text-xl font-black tracking-normal text-white">{partner.name}</span>
                 )}
               </Link>
             ))}
