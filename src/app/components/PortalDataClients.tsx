@@ -40,6 +40,23 @@ type Campaign = {
   is_invited?: number;
   invite_status?: string;
   affiliate_link?: string;
+  has_joined?: number;
+  my_ref_code?: string;
+};
+
+type MyAffiliate = {
+  campaign_id?: string;
+  title?: string;
+  brand_name?: string;
+  brand_logo?: string;
+  image_urls?: string;
+  commission_type?: string;
+  commission_value?: number | string;
+  tracking_url?: string;
+  ref_code?: string;
+  click_count?: number;
+  joined_at?: string;
+  affiliate_link?: string;
 };
 
 type Application = {
@@ -448,6 +465,9 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
   const [message, setMessage] = useState("");
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [joinedLinks, setJoinedLinks] = useState<Record<string, string>>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -466,42 +486,49 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
     setLoading(false);
   }
 
-  async function trackAffiliate(campaign: Campaign) {
+  async function joinAffiliate(campaign: Campaign) {
     if (!campaign.campaign_id) return;
     setUpgradeRequired(false);
+    setMessage("");
 
     if (campaign.campaign_id.startsWith("demo-")) {
       const tier = campaign.access_tier;
       if (tier === "creator_plus" || tier === "creator_pro") {
         const planName = tier === "creator_pro" ? "Creator Pro" : "Creator Plus";
-        setMessage(`This affiliate program requires ${planName}. Upgrade your plan to access affiliate links like this.`);
+        setMessage(`This affiliate program requires ${planName}. Upgrade your plan to join.`);
         setUpgradeRequired(true);
         return;
       }
-      if (campaign.affiliate_link) window.open(campaign.affiliate_link, "_blank", "noopener,noreferrer");
+      setMessage("Sign up to join this affiliate program and get your unique tracking link.");
       return;
     }
 
-    const result = await api("campaigns/affiliate-click", {
+    setJoiningId(campaign.campaign_id);
+    const result = await api<{ tracking_url?: string; ref_code?: string }>("campaigns/join-affiliate", {
       method: "POST",
-      body: JSON.stringify({ campaign_id: campaign.campaign_id }),
+      body: JSON.stringify({ campaignId: campaign.campaign_id }),
     });
+    setJoiningId(null);
 
     const msg = (result.message || "").toLowerCase();
-    const isSubscriptionError =
-      msg.includes("subscription") ||
-      msg.includes("upgrade") ||
-      msg.includes("creator plus") ||
-      msg.includes("creator pro") ||
-      msg.includes("access tier") ||
-      msg.includes("membership");
+    const isSubscriptionError = msg.includes("subscription") || msg.includes("upgrade") || msg.includes("creator plus") || msg.includes("creator pro") || msg.includes("access tier") || msg.includes("membership");
 
     if (isSubscriptionError) {
       setUpgradeRequired(true);
-      setMessage(result.message || "This campaign requires a Creator subscription. Upgrade your plan to access it.");
+      setMessage(result.message || "This campaign requires a Creator subscription.");
+    } else if (result.status === 200 && (result.data as { tracking_url?: string })?.tracking_url) {
+      const trackingUrl = (result.data as { tracking_url: string }).tracking_url;
+      setJoinedLinks((prev) => ({ ...prev, [campaign.campaign_id!]: trackingUrl }));
+      load();
     } else {
-      if (campaign.affiliate_link) window.open(campaign.affiliate_link, "_blank", "noopener,noreferrer");
+      setMessage(result.message || "Failed to join program.");
     }
+  }
+
+  function copyLink(campaignId: string, url: string) {
+    navigator.clipboard.writeText(url);
+    setCopiedId(campaignId);
+    setTimeout(() => setCopiedId(null), 2000);
   }
 
   async function openInvite(campaign: Campaign, action: "accepted" | "declined") {
@@ -516,48 +543,72 @@ export function CreatorCampaignsClient({ affiliateOnly = false, freeOnly = false
   }
 
   return (
-    <LiveSection title={affiliateOnly ? "Affiliate Programs" : freeOnly ? "Free Collaborations" : "Campaigns"} actionLabel="Refresh" onAction={load}>
+    <LiveSection
+      title={affiliateOnly ? "Affiliate Programs" : freeOnly ? "Free Collaborations" : "Campaigns"}
+      actionLabel="Refresh"
+      onAction={load}
+      headerExtra={affiliateOnly ? <Link href="/creator/my-affiliate-links" className="text-sm font-bold text-[#287d69] underline underline-offset-2">My Links →</Link> : undefined}
+    >
       {message ? (
         <Notice>
           <p>{message}</p>
           {upgradeRequired && (
-            <Link
-              href="/creator/memberships"
-              className="mt-2 inline-flex items-center gap-1 font-bold text-[#287d69] underline underline-offset-2 hover:text-[#171717]"
-            >
+            <Link href="/creator/memberships" className="mt-2 inline-flex items-center gap-1 font-bold text-[#287d69] underline underline-offset-2 hover:text-[#171717]">
               View Creator Memberships →
             </Link>
           )}
         </Notice>
       ) : null}
       <List loading={loading} empty="No campaigns found.">
-        {campaigns.map((campaign) => (
-          <Card key={campaign.campaign_id || campaign.title} title={campaign.title || "Untitled campaign"} badge={campaign.access_tier || campaign.earning_type || "free"}>
-            <p>{campaign.description || "No description."}</p>
-            <Meta items={[campaign.brand_name || "Brand", `Type: ${campaign.earning_type || "paid"}`, `Status: ${campaign.status || "active"}`, campaign.objective || "No objective"]} />
-            <div className="mt-4 flex flex-wrap gap-2">
-              {campaign.affiliate_link ? (
-                <button
-                  onClick={() => trackAffiliate(campaign)}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white"
-                >
-                  {(campaign.access_tier === "creator_plus" || campaign.access_tier === "creator_pro") && (
-                    <span className="rounded bg-[#fdda6d] px-1.5 py-0.5 text-xs font-black text-[#171717]">
-                      {campaign.access_tier === "creator_pro" ? "Pro" : "Plus"}
-                    </span>
-                  )}
-                  Open Affiliate Link
-                </button>
-              ) : null}
-              {campaign.is_invited ? (
-                <>
-                  <button onClick={() => openInvite(campaign, "accepted")} className="rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white">Accept Invite</button>
-                  <button onClick={() => openInvite(campaign, "declined")} className="rounded-md border border-[#171717] px-4 py-2 text-sm font-bold text-[#171717]">Decline</button>
-                </>
-              ) : null}
-            </div>
-          </Card>
-        ))}
+        {campaigns.map((campaign) => {
+          const isAffiliate = campaign.earning_type === "affiliate";
+          const alreadyJoined = campaign.has_joined === 1;
+          const trackingUrl = joinedLinks[campaign.campaign_id!] ?? (alreadyJoined && campaign.my_ref_code ? `${typeof window !== "undefined" ? window.location.origin : ""}/campaigns/affiliate-redirect/${campaign.my_ref_code}` : null);
+          const isJoining = joiningId === campaign.campaign_id;
+
+          return (
+            <Card key={campaign.campaign_id || campaign.title} title={campaign.title || "Untitled campaign"} badge={campaign.access_tier || campaign.earning_type || "free"}>
+              <p>{campaign.description || "No description."}</p>
+              <Meta items={[campaign.brand_name || "Brand", `Type: ${campaign.earning_type || "paid"}`, `Status: ${campaign.status || "active"}`, campaign.objective || "No objective"]} />
+
+              {trackingUrl && (
+                <div className="mt-3 flex items-center gap-2 rounded-md border border-[#d8d0c2] bg-[#f9f7f4] px-3 py-2">
+                  <span className="flex-1 truncate text-xs text-[#555]">{trackingUrl}</span>
+                  <button
+                    onClick={() => copyLink(campaign.campaign_id!, trackingUrl)}
+                    className="shrink-0 rounded bg-[#171717] px-2 py-1 text-xs font-bold text-white"
+                  >
+                    {copiedId === campaign.campaign_id ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {isAffiliate ? (
+                  alreadyJoined || trackingUrl ? (
+                    <Link href="/creator/my-affiliate-links" className="inline-flex items-center gap-1.5 rounded-md border border-[#171717] px-4 py-2 text-sm font-bold text-[#171717]">
+                      View My Link
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => joinAffiliate(campaign)}
+                      disabled={isJoining}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                    >
+                      {isJoining ? "Joining…" : "Join Program"}
+                    </button>
+                  )
+                ) : null}
+                {campaign.is_invited ? (
+                  <>
+                    <button onClick={() => openInvite(campaign, "accepted")} className="rounded-md bg-[#171717] px-4 py-2 text-sm font-bold text-white">Accept Invite</button>
+                    <button onClick={() => openInvite(campaign, "declined")} className="rounded-md border border-[#171717] px-4 py-2 text-sm font-bold text-[#171717]">Decline</button>
+                  </>
+                ) : null}
+              </div>
+            </Card>
+          );
+        })}
       </List>
     </LiveSection>
   );
@@ -1255,6 +1306,64 @@ export function BusinessWalletClient() {
 
 // ─── Social Connect ────────────────────────────────────────────────────────────
 
+export function MyAffiliateLinksClient() {
+  const [affiliates, setAffiliates] = useState<MyAffiliate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  useEffect(() => { load(); }, []);
+
+  async function load() {
+    setLoading(true);
+    const result = await api<MyAffiliate[]>("campaigns/my-affiliates");
+    setAffiliates(unwrapList<MyAffiliate>(result));
+    setLoading(false);
+  }
+
+  function copyLink(id: string, url: string) {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  }
+
+  function commissionDisplay(affiliate: MyAffiliate) {
+    if (!affiliate.commission_value) return "";
+    return affiliate.commission_type === "percentage"
+      ? `${affiliate.commission_value}% per sale`
+      : `KES ${affiliate.commission_value} per sale`;
+  }
+
+  return (
+    <LiveSection title="My Affiliate Links" actionLabel="Refresh" onAction={load}>
+      <List loading={loading} empty="You haven't joined any affiliate programs yet.">
+        {affiliates.map((affiliate, i) => (
+          <Card key={affiliate.campaign_id ?? i} title={affiliate.title || "Untitled"} badge={commissionDisplay(affiliate) || "affiliate"}>
+            <Meta items={[affiliate.brand_name || "Brand", `${affiliate.click_count ?? 0} clicks`, affiliate.joined_at ? `Joined ${new Date(affiliate.joined_at).toLocaleDateString()}` : ""].filter(Boolean)} />
+            {affiliate.tracking_url && (
+              <div className="mt-3 flex items-center gap-2 rounded-md border border-[#d8d0c2] bg-[#f9f7f4] px-3 py-2">
+                <span className="flex-1 truncate text-xs text-[#555]">{affiliate.tracking_url}</span>
+                <button
+                  onClick={() => copyLink(affiliate.campaign_id ?? String(i), affiliate.tracking_url!)}
+                  className="shrink-0 rounded bg-[#171717] px-2 py-1 text-xs font-bold text-white"
+                >
+                  {copiedId === (affiliate.campaign_id ?? String(i)) ? "Copied!" : "Copy"}
+                </button>
+              </div>
+            )}
+            <div className="mt-4 flex gap-2">
+              {affiliate.affiliate_link && (
+                <a href={affiliate.affiliate_link} target="_blank" rel="noopener noreferrer" className="rounded-md border border-[#d8d0c2] px-4 py-2 text-sm font-bold text-[#555] hover:border-[#171717]">
+                  Visit Brand Link
+                </a>
+              )}
+            </div>
+          </Card>
+        ))}
+      </List>
+    </LiveSection>
+  );
+}
+
 type SocialSite = {
   site_id?: string;
   sm_name?: string;
@@ -1268,6 +1377,7 @@ const SOCIAL_PLATFORMS = [
   { id: "tiktok", label: "TikTok", color: "#FF0050", textColor: "#ffffff" },
   { id: "linkedin", label: "LinkedIn", color: "#0A66C2", textColor: "#ffffff" },
   { id: "instagram", label: "Instagram", color: "#E4405F", textColor: "#ffffff" },
+  { id: "facebook", label: "Facebook", color: "#1877F2", textColor: "#ffffff" },
 ];
 
 export function SocialConnectClient() {
@@ -1277,6 +1387,7 @@ export function SocialConnectClient() {
   const [message, setMessage] = useState("");
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
   const [igUsername, setIgUsername] = useState("");
+  const [fbPageUrl, setFbPageUrl] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -1373,6 +1484,65 @@ export function SocialConnectClient() {
     }
   }
 
+  async function initFacebook() {
+    setMessage("");
+    setConnectingPlatform("facebook");
+    const initResult = await api<{ authUrl?: string; method?: string }>(`oauth/init/facebook`);
+    const data = initResult.data as { authUrl?: string; method?: string } | undefined;
+    if (data?.method === "page_url" || !data?.authUrl) {
+      // Stay on "facebook" connecting state to show the page URL form
+      return;
+    }
+    // OAuth flow available — open popup
+    const popup = window.open(data.authUrl, "sg_oauth_facebook", "width=620,height=720,scrollbars=yes");
+    if (!popup) {
+      setMessage("Popup blocked — please allow popups for this site and try again.");
+      setConnectingPlatform(null);
+      return;
+    }
+    let attempts = 0;
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > 90 || popup.closed) {
+        clearInterval(pollRef.current!);
+        setConnectingPlatform(null);
+        if (attempts > 90) setMessage("Connection timed out.");
+        return;
+      }
+      try {
+        const statusResult = await api<{ status?: string; message?: string }>(`oauth/status/${data.state}`);
+        const status = (statusResult.data as { status?: string } | undefined)?.status;
+        if (status === "success") {
+          clearInterval(pollRef.current!);
+          popup.close();
+          setConnectingPlatform(null);
+          setMessage("Facebook connected successfully!");
+          load();
+        } else if (status === "error") {
+          clearInterval(pollRef.current!);
+          popup.close();
+          setConnectingPlatform(null);
+          setMessage((statusResult.data as { message?: string } | undefined)?.message ?? "Connection failed.");
+        }
+      } catch { /* ignore */ }
+    }, 2000);
+  }
+
+  async function connectFacebook(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const result = await api("oauth/connect-facebook", {
+      method: "POST",
+      body: JSON.stringify({ pageUrl: fbPageUrl }),
+    });
+    setMessage(result.message ?? (result.status === 200 ? "Facebook page connected." : "Connection failed."));
+    if (result.status === 200) {
+      setConnectingPlatform(null);
+      setFbPageUrl("");
+      load();
+    }
+  }
+
   if (loading) return <div className="rounded-lg border border-[#e7e1d6] bg-white p-5 text-sm text-[#555]">Loading...</div>;
 
   return (
@@ -1383,6 +1553,7 @@ export function SocialConnectClient() {
           const connected = getConnected(platform.id);
           const isConnecting = connectingPlatform === platform.id;
           const showIgForm = connectingPlatform === "instagram" && platform.id === "instagram";
+          const showFbForm = connectingPlatform === "facebook" && platform.id === "facebook";
 
           return (
             <article key={platform.id} className="rounded-lg border border-[#e7e1d6] bg-white p-5">
@@ -1423,6 +1594,26 @@ export function SocialConnectClient() {
                     Cancel
                   </button>
                 </form>
+              ) : showFbForm ? (
+                <form onSubmit={connectFacebook} className="mt-4">
+                  <p className="mb-2 text-xs text-[#555]">Enter your Facebook Page name or URL (e.g. facebook.com/YourPage)</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={fbPageUrl}
+                      onChange={(e) => setFbPageUrl(e.target.value)}
+                      placeholder="YourPageName or facebook.com/..."
+                      required
+                      className="min-h-10 flex-1 rounded-md border border-[#d8d0c2] px-3 text-sm text-[#171717]"
+                    />
+                    <button type="submit" className="rounded-md bg-[#1877F2] px-4 py-2 text-sm font-bold text-white">
+                      Connect
+                    </button>
+                    <button type="button" onClick={() => setConnectingPlatform(null)} className="rounded-md border border-[#d8d0c2] px-3 py-2 text-sm font-bold text-[#555]">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
               ) : (
                 <div className="mt-4 flex gap-2">
                   {connected ? (
@@ -1434,7 +1625,11 @@ export function SocialConnectClient() {
                     </button>
                   ) : (
                     <button
-                      onClick={() => platform.id === "instagram" ? setConnectingPlatform("instagram") : connectOAuth(platform.id)}
+                      onClick={() => {
+                        if (platform.id === "instagram") setConnectingPlatform("instagram");
+                        else if (platform.id === "facebook") initFacebook();
+                        else connectOAuth(platform.id);
+                      }}
                       disabled={isConnecting}
                       className="rounded-md px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
                       style={{ backgroundColor: platform.color }}
@@ -1452,11 +1647,14 @@ export function SocialConnectClient() {
   );
 }
 
-function LiveSection({ title, actionLabel, onAction, children }: { title: string; actionLabel: string; onAction: () => void; children: React.ReactNode }) {
+function LiveSection({ title, actionLabel, onAction, headerExtra, children }: { title: string; actionLabel: string; onAction: () => void; headerExtra?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-[#e7e1d6] bg-white p-5 shadow-sm">
       <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-bold text-[#171717]">{title}</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-[#171717]">{title}</h2>
+          {headerExtra}
+        </div>
         <button type="button" onClick={onAction} className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#171717] px-5 py-2 text-sm font-bold text-white">
           {actionLabel}
         </button>
