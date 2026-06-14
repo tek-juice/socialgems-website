@@ -22,6 +22,8 @@ type CampaignForm = {
   campaign_image: string;
   earning_type: "paid" | "affiliate" | "barter";
   affiliate_link: string;
+  commission_type: "percentage" | "fixed";
+  commission_value: string;
 };
 
 type Campaign = {
@@ -56,6 +58,8 @@ const defaultForm: CampaignForm = {
   campaign_image: "",
   earning_type: "paid",
   affiliate_link: "",
+  commission_type: "percentage",
+  commission_value: "",
 };
 
 export default function BusinessCampaignsClient() {
@@ -135,6 +139,12 @@ export default function BusinessCampaignsClient() {
       return "Affiliate campaigns require an affiliate link.";
     }
 
+    if (form.earning_type === "affiliate") {
+      const cv = Number(form.commission_value);
+      if (!form.commission_value || isNaN(cv) || cv <= 0) return "Please enter a valid commission value.";
+      if (form.commission_type === "percentage" && cv > 100) return "Percentage commission cannot exceed 100%.";
+    }
+
     return "";
   }
 
@@ -156,11 +166,13 @@ export default function BusinessCampaignsClient() {
         description: form.description,
         start_date: form.start_date,
         end_date: form.end_date,
-        budget: Number(form.budget),
+        budget: form.earning_type === "affiliate" ? 0 : Number(form.budget),
         number_of_influencers: Number(form.number_of_influencers),
         campaign_image: form.campaign_image || "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1600&q=80",
         earning_type: form.earning_type,
         affiliate_link: form.earning_type === "affiliate" ? form.affiliate_link : undefined,
+        commission_type: form.earning_type === "affiliate" ? form.commission_type : undefined,
+        commission_value: form.earning_type === "affiliate" ? Number(form.commission_value) : undefined,
         tasks,
       };
 
@@ -221,7 +233,9 @@ export default function BusinessCampaignsClient() {
             <Field label="Objective" value={form.objective} onChange={(value) => updateForm("objective", value)} required placeholder="Awareness, Sales, App installs..." />
             <Field label="Start Date" value={form.start_date} onChange={(value) => updateForm("start_date", value)} type="date" required />
             <Field label="End Date" value={form.end_date} onChange={(value) => updateForm("end_date", value)} type="date" required />
-            <Field label="Budget (USD)" value={form.budget} onChange={(value) => updateForm("budget", value)} type="number" required />
+            {form.earning_type !== "affiliate" ? (
+              <Field label="Budget (KES)" value={form.budget} onChange={(value) => updateForm("budget", value)} type="number" required />
+            ) : null}
             <Field label="Number of Creators" value={form.number_of_influencers} onChange={(value) => updateForm("number_of_influencers", value)} type="number" required />
             <Field label="Campaign Image URL" value={form.campaign_image} onChange={(value) => updateForm("campaign_image", value)} placeholder="Optional. Backend has a default image." />
             <label className="block">
@@ -237,7 +251,46 @@ export default function BusinessCampaignsClient() {
               </select>
             </label>
             {form.earning_type === "affiliate" ? (
-              <Field label="Affiliate Link" value={form.affiliate_link} onChange={(value) => updateForm("affiliate_link", value)} required />
+              <>
+                <Field label="Affiliate Link" value={form.affiliate_link} onChange={(value) => updateForm("affiliate_link", value)} required />
+                <label className="block md:col-span-2">
+                  <span className="text-sm font-bold text-[#171717]">Commission Structure</span>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateForm("commission_type", "percentage")}
+                      className={`flex-1 rounded-l-md border px-4 py-2 text-sm font-semibold transition-colors ${form.commission_type === "percentage" ? "border-[#171717] bg-[#171717] text-white" : "border-[#d8d0c2] bg-[#f9f6f0] text-[#555]"}`}
+                    >
+                      Percentage (%)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateForm("commission_type", "fixed")}
+                      className={`flex-1 rounded-r-md border px-4 py-2 text-sm font-semibold transition-colors ${form.commission_type === "fixed" ? "border-[#171717] bg-[#171717] text-white" : "border-[#d8d0c2] bg-[#f9f6f0] text-[#555]"}`}
+                    >
+                      Fixed (KES)
+                    </button>
+                  </div>
+                  <div className="relative mt-2">
+                    <input
+                      type="number"
+                      value={form.commission_value}
+                      onChange={(e) => updateForm("commission_value", e.target.value)}
+                      placeholder={form.commission_type === "percentage" ? "e.g. 10" : "e.g. 500"}
+                      required
+                      className="min-h-12 w-full rounded-md border border-[#d8d0c2] px-3 pr-14 text-[#171717]"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#999]">
+                      {form.commission_type === "percentage" ? "%" : "KES"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-[#666]">
+                    {form.commission_type === "percentage"
+                      ? "Influencers earn this % of every sale they drive."
+                      : "Influencers earn this fixed KES amount per conversion."}
+                  </p>
+                </label>
+              </>
             ) : null}
           </div>
 
